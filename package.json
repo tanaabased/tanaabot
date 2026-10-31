@@ -1,0 +1,26 @@
+{
+  "name": "@tanaab/tanaabot",
+  "description": "tanaabot cloud assistant guidance, assets, and job prompts.",
+  "version": "0.1.0",
+  "private": true,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tanaabased/tanaabot.git"
+  },
+  "bugs": "https://github.com/tanaabased/tanaabot/issues",
+  "homepage": "https://github.com/tanaabased/tanaabot",
+  "packageManager": "bun@1.4.4",
+  "engines": {
+    "bun": ">=1.4.2 <1.5.0"
+  },
+  "type": "module",
+  "scripts": {
+    "lint": "bun run format:check",
+    "format:check": "prettier . --check --ignore-unknown",
+    "format:write": "prettier . --write --ignore-unknown"
+  },
+  "devDependencies": {
+    "prettier": "^3.9.8"
+  }
+}
