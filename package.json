@@ -26,8 +26,7 @@
     "test": "bun run test:unit && bun run test:component",
     "test:unit": "bun ./node_modules/mocha/bin/mocha.js \"test/*.spec.js\"",
     "test:component": "bun ./node_modules/mocha/bin/mocha.js \"test/*.component.js\"",
-    "leia": "bun ./node_modules/.bin/leia",
-    "check:package": "bun scripts/check-package-cli.js"
+    "leia": "bun ./node_modules/.bin/leia"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
@@ -64,9 +63,7 @@
       "INVENTORY.md",
       "package.json",
       "Brewfile",
-      "CHANGELOG.md",
-      "index.js",
-      "openclaw.plugin.json"
+      "CHANGELOG.md"
     ]
   },
   "files": [
@@ -91,26 +88,9 @@
     "TANABOOT.md",
     "INVENTORY.md",
     "Brewfile",
-    "CHANGELOG.md",
-    "index.js",
-    "openclaw.plugin.json"
+    "CHANGELOG.md"
   ],
   "publishConfig": {
     "access": "public"
-  },
-  "openclaw": {
-    "extensions": [
-      "./index.js"
-    ],
-    "runtimeExtensions": [
-      "./index.js"
-    ],
-    "compat": {
-      "pluginApi": ">=2026.10.6",
-      "minGatewayVersion": "2026.10.6"
-    },
-    "build": {
-      "openclawVersion": "2026.10.6"
-    }
   }
 }

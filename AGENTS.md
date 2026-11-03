@@ -17,7 +17,7 @@ with normal sentence capitalization. Read the skill before writing; a requested 
 - Use [Tanaabot Skill Author](./skills/skill-author/SKILL.md) when changing skills. Keep shared
   implementations with Canon and Agent System. Local skills use owner `tanaab`, namespace `tanaabot`
   and the `codex-plugin` container layout.
-- Keep package, Codex and OpenClaw plugin versions aligned. Maintain explicit npm `files` and Codex Tools
+- Keep package and Codex plugin versions aligned. Maintain explicit npm `files` and Codex Tools
   `managedPaths`; ship regular assets rather than symlinks.
 - Keep changes small. Add folders and helpers when they have a concrete owner and use.
 

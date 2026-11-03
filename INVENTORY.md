@@ -39,13 +39,11 @@ are inactive stubs. The Cloud target home and shell-loading behavior remain unve
 
 ## Plugins
 
-| Surface  | Source                                                                 | Status                                                    |
-| -------- | ---------------------------------------------------------------------- | --------------------------------------------------------- |
-| Codex    | [Plugin manifest](./.codex-plugin/plugin.json)                         | Voice and skill-author skills                             |
-| OpenClaw | [Plugin manifest](./openclaw.plugin.json) and [entrypoint](./index.js) | Skills declared; runtime registration is a no-op scaffold |
+| Surface | Source                                         | Status                        |
+| ------- | ---------------------------------------------- | ----------------------------- |
+| Codex   | [Plugin manifest](./.codex-plugin/plugin.json) | Voice and skill-author skills |
 
-Both surfaces ship in `@tanaab/tanaabot`. The native plugin targets OpenClaw `2026.10.6` or newer;
-installed-host behavior remains unverified.
+The Codex plugin ships in `@tanaab/tanaabot`; installed-host behavior remains unverified.
 
 ## Configuration files
 
@@ -66,7 +64,7 @@ installed-host behavior remains unverified.
 ## Artwork
 
 `composer-icon.svg` is the small cyan outline; `icon-large.png` is the large skill and plugin image.
-`icon-large-circle.png` is the profile avatar. ClawHub's `icon.png` is a regular copy of the large image.
+`icon-large-circle.png` is the profile avatar.
 
 The L3-38 spaceport circle is selected in the manifest. The compact raster images are 256×256 PNGs;
 the circular variants have transparent corners. Alternatives remain available without changing the

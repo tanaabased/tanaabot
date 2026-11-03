@@ -50,9 +50,9 @@ Lint runs ESLint, Prettier and ShellCheck. Unit and component suites currently c
 placeholders. The [Leia examples](https://github.com/tanaabased/tanaabot/tree/main/examples) exercise packaged Tanaboot previews in CI; actual
 Cloud provisioning remains pending.
 
-The [release workflow](https://github.com/tanaabased/tanaabot/blob/main/.github/workflows/release.yml) publishes independently to npm, ClawHub and
-the repository. Before the first release, configure npm trusted publishing and grant the repository
-access to `TANAAB_LOBSTER_BOAT` and `TANAAB_COAXIUM_INJECTOR`. See [CHANGELOG.md](./CHANGELOG.md)
+The [release workflow](https://github.com/tanaabased/tanaabot/blob/main/.github/workflows/release.yml) publishes independently to npm and the
+repository. Before the first release, configure npm trusted publishing and grant the repository
+access to `TANAAB_COAXIUM_INJECTOR`. See [CHANGELOG.md](./CHANGELOG.md)
 for unreleased changes.
 
 ## Support
