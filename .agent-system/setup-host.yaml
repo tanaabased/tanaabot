@@ -4,7 +4,7 @@ steps:
     runtimes: [codex]
     check:
       command: bash
-      args: [scripts/setup-cloud.sh, check, host]
+      args: [tanaboot.sh, --host, --check]
     apply:
       command: bash
-      args: [scripts/setup-cloud.sh, apply, host]
+      args: [tanaboot.sh, --host]

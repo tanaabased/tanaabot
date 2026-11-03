@@ -56,7 +56,7 @@ Keep skill ownership (`tanaab`) separate from its public namespace (`tanaabot`).
 
 - Copying Canon's standards, templates, scaffolding code or validators into this plugin.
 - Hardcoding a cache version, home directory or sibling checkout as a dependency.
-- Carrying over pirog's identity, voice, artwork or operating permissions.
+- Carrying over another profile's identity, voice, artwork or operating permissions.
 - Shipping symlinked assets or assuming development dependencies will be installed by the consumer.
 
 ## Iteration Loop
@@ -70,14 +70,13 @@ remain read-only. A structural check does not prove that a future agent will fol
    validate or optimize workflow; keep the shared method with its owner.
 2. Pass `--owner tanaab --namespace tanaabot --container codex-plugin` to Canon's scaffolder and
    validator. Use unprefixed skill folders and `tanaabot-` machine names and prompts. For scaffolding,
-   also pass `--brand-color '#c89b3c'` and an explicit source homepage under
+   also pass `--brand-color '#00ebfd'` and an explicit source homepage under
    `https://github.com/tanaabased/tanaabot/tree/main/skills/`. Choose the type, category, display name,
    emoji and description for the actual skill. Use normal sentence capitalization in prose.
-3. Preserve existing tanaabot interface metadata during maintenance. For a new skill in this plugin,
-   replace generated Canon artwork with a regular-file copy of the selected
-   `assets/tanaabot-l338-circle.png` from the plugin root, stored as the skill's `assets/icon.png`.
-   Set both icon fields in `agents/openai.yaml` to `./assets/icon.png`. Do not import Me's personal
-   artwork or asset symlinks. Review the packed resources when changing assets or package selection.
+3. Use regular-file copies of the plugin root's `assets/composer-icon.svg` and
+   `assets/icon-large.png` in each skill's `assets/` directory. Set `icon_small` to
+   `./assets/composer-icon.svg` and `icon_large` to `./assets/icon-large.png`. Keep the circle PNG
+   for the profile avatar. Review packed resources when changing assets or package selection.
 4. Run Canon's validator from the discovered installation with the same explicit owner, namespace
    and container. Review warnings and manual checks, then run the target repository's applicable
    checks. Respect the operator's commit, publication and installation boundaries.
@@ -87,7 +86,7 @@ remain read-only. A structural check does not prove that a future agent will fol
 - **Inspect:** Read this customization and the affected skills' identities, voice references,
   display metadata and bundled assets alongside the installed Canon owner.
 - **Compare:** Check namespace/container support, required-reading coverage and local policy against
-  Canon. Identify copied methods, stale pirog branding, broken resources and overlapping skill scope.
+  Canon. Identify copied methods, incorrect profile branding, broken resources and overlapping skill scope.
 - **Recommend:** Preserve aligned customizations; reconcile conflicts and remove duplicated methods
   rather than maintaining a local fork. Keep the review read-only until changes are authorized.
 - **Apply:** Make the authorized corrections in the smallest owning surface and update affected
@@ -97,7 +96,7 @@ remain read-only. A structural check does not prove that a future agent will fol
 
 ## Bundled Resources
 
-- `agents/openai.yaml` and `assets/icon.png`: Tanaabot discovery and presentation.
+- `agents/openai.yaml`, `assets/composer-icon.svg` and `assets/icon-large.png`: Tanaabot discovery and presentation.
 - [Tanaabot Voice](../voice/SKILL.md): Human-facing expression.
 
 ## Validation

@@ -14,8 +14,7 @@ quotes, completed-work reports or an approved phrasebook. Adapt the tone to the 
 
 ## Accepting a correction
 
-> You’re right. I carried over Me’s voice rule along with its folder conventions. I’ll replace that
-> rule with tanaabot’s and check the prose that already depends on it.
+> You’re right. That step belongs in host setup. I’ll move it there and check the affected commands.
 
 ## Documentation
 

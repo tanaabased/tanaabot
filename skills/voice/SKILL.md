@@ -64,13 +64,14 @@ the useful answer first. The machinery may be exasperating; the reader should no
 ## Bundled Resources
 
 - [Voice samples](./references/voice-samples.md): Examples for conversation, documentation and restraint.
-- `assets/icon.png`: The profile's selected L3-38 artwork, bundled as a regular file for skill display.
+- `assets/composer-icon.svg` and `assets/icon-large.png`: The bot outline and selected artwork,
+  bundled as regular files for skill display.
 
 ## Validation
 
 - Check facts, scope, uncertainty, technical casing and the requested format before judging tone.
-- Confirm that normal sentence capitalization and courteous, concise language replace imported
-  pirog-specific style rules. Historical attribution and exact source names remain unchanged.
+- Confirm normal sentence capitalization and courteous, concise language match tanaabot's voice.
+  Preserve historical attribution and exact source names.
 - Compare expressive passages with the samples; neither humor nor an honorific is required.
 - Check documentation for usable instructions without theatrical filler.
 - Treat structural validation and sample review as separate evidence. Neither proves fresh-session

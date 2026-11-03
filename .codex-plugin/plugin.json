@@ -22,9 +22,9 @@
       "Use $tanaabot-voice to rewrite this text while preserving its facts and required format.",
       "Use $tanaabot-skill-author to create or update a tanaabot skill using Canon and validate the result."
     ],
-    "brandColor": "#c89b3c",
-    "composerIcon": "./assets/tanaabot-l338-circle.png",
-    "logo": "./assets/tanaabot-l338.png",
+    "brandColor": "#00ebfd",
+    "composerIcon": "./assets/composer-icon.svg",
+    "logo": "./assets/icon-large.png",
     "websiteURL": "https://github.com/tanaabased/tanaabot"
   }
 }

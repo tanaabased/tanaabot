@@ -1,58 +1,10 @@
-# Scaffold: these declarations do not install or enable plugins yet.
+# Scaffold: both commands fail explicitly until Cloud provisioning is implemented.
 steps:
-  - id: cloud-shell
+  - id: cloud-agent
     runtimes: [codex]
     check:
       command: bash
-      args: [scripts/setup-cloud.sh, check, shell]
+      args: [tanaboot.sh, --agent, --check]
     apply:
       command: bash
-      args: [scripts/setup-cloud.sh, apply, shell]
-  - id: cloud-git
-    runtimes: [codex]
-    check:
-      command: bash
-      args: [scripts/setup-cloud.sh, check, git]
-    apply:
-      command: bash
-      args: [scripts/setup-cloud.sh, apply, git]
-  - id: cloud-gh
-    runtimes: [codex]
-    check:
-      command: bash
-      args: [scripts/setup-cloud.sh, check, gh]
-    apply:
-      command: bash
-      args: [scripts/setup-cloud.sh, apply, gh]
-  - id: cloud-ssh
-    runtimes: [codex]
-    check:
-      command: bash
-      args: [scripts/setup-cloud.sh, check, ssh]
-    apply:
-      command: bash
-      args: [scripts/setup-cloud.sh, apply, ssh]
-  - id: cloud-guidance
-    runtimes: [codex]
-    check:
-      command: bash
-      args: [scripts/setup-cloud.sh, check, guidance]
-    apply:
-      command: bash
-      args: [scripts/setup-cloud.sh, apply, guidance]
-  - id: tanaabot-plugin
-    runtimes: [codex]
-    check:
-      command: bash
-      args: [scripts/setup-cloud.sh, check, plugin, tanaabot, local, .]
-    apply:
-      command: bash
-      args: [scripts/setup-cloud.sh, apply, plugin, tanaabot, local, .]
-  - id: canon-plugin
-    runtimes: [codex]
-    check:
-      command: bash
-      args: [scripts/setup-cloud.sh, check, plugin, tanaab, github, tanaabased/canon, main]
-    apply:
-      command: bash
-      args: [scripts/setup-cloud.sh, apply, plugin, tanaab, github, tanaabased/canon, main]
+      args: [tanaboot.sh, --agent]
