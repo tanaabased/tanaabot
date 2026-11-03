@@ -1,0 +1,30 @@
+{
+  "name": "tanaabot",
+  "version": "0.1.0",
+  "description": "Tanaabot's voice, skill authoring and global guidance for Codex.",
+  "author": {
+    "name": "Tanaab",
+    "url": "https://github.com/tanaabased"
+  },
+  "homepage": "https://github.com/tanaabased/tanaabot",
+  "repository": "https://github.com/tanaabased/tanaabot",
+  "license": "MIT",
+  "keywords": ["tanaabot", "codex", "skills", "writing"],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "tanaabot",
+    "shortDescription": "Courteous assistance, with a little protocol-droid fussing",
+    "longDescription": "Write in tanaabot's courteous protocol-droid voice and author its skills using Canon's shared methods. The bundle includes global guidance sources; Cloud installation and setup are still being developed.",
+    "developerName": "Tanaab",
+    "category": "Productivity",
+    "capabilities": ["Interactive", "Write"],
+    "defaultPrompt": [
+      "Use $tanaabot-voice to rewrite this text while preserving its facts and required format.",
+      "Use $tanaabot-skill-author to create or update a tanaabot skill using Canon and validate the result."
+    ],
+    "brandColor": "#00ebfd",
+    "composerIcon": "./assets/composer-icon.svg",
+    "logo": "./assets/icon-large.png",
+    "websiteURL": "https://github.com/tanaabased/tanaabot"
+  }
+}

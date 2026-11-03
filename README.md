@@ -1,2 +1,76 @@
 # tanaabot
-Tanaab-based cloud assistant
+
+<p align="center">
+  <img src="./assets/icon-large-circle.png" alt="tanaabot" width="180" />
+</p>
+
+<p align="center">
+  <img src="https://img.shields.io/badge/environment-Codex_Cloud-00c88a" alt="Environment: Codex Cloud" />
+  <a href="https://github.com/tanaabased/tanaabot/issues/5"><img src="https://img.shields.io/badge/status-scaffolding-00ebfd" alt="Status: scaffolding" /></a>
+  <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-111827" alt="License: MIT" /></a>
+</p>
+
+tanaabot prepares a Codex Cloud environment with its tools, guidance and skills for managed and
+scheduled tasks. Its assistant has a courteous protocol-droid voice, with a little grandmotherly concern.
+
+Cloud provisioning is being developed in [#5](https://github.com/tanaabased/tanaabot/issues/5).
+The current scaffold previews setup; it does not yet install or check an environment.
+
+## What ships
+
+- [Tanaboot](./TANABOOT.md): The setup entrypoint, with host and agent modes.
+- [Dependencies](./INVENTORY.md#dependencies): The Brewfile and shared provisioning tools.
+- [Dotpackages](./INVENTORY.md#dotpackages): Global guidance and configuration stubs.
+- [Skills](./INVENTORY.md#skills): Tanaabot Voice and Skill Author.
+- [Configuration files](./INVENTORY.md#configuration-files): Agent System metadata and Codex plugin sources.
+- [Automations](./INVENTORY.md#automations): Current inventory; none declared yet.
+
+## Preview setup
+
+From a source checkout:
+
+```sh
+./tanaboot.sh --dry-run
+```
+
+Add `--host` or `--agent` to preview one group. See [Tanaboot](./TANABOOT.md) for the option reference
+and current limits.
+
+## Development
+
+Use the runtimes declared in [`.bun-version`](./.bun-version) and [`.node-version`](./.node-version):
+
+```sh
+bun install --frozen-lockfile --ignore-scripts
+bun run lint
+bun run test
+```
+
+Lint runs ESLint, Prettier and ShellCheck. Unit and component suites currently contain pending
+placeholders. The [Leia examples](https://github.com/tanaabased/tanaabot/tree/main/examples) exercise packaged Tanaboot previews in CI; actual
+Cloud provisioning remains pending.
+
+The [release workflow](https://github.com/tanaabased/tanaabot/blob/main/.github/workflows/release.yml) publishes independently to npm and the
+repository. Before the first release, configure npm trusted publishing and grant the repository
+access to `TANAAB_COAXIUM_INJECTOR`. See [CHANGELOG.md](./CHANGELOG.md)
+for unreleased changes.
+
+## Support
+
+Report bugs and requests through [GitHub issues](https://github.com/tanaabased/tanaabot/issues/new/choose).
+
+## Maintainers
+
+- [@pirog](https://github.com/pirog)
+
+## Contributors
+
+<a href="https://github.com/tanaabased/tanaabot/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=tanaabased/tanaabot" alt="Contributors" />
+</a>
+
+Made with [contrib.rocks](https://contrib.rocks).
+
+## License
+
+[MIT](./LICENSE).

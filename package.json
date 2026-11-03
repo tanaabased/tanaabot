@@ -1,0 +1,96 @@
+{
+  "name": "@tanaab/tanaabot",
+  "description": "Tanaabot's Codex Cloud environment, guidance and skills.",
+  "version": "0.1.0",
+  "author": "Tanaab",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tanaabased/tanaabot.git"
+  },
+  "bugs": "https://github.com/tanaabased/tanaabot/issues",
+  "homepage": "https://github.com/tanaabased/tanaabot",
+  "packageManager": "bun@1.4.4",
+  "engines": {
+    "bun": ">=1.4.2 <1.5.0"
+  },
+  "type": "module",
+  "scripts": {
+    "codex:check": "bun ./node_modules/.bin/codex-tools cache check",
+    "codex:sync": "bun ./node_modules/.bin/codex-tools cache sync",
+    "lint": "bun run lint:eslint && bun run format:check && bun run lint:shellcheck",
+    "format:check": "bun run --bun prettier . --check --ignore-unknown",
+    "format:write": "bun run --bun prettier . --write --ignore-unknown",
+    "lint:eslint": "bun run --bun eslint .",
+    "lint:shellcheck": "shellcheck tanaboot.sh",
+    "test": "bun run test:unit && bun run test:component",
+    "test:unit": "bun ./node_modules/mocha/bin/mocha.js \"test/*.spec.js\"",
+    "test:component": "bun ./node_modules/mocha/bin/mocha.js \"test/*.component.js\"",
+    "leia": "bun ./node_modules/.bin/leia"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@lando/leia": "^2.0.0",
+    "@tanaab/codex-tools": "^1.0.3",
+    "eslint": "^10.10.0",
+    "eslint-config-prettier": "^10.1.1",
+    "globals": "^17.12.0",
+    "mocha": "^12.0.2",
+    "prettier": "^3.9.8",
+    "shellcheck": "^4.1.0"
+  },
+  "codexTools": {
+    "managedPaths": [
+      ".bun-version",
+      ".node-version",
+      ".agent-system/agent.yaml",
+      ".agent-system/setup-host.yaml",
+      ".agent-system/setup-agent.yaml",
+      ".codex-plugin",
+      "assets",
+      "dotfiles/ai/.codex/AGENTS.md",
+      "dotfiles/shell/.profile",
+      "dotfiles/git/.gitconfig",
+      "dotfiles/gh/.config/gh/config.yml",
+      "dotfiles/ssh/.ssh/config",
+      "prompts",
+      "skills",
+      "tanaboot.sh",
+      "AGENTS.md",
+      "LICENSE",
+      "README.md",
+      "TANABOOT.md",
+      "INVENTORY.md",
+      "package.json",
+      "Brewfile",
+      "CHANGELOG.md"
+    ]
+  },
+  "files": [
+    ".bun-version",
+    ".node-version",
+    ".agent-system/agent.yaml",
+    ".agent-system/setup-host.yaml",
+    ".agent-system/setup-agent.yaml",
+    ".codex-plugin/plugin.json",
+    "assets/",
+    "dotfiles/ai/.codex/AGENTS.md",
+    "dotfiles/shell/.profile",
+    "dotfiles/git/.gitconfig",
+    "dotfiles/gh/.config/gh/config.yml",
+    "dotfiles/ssh/.ssh/config",
+    "prompts/",
+    "skills/",
+    "tanaboot.sh",
+    "AGENTS.md",
+    "LICENSE",
+    "README.md",
+    "TANABOOT.md",
+    "INVENTORY.md",
+    "Brewfile",
+    "CHANGELOG.md"
+  ],
+  "publishConfig": {
+    "access": "public"
+  }
+}

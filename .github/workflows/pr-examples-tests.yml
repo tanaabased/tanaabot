@@ -1,0 +1,63 @@
+name: Example Tests
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  STAMPED_VERSION: v9.9.9-ci.${{ github.event.pull_request.head.sha }}
+
+jobs:
+  examples:
+    name: ${{ matrix.example }}
+    runs-on: ubuntu-24.04
+    strategy:
+      fail-fast: false
+      matrix:
+        example:
+          - inputs
+          - defaults
+          - host
+          - agent
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.sha }}
+          fetch-depth: 0
+      - name: Install Bun
+        uses: tanaabased/actions/setup-bun@v1
+      - name: Install dependencies
+        run: bun install --frozen-lockfile --ignore-scripts
+      - name: Prepare release-shaped candidate
+        uses: tanaabased/actions/prepare-release@v1
+        with:
+          version: ${{ env.STAMPED_VERSION }}
+          release-date: ${{ github.event.pull_request.created_at }}
+          release-url: ${{ github.event.pull_request.html_url }}
+          commands: |
+            version-injector tanaboot.sh --style sh --version "$PREPARE_RELEASE_VERSION"
+            version-injector .codex-plugin/plugin.json --style json --version "$PREPARE_RELEASE_VERSION"
+            bun run format:write
+            bun run format:check
+      - name: Pack candidate
+        id: pack
+        uses: tanaabased/actions/npm-pack@v1
+      - name: Put packaged Tanaboot on PATH
+        env:
+          TARBALL: ${{ steps.pack.outputs.tarball-path }}
+        run: |
+          package_root="$(mktemp -d "$RUNNER_TEMP/tanaboot-candidate.XXXXXX")"
+          tar -xzf "$TARBALL" -C "$package_root" --strip-components=1
+          echo "$package_root" >> "$GITHUB_PATH"
+      - name: Run Leia-backed example
+        uses: tanaabased/actions/run-leia@v1
+        env:
+          NO_COLOR: '1'
+        with:
+          scenarios: examples/${{ matrix.example }}/README.md
+          shell: bash
+          stdin: 'true'
+          retry: '0'

@@ -1,0 +1,18 @@
+schema-version: 1
+
+agent:
+  id: tanaabot
+  name: tanaabot
+  description: Codex Cloud assistant for managed and scheduled tasks.
+  runtime: codex
+  emoji: 🤖
+  avatar: assets/icon-large-circle.png
+
+github:
+  host: github.com
+  username: tanaabot
+
+setup-host:
+  file: ./setup-host.yaml
+setup-agent:
+  file: ./setup-agent.yaml
