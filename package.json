@@ -1,8 +1,8 @@
 {
   "name": "@tanaab/tanaabot",
-  "description": "tanaabot cloud assistant guidance, assets, and job prompts.",
+  "description": "Tanaabot's Codex plugin, voice and Cloud profile sources.",
   "version": "0.1.0",
-  "private": true,
+  "author": "Tanaab",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -16,11 +16,62 @@
   },
   "type": "module",
   "scripts": {
+    "codex:check": "bun ./node_modules/.bin/codex-tools cache check",
+    "codex:sync": "bun ./node_modules/.bin/codex-tools cache sync",
     "lint": "bun run format:check",
     "format:check": "prettier . --check --ignore-unknown",
     "format:write": "prettier . --write --ignore-unknown"
   },
   "devDependencies": {
+    "@tanaab/codex-tools": "^1.0.3",
     "prettier": "^3.9.8"
+  },
+  "codexTools": {
+    "managedPaths": [
+      ".agent-system/agent.yaml",
+      ".agent-system/setup-host.yaml",
+      ".agent-system/setup-agent.yaml",
+      ".codex-plugin",
+      "assets",
+      "dotfiles/ai/.codex/AGENTS.md",
+      "dotfiles/shell/.profile",
+      "dotfiles/git/.gitconfig",
+      "dotfiles/gh/.config/gh/config.yml",
+      "dotfiles/ssh/.ssh/config",
+      "prompts",
+      "scripts/setup-cloud.sh",
+      "skills",
+      "tanaboot.sh",
+      "AGENTS.md",
+      "LICENSE",
+      "MIGRATION.md",
+      "README.md",
+      "package.json",
+      "Brewfile"
+    ]
+  },
+  "files": [
+    ".agent-system/agent.yaml",
+    ".agent-system/setup-host.yaml",
+    ".agent-system/setup-agent.yaml",
+    ".codex-plugin/plugin.json",
+    "assets/",
+    "dotfiles/ai/.codex/AGENTS.md",
+    "dotfiles/shell/.profile",
+    "dotfiles/git/.gitconfig",
+    "dotfiles/gh/.config/gh/config.yml",
+    "dotfiles/ssh/.ssh/config",
+    "prompts/",
+    "scripts/setup-cloud.sh",
+    "skills/",
+    "tanaboot.sh",
+    "AGENTS.md",
+    "LICENSE",
+    "MIGRATION.md",
+    "README.md",
+    "Brewfile"
+  ],
+  "publishConfig": {
+    "access": "public"
   }
 }

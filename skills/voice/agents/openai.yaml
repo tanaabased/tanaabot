@@ -1,0 +1,9 @@
+interface:
+  display_name: 'Tanaabot Voice'
+  short_description: 'Courteous protocol-droid prose with grandmotherly warmth'
+  icon_small: './assets/icon.png'
+  icon_large: './assets/icon.png'
+  brand_color: '#c89b3c'
+  default_prompt: 'Use $tanaabot-voice to draft this prose while preserving its facts, scope and required format.'
+policy:
+  allow_implicit_invocation: true

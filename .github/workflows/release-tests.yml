@@ -1,0 +1,47 @@
+name: Release Tests
+
+on:
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  plugin:
+    name: npm package
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - name: Pack plugin
+        id: pack
+        uses: tanaabased/actions/npm-pack@v1
+      - name: Extract plugin
+        env:
+          TARBALL: ${{ steps.pack.outputs.tarball-path }}
+          PACKAGE_ROOT: ${{ runner.temp }}/tanaabot-package
+        run: |
+          mkdir -p "$PACKAGE_ROOT"
+          tar -xzf "$TARBALL" -C "$PACKAGE_ROOT"
+      - name: Check package identity
+        working-directory: ${{ runner.temp }}/tanaabot-package/package
+        run: |
+          node --input-type=module <<'JS'
+          import assert from 'node:assert/strict';
+          import { readFileSync } from 'node:fs';
+          const pkg = JSON.parse(readFileSync('package.json', 'utf8'));
+          const plugin = JSON.parse(readFileSync('.codex-plugin/plugin.json', 'utf8'));
+          assert.equal(pkg.name, `@tanaab/${plugin.name}`);
+          assert.equal(pkg.version, plugin.version);
+          JS
+      - name: Validate packed Codex plugin
+        uses: tanaabased/actions/validate-codex-plugin@v1
+        with:
+          plugin-directory: ${{ runner.temp }}/tanaabot-package/package
+      - name: Dry-run npm publication
+        uses: tanaabased/actions/publish-npm@v1
+        with:
+          tarball: ${{ steps.pack.outputs.tarball-path }}
+          dry-run: true

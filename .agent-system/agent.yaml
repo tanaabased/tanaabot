@@ -1,0 +1,11 @@
+schema-version: 1
+
+agent:
+  id: tanaabot
+  name: tanaabot
+  avatar: assets/tanaabot-l338-circle.png
+
+setup-host:
+  file: ./setup-host.yaml
+setup-agent:
+  file: ./setup-agent.yaml
