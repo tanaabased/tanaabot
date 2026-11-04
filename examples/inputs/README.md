@@ -24,3 +24,12 @@ printf '%s\n' "$output" | grep -F 'Choose only one setup mode'
 # should let the CLI disable environment-supplied debugging
 test -z "$(TANABOOT_DEBUG=1 tanaboot.sh --dry-run --debug=false 2>&1 >/dev/null)"
 ```
+
+```sh
+# should reject an option masquerading as a revision
+status=0
+output=$(tanaboot.sh --ref --host 2>&1) || status=$?
+printf '%s\n' "$output"
+test "$status" -eq 2
+printf '%s\n' "$output" | grep -F 'Provide a branch, tag or full commit SHA'
+```

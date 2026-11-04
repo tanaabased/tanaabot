@@ -1,7 +1,7 @@
 # Agent setup
 
-Preview the packaged `agent` mode and verify that an unfinished readiness check fails. Actual
-provisioning remains pending until #5. CI puts `tanaboot.sh` on `PATH`.
+Preview packaged guidance and plugin delegation. Agent readiness requires prepared host tools;
+an empty-home check fails without installing them. CI puts `tanaboot.sh` on `PATH`.
 
 ## Testing
 
@@ -12,13 +12,13 @@ printf '%s\n' "$output"
 printf '%s\n' "$output" | grep -F -- '--dotpkg'
 ! printf '%s\n' "$output" | grep -F -- '--brewfile'
 
-# should report an unimplemented agent readiness check
+# should require host setup without changing the agent home
+profile_home=$(mktemp -d "$TMPDIR/tanaboot-agent.XXXXXX")
 status=0
-output=$(tanaboot.sh --agent --check 2>&1) || status=$?
+output=$(HOME="$profile_home" CODEX_HOME="$profile_home/.codex" XDG_DATA_HOME="$profile_home/data" tanaboot.sh --agent --check 2>&1) || status=$?
 printf '%s\n' "$output"
 test "$status" -eq 1
-printf '%s\n' "$output" | grep -F 'not implemented'
-
-# should provision the agent once #5 is implemented
-skip
+printf '%s\n' "$output" | grep -F 'Pinned Bootbox is missing'
+test ! -e "$profile_home/.codex"
+test ! -e "$profile_home/data"
 ```

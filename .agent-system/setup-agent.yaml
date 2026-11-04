@@ -1,4 +1,3 @@
-# Scaffold: both commands fail explicitly until Cloud provisioning is implemented.
 steps:
   - id: cloud-agent
     runtimes: [codex]

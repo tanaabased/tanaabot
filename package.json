@@ -31,7 +31,6 @@
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@lando/leia": "^2.0.0",
-    "@tanaab/codex-tools": "^1.0.3",
     "eslint": "^10.10.0",
     "eslint-config-prettier": "^10.1.1",
     "globals": "^17.12.0",
@@ -49,7 +48,7 @@
       ".codex-plugin",
       "assets",
       "dotfiles/ai/.codex/AGENTS.md",
-      "dotfiles/shell/.profile",
+      "dotfiles/shell/.config/tanaabot/env.sh",
       "dotfiles/git/.gitconfig",
       "dotfiles/gh/.config/gh/config.yml",
       "dotfiles/ssh/.ssh/config",
@@ -63,7 +62,8 @@
       "INVENTORY.md",
       "package.json",
       "Brewfile",
-      "CHANGELOG.md"
+      "CHANGELOG.md",
+      "bun.lock"
     ]
   },
   "files": [
@@ -75,7 +75,7 @@
     ".codex-plugin/plugin.json",
     "assets/",
     "dotfiles/ai/.codex/AGENTS.md",
-    "dotfiles/shell/.profile",
+    "dotfiles/shell/.config/tanaabot/env.sh",
     "dotfiles/git/.gitconfig",
     "dotfiles/gh/.config/gh/config.yml",
     "dotfiles/ssh/.ssh/config",
@@ -88,9 +88,22 @@
     "TANABOOT.md",
     "INVENTORY.md",
     "Brewfile",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "bun.lock"
   ],
   "publishConfig": {
     "access": "public"
+  },
+  "tanaboot": {
+    "bootbox": {
+      "revision": "a68c2be246783543b926df93842510c13ebd94fb",
+      "sha256": "086da3ee48cd374e7e21b72827175bbda3b68794fd17367408609041583df1b0"
+    },
+    "canon": {
+      "revision": "e76bc0a89dfe96298fe33756f335c82f855e0188"
+    }
+  },
+  "dependencies": {
+    "@tanaab/codex-tools": "^1.0.3"
   }
 }

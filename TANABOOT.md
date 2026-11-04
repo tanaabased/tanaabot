@@ -1,97 +1,77 @@
 # Tanaboot
 
-The option reference for [`tanaboot.sh`](./tanaboot.sh), tanaabot's Codex Cloud setup entrypoint.
-Start with the [README](./README.md#preview-setup) for the current preview.
+Use [`tanaboot.sh`](./tanaboot.sh) in a Linux Codex Cloud setup to install a selected tanaabot revision.
 
 ## Usage
 
+From a source checkout:
+
 ```sh
-# Preview host setup followed by agent setup
-./tanaboot.sh --dry-run
-
-# Preview one group with diagnostics
-./tanaboot.sh --host --dry-run --debug
-./tanaboot.sh --agent --dry-run
-
-# Show all options and environment variables
-./tanaboot.sh --help
+./tanaboot.sh --ref main
+./tanaboot.sh --ref v0.1.0
+./tanaboot.sh --ref <full-commit-sha>
 ```
 
-## Bootstrap behavior
+Choose a branch, tag or full commit SHA from canonical `tanaabased/tanaabot`. Tanaboot reports the
+requested reference and resolved commit, then runs that commit's entrypoint. A missing reference,
+branch/tag collision, unavailable commit or modified managed checkout fails without selecting another
+revision. Use a full commit SHA to resolve a name collision.
 
-Host mode will delegate the [Brewfile](./Brewfile) to Bootbox and prepare Homebrew PATH. Agent mode
-will apply [dotpackages](./INVENTORY.md#dotpackages) through Bootbox and install this checkout's
-plugin and Canon through Codex Tools. With no mode flag, host setup precedes agent setup.
+Setup requires 64-bit Linux, a non-root user, a writable home, and Bash, Git, curl, jq and `sha256sum`.
+Guidance currently targets `~/.codex`; a different `CODEX_HOME` is rejected. Bootbox provisions its
+standard foundation, including 1Password CLI, plus the [Brewfile](./Brewfile). Authentication, secret
+retrieval, SSH and identity setup are deferred. Node and Bun must satisfy the selected revision's
+runtime declarations; Tanaboot checks Bun against `.bun-version`.
 
-Only previews are implemented. They print planned delegation without downloading or executing it.
-Installation and readiness checks return failure until [#5](https://github.com/tanaabased/tanaabot/issues/5)
-is implemented. Tanaboot currently requires a local checkout; source acquisition and plugin selection
-also belong to #5.
+The default installs host dependencies before agent guidance and plugins. Agent mode requires the
+host tools first. Sources remain under `${XDG_DATA_HOME:-$HOME/.local/share}/tanaabot`; keep them while
+using the installed guidance and plugins. Existing configuration conflicts fail without forced
+replacement. Preserve conflicting files or local edits, resolve the reported conflict, then retry.
+Do not remove a lock until you have confirmed that its setup or acquisition process has stopped.
 
-## CLI options
+```sh
+# Preview without downloads or changes; a reference remains unresolved offline
+./tanaboot.sh --ref main --dry-run
 
-CLI options override environment variables, which override defaults.
+# Install or check the current source checkout
+./tanaboot.sh --host
+./tanaboot.sh --agent
+./tanaboot.sh --check
+```
 
-### `--host`
+`--check` does not download or install. With `--ref`, it resolves names but requires the exact revision
+already present locally. It checks tool, guidance and enabled-plugin state. A successful check does
+not establish that a fresh Cloud task will discover the setup.
 
-| Field       | Value                                                  |
-| ----------- | ------------------------------------------------------ |
-| Environment | None                                                   |
-| Default     | Host then agent                                        |
-| Values      | Flag; mutually exclusive with `--agent`                |
-| Description | Select host dependencies and Homebrew PATH setup only. |
+## Options
 
-### `--agent`
+| Option         | Purpose                                                                 |
+| -------------- | ----------------------------------------------------------------------- |
+| `--ref REF`    | Resolve and execute one canonical revision; omitted uses this checkout. |
+| `--host`       | Select host dependencies only.                                          |
+| `--agent`      | Select guidance, shell initialization and Codex plugins only.           |
+| `--check`      | Check readiness without downloading or changing setup.                  |
+| `--dry-run`    | Preview without network access or changes.                              |
+| `--debug`      | Enable wrapper diagnostics on stderr.                                   |
+| `--debug=BOOL` | Override diagnostics; `0`, `false`, `no` and `off` disable them.        |
+| `--version`    | Print the running script version.                                       |
+| `-h`, `--help` | Print usage and options.                                                |
 
-| Field       | Value                                                |
-| ----------- | ---------------------------------------------------- |
-| Environment | None                                                 |
-| Default     | Host then agent                                      |
-| Values      | Flag; mutually exclusive with `--host`               |
-| Description | Select guidance, dotpackages and Codex plugins only. |
+Choose at most one mode and one action. `TANABOOT_DEBUG` supplies the debug default, falling back
+to `DEBUG`, then `RUNNER_DEBUG`. Explicit CLI selection takes precedence.
 
-### `--check`
+Normal output goes to stdout; diagnostics go to stderr. Output respects `NO_COLOR` and `FORCE_COLOR`.
+Exit `0` means the selected command succeeded, `1` means a setup or readiness failure, and `2` means
+invalid arguments. A selected revision's entrypoint retains its failure status.
 
-| Field       | Value                                                                              |
-| ----------- | ---------------------------------------------------------------------------------- |
-| Environment | None                                                                               |
-| Default     | Installation                                                                       |
-| Values      | Flag; mutually exclusive with `--dry-run`                                          |
-| Description | Request a readiness check. Currently returns `1` because checks are unimplemented. |
+## Cloud verification
 
-### `--dry-run`
+Allow GitHub source/raw/release downloads and the package hosts needed by Bootbox, Homebrew and Bun
+in the environment's network policy. Access failures must be resolved in the selected environment;
+Tanaboot does not select credentials or bypass its proxy.
 
-| Field       | Value                                                         |
-| ----------- | ------------------------------------------------------------- |
-| Environment | None                                                          |
-| Default     | Installation                                                  |
-| Values      | Flag; mutually exclusive with `--check`                       |
-| Description | Preview the selected setup without network access or changes. |
-
-### `--debug`
-
-| Field       | Value                                                                |
-| ----------- | -------------------------------------------------------------------- |
-| Environment | `TANABOOT_DEBUG`; falls back to `DEBUG`, then `RUNNER_DEBUG`         |
-| Default     | Off                                                                  |
-| Values      | `--debug` or `--debug=BOOL`; `0`, `false`, `no` and `off` disable it |
-| Description | Write wrapper diagnostics to stderr.                                 |
-
-### `--version`
-
-Print the running wrapper version and exit.
-
-### `-h`, `--help`
-
-Print the CLI and environment-variable reference and exit.
-
-## Output and exit status
-
-Normal output goes to stdout; diagnostics go to stderr. Output supports `NO_COLOR` and `FORCE_COLOR`
-and remains plain when redirected unless color is forced.
-
-| Status | Meaning                                         |
-| ------ | ----------------------------------------------- |
-| `0`    | Help, version or preview completed              |
-| `1`    | Setup is unimplemented or a prerequisite failed |
-| `2`    | Invalid arguments                               |
+After preparing and publishing the environment, start a fresh task from that saved configuration.
+Record the actual tanaabot commit and verify tool paths, loaded guidance, discoverable skills and a
+safe setup rerun there. Source tests and checks in an existing task do not establish this result.
+Saved Cloud configuration, publication and this fresh-task check remain operator-owned acceptance
+work for [#5](https://github.com/tanaabased/tanaabot/issues/5).

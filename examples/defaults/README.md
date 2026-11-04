@@ -1,7 +1,7 @@
 # Default setup
 
-Preview the packaged default mode, which selects host then agent. The provisioning case remains
-pending until #5. CI puts the candidate on `PATH` as `tanaboot.sh`.
+Preview the packaged default mode, which selects host then agent. CI puts the candidate on `PATH` as
+`tanaboot.sh`. Fresh-task Cloud installation is a separate acceptance check in #5.
 
 ## Testing
 
@@ -11,13 +11,9 @@ set -o pipefail
 tanaboot.sh --dry-run | grep -F -- '--brewfile'
 tanaboot.sh --dry-run | grep -F -- '--dotpkg'
 
-# should refuse unimplemented installation
-status=0
-output=$(tanaboot.sh 2>&1) || status=$?
+# should leave a requested revision unresolved in an offline preview
+output=$(tanaboot.sh --ref main --dry-run)
 printf '%s\n' "$output"
-test "$status" -eq 1
-printf '%s\n' "$output" | grep -F 'nothing was changed'
-
-# should provision a fresh Cloud environment once #5 is implemented
-skip
+printf '%s\n' "$output" | grep -F 'main'
+printf '%s\n' "$output" | grep -F 'not resolved offline'
 ```

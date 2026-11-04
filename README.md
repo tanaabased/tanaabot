@@ -6,15 +6,15 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/environment-Codex_Cloud-00c88a" alt="Environment: Codex Cloud" />
-  <a href="https://github.com/tanaabased/tanaabot/issues/5"><img src="https://img.shields.io/badge/status-scaffolding-00ebfd" alt="Status: scaffolding" /></a>
+  <a href="https://github.com/tanaabased/tanaabot/issues/5"><img src="https://img.shields.io/badge/status-Cloud_verification_pending-00ebfd" alt="Status: Cloud verification pending" /></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-111827" alt="License: MIT" /></a>
 </p>
 
 tanaabot prepares a Codex Cloud environment with its tools, guidance and skills for managed and
 scheduled tasks. Its assistant has a courteous protocol-droid voice, with a little grandmotherly concern.
 
-Cloud provisioning is being developed in [#5](https://github.com/tanaabased/tanaabot/issues/5).
-The current scaffold previews setup; it does not yet install or check an environment.
+Tanaboot installs a selected revision through Bootbox and Codex Tools. Fresh-task Cloud verification
+remains pending in [#5](https://github.com/tanaabased/tanaabot/issues/5).
 
 ## What ships
 
@@ -25,16 +25,16 @@ The current scaffold previews setup; it does not yet install or check an environ
 - [Configuration files](./INVENTORY.md#configuration-files): Agent System metadata and Codex plugin sources.
 - [Automations](./INVENTORY.md#automations): Current inventory; none declared yet.
 
-## Preview setup
+## Install
 
-From a source checkout:
+From a source checkout in a Linux Cloud setup, as its non-root user:
 
 ```sh
-./tanaboot.sh --dry-run
+./tanaboot.sh --ref main
 ```
 
-Add `--host` or `--agent` to preview one group. See [Tanaboot](./TANABOOT.md) for the option reference
-and current limits.
+Choose a branch, tag or full commit SHA with `--ref`. Add `--dry-run` for an offline preview.
+See [Tanaboot](./TANABOOT.md) for prerequisites, setup modes and recovery.
 
 ## Development
 
@@ -46,9 +46,8 @@ bun run lint
 bun run test
 ```
 
-Lint runs ESLint, Prettier and ShellCheck. Unit and component suites currently contain pending
-placeholders. The [Leia examples](https://github.com/tanaabased/tanaabot/tree/main/examples) exercise packaged Tanaboot previews in CI; actual
-Cloud provisioning remains pending.
+Lint runs ESLint, Prettier and ShellCheck. Unit and component suites cover revision selection, delegation and failure handling. The [Leia examples](https://github.com/tanaabased/tanaabot/tree/main/examples) exercise packaged Tanaboot previews in CI; fresh-task
+Cloud verification remains pending.
 
 The [release workflow](https://github.com/tanaabased/tanaabot/blob/main/.github/workflows/release.yml) publishes independently to npm and the
 repository. Before the first release, configure npm trusted publishing and grant the repository
