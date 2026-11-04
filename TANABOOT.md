@@ -7,7 +7,7 @@ Use [`tanaboot.sh`](./tanaboot.sh) in a Linux Codex Cloud setup to install a sel
 From a source checkout:
 
 ```sh
-./tanaboot.sh --ref main
+./tanaboot.sh --ref main --codex-plugin canon#main
 ./tanaboot.sh --ref v0.1.0
 ./tanaboot.sh --ref <full-commit-sha>
 ```
@@ -25,8 +25,9 @@ retrieval, SSH and identity setup are deferred. Tanaboot downloads the current h
 `https://bootbox.tanaab.sh/bootbox.sh` on each setup or check. Node and Bun must satisfy the selected revision's
 runtime declarations; Tanaboot checks Bun against `.bun-version`.
 
-The default installs host dependencies before agent guidance and the Tanaabot plugin. No additional
-plugins are selected by default. Agent mode requires the
+The default mode installs host dependencies before agent guidance and the Tanaabot plugin.
+The standard command and declared agent setup also select Canon from `main` through
+`--codex-plugin canon#main`. Direct callers select additional plugins explicitly. Agent mode requires the
 host tools first. Sources remain under `${XDG_DATA_HOME:-$HOME/.local/share}/tanaabot`; keep them while
 using the installed guidance and plugins. Existing configuration conflicts fail without forced
 replacement. Preserve conflicting files or local edits, resolve the reported conflict, then retry.
@@ -44,8 +45,9 @@ Do not remove a lock until you have confirmed that its setup or acquisition proc
 
 `--check` downloads Bootbox for its checks but does not install. With `--ref`, it resolves names but requires the exact revision
 already present locally. It checks tool, guidance and enabled-plugin state. A successful check does
-not establish that a fresh Cloud task will discover the setup. It checks the base setup; omit
-`--codex-plugin` when checking.
+not establish that a fresh Cloud task will discover the setup. Include Git `--codex-plugin` selections
+to check their retained sources and installed/enabled state. npm selectors are install inputs;
+inspect those installations through Codex Tools or the native Codex CLI.
 
 ## Additional Codex plugins
 
@@ -69,7 +71,7 @@ it to Codex Tools. The checkout must already contain its installable plugin reso
 | `--codex-plugin SRC` | Install an additional Codex plugin; repeat for multiple sources.        |
 | `--host`             | Select host dependencies only.                                          |
 | `--agent`            | Select guidance, shell initialization and Codex plugins only.           |
-| `--check`            | Check base readiness without installing.                                |
+| `--check`            | Check setup and selected Git plugins without installing.                |
 | `--dry-run`          | Preview without network access or changes.                              |
 | `--debug`            | Enable wrapper diagnostics on stderr.                                   |
 | `--version`          | Print the running script version.                                       |

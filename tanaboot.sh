@@ -94,7 +94,7 @@ ${tty_tp}Options:${tty_reset}
   --codex-plugin SRC  Install a Codex plugin; repeatable ${tty_dim}[default: ${plugins_display}]${tty_reset}
   --host              Select host dependencies only
   --agent             Select guidance, dotpackages and Codex plugins only
-  --check             Check base setup without installing; omit --codex-plugin
+  --check             Check setup and selected Git plugins without installing
   --dry-run           Preview delegation without downloads or changes
   --debug             Show diagnostics ${tty_dim}[default: ${debug_display}]${tty_reset}
   --version           Show the script version
@@ -170,6 +170,7 @@ validate_plugins() {
   for selection in ${PLUGIN_SOURCES[@]+"${PLUGIN_SOURCES[@]}"}; do
     if [[ "${selection}" == npm:* ]]; then
       [[ -n "${selection#npm:}" ]] || option_error 'Provide a package after npm:.'
+      [[ "${ACTION}" != check ]] || option_error '--check supports Git plugin sources; use Codex Tools to inspect npm installations.'
       continue
     fi
     repo="${selection%%#*}"
@@ -181,7 +182,6 @@ validate_plugins() {
   done
   if [[ ${#PLUGIN_SOURCES[@]} -gt 0 ]]; then
     [[ "${TARGET}" != host ]] || option_error '--codex-plugin requires agent or default setup.'
-    [[ "${ACTION}" != check ]] || option_error '--check verifies base setup; omit --codex-plugin.'
   fi
 }
 
@@ -244,6 +244,7 @@ acquire_source() (
   acquisition_stage=""
   dir="${DATA_DIR}/sources/${project}/${sha}"
   if [[ "${ACTION}" == check ]]; then
+    [[ -d "${dir}" ]] || fail 'Selected source is missing. Run setup to acquire the requested revision.'
     verify_source "${dir}" "${url}" "${sha}"
     printf '%s\n' "${dir}"
     return
@@ -336,19 +337,24 @@ check_plugin() {
   jq -e '.ok == true and .inspection.installed == true and .inspection.enabled == true' <<< "${output}" >/dev/null || fail 'Plugin is not installed and enabled. Resolve its Codex state before retrying.'
 }
 
+select_plugin_source() {
+  local selection="$1" repo ref sha
+  PLUGIN_SOURCE="${selection}"
+  if [[ "${selection}" != npm:* ]]; then
+    repo="${selection%%#*}"
+    ref=main
+    if [[ "${selection}" == *#* ]]; then ref="${selection#*#}"; fi
+    sha="$(resolve_ref "https://github.com/tanaabased/${repo}.git" "${ref}")"
+    note "Plugin source: ${repo}#${ref} (${sha})"
+    PLUGIN_SOURCE="$(acquire_source "${repo}" "https://github.com/tanaabased/${repo}.git" "${sha}")"
+  fi
+}
+
 install_plugins() {
-  local selection repo ref sha source
+  local selection
   for selection in ${PLUGIN_SOURCES[@]+"${PLUGIN_SOURCES[@]}"}; do
-    source="${selection}"
-    if [[ "${selection}" != npm:* ]]; then
-      repo="${selection%%#*}"
-      ref=main
-      if [[ "${selection}" == *#* ]]; then ref="${selection#*#}"; fi
-      sha="$(resolve_ref "https://github.com/tanaabased/${repo}.git" "${ref}")"
-      note "Plugin source: ${repo}#${ref} (${sha})"
-      source="$(acquire_source "${repo}" "https://github.com/tanaabased/${repo}.git" "${sha}")"
-    fi
-    codex_tools install "${source}"
+    select_plugin_source "${selection}"
+    codex_tools install "${PLUGIN_SOURCE}"
   done
 }
 
@@ -362,6 +368,13 @@ check_agent() {
     grep -Fxq "${SHELL_INIT_LINE}" "${HOME}/${file}" || fail 'Shell startup is incomplete. Run agent setup.'
   done
   check_plugin "${REPO_DIR}"
+  if [[ "${ACTION}" == check ]]; then
+    local selection
+    for selection in ${PLUGIN_SOURCES[@]+"${PLUGIN_SOURCES[@]}"}; do
+      select_plugin_source "${selection}"
+      check_plugin "${PLUGIN_SOURCE}"
+    done
+  fi
 }
 
 apply_agent() {

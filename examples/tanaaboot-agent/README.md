@@ -39,16 +39,10 @@ test -x "$TANABOOT_PACKAGE_ROOT/node_modules/.bin/codex-tools"
 test ! -e "$TANABOOT_PACKAGE_ROOT/node_modules/mocha"
 test ! -e "$TANABOOT_PACKAGE_ROOT/node_modules/eslint"
 
-# should install repeated published and git plugin selections
-cp -R plugin "$TMPDIR/plugin"
-git -C "$TMPDIR/plugin" init -q -b main
-git -C "$TMPDIR/plugin" add .
-git -C "$TMPDIR/plugin" -c user.name=Test -c user.email=test@example.invalid commit -qm 'plugin fixture'
-sha=$(git -C "$TMPDIR/plugin" rev-parse HEAD)
-GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.$TMPDIR/plugin.insteadOf" GIT_CONFIG_VALUE_0=https://github.com/tanaabased/tanaboot-probe.git \
-  tanaboot.sh --agent --codex-plugin npm:@tanaab/codex-tools@1.0.3 --codex-plugin "tanaboot-probe#$sha"
-source="${XDG_DATA_HOME:-$HOME/.local/share}/tanaabot/sources/tanaboot-probe/$sha"
-test "$(git -C "$source" rev-parse HEAD)" = "$sha"
-bun "$TANABOOT_PACKAGE_ROOT/node_modules/.bin/codex-tools" status --repo-root "$source" --json | \
-  jq -e '.ok and .inspection.installed and .inspection.enabled'
+# should fail declared plugin readiness when canon has not been installed
+status=0
+output=$(tanaboot.sh --agent --codex-plugin canon#main --check 2>&1) || status=$?
+printf '%s\n' "$output"
+test "$status" -eq 1
+printf '%s\n' "$output" | grep -F 'Selected source is missing'
 ```

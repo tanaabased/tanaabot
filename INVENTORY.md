@@ -9,8 +9,8 @@ Tanaabot's Codex Cloud sources and their current status. See [Tanaboot](./TANABO
 | [Tanaabot Voice](./skills/voice/SKILL.md)               | Replies and documentation in tanaabot's voice | None                                                |
 | [Tanaabot Skill Author](./skills/skill-author/SKILL.md) | Create, maintain and validate tanaabot skills | Host-available `tanaab:tanaab-skill-author` and Bun |
 
-Skill Author customizes Canon's methods. Install Canon explicitly with `--codex-plugin` when needed;
-it is not part of the default setup. Missing required tools or references leave the dependent task incomplete.
+Skill Author customizes Canon's methods. The standard agent setup installs Canon from `main`
+through `--codex-plugin canon#main`. Missing required tools or references leave the dependent task incomplete.
 
 ## Dotpackages
 
@@ -32,7 +32,7 @@ Git, GitHub and SSH configuration remain inactive stubs. Fresh-task Cloud discov
 | [Brewfile](./Brewfile)                                   | Linux Cloud CLI tools and runtimes           | Declared; no Cloud installation tested    |
 | [Bootbox](https://github.com/tanaabased/bootbox)         | Host provisioning and dotpackage application | Current hosted script downloaded at setup |
 | [Codex Tools](https://github.com/tanaabased/codex-tools) | Plugin installation and cache maintenance    | Runtime dependency; Cloud use unverified  |
-| [Canon](https://github.com/tanaabased/canon)             | Shared skill-authoring methods               | Optional Codex plugin                     |
+| [Canon](https://github.com/tanaabased/canon)             | Shared skill-authoring methods               | Selected from main by agent setup         |
 
 ## Plugins
 

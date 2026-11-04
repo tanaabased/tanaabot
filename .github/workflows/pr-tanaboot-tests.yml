@@ -12,7 +12,7 @@ env:
 
 jobs:
   examples:
-    name: ${{ matrix.example }}
+    name: ${{ matrix.name || matrix.example }}
     runs-on: ubuntu-24.04
     strategy:
       fail-fast: false
@@ -23,6 +23,13 @@ jobs:
           - tanaaboot-host
           - tanaaboot-agent
           - tanaaboot-revisions
+        include:
+          - example: tanaaboot-codex-plugin
+            name: tanaaboot-codex-plugin-source
+            source: canon#main
+          - example: tanaaboot-codex-plugin
+            name: tanaaboot-codex-plugin-release
+            source: npm:@tanaab/canon@0.13.0
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -62,6 +69,7 @@ jobs:
         uses: tanaabased/actions/run-leia@v1
         env:
           NO_COLOR: '1'
+          CODEX_PLUGIN_SOURCE: ${{ matrix.source }}
         with:
           scenarios: examples/${{ matrix.example }}/README.md
           shell: bash

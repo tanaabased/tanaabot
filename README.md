@@ -30,11 +30,12 @@ remains pending in [#5](https://github.com/tanaabased/tanaabot/issues/5).
 From a source checkout in a Linux Cloud setup, as its non-root user:
 
 ```sh
-./tanaboot.sh --ref main
+./tanaboot.sh --ref main --codex-plugin canon#main
 ```
 
 Choose a branch, tag or full commit SHA with `--ref`. Add `--dry-run` for an offline preview.
-Use repeatable `--codex-plugin` options to select additional published or source plugins.
+The standard agent setup selects Canon from `main`. Use repeatable `--codex-plugin` options to select
+published or source plugins.
 See [Tanaboot](./TANABOOT.md) for prerequisites, setup modes and recovery.
 
 ## Development
