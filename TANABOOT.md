@@ -16,6 +16,7 @@ Choose a branch, tag or full commit SHA from canonical `tanaabased/tanaabot`. Ta
 requested reference and resolved commit, then runs that commit's entrypoint. A missing reference,
 branch/tag collision, unavailable commit or modified managed checkout fails without selecting another
 revision. Use a full commit SHA to resolve a name collision.
+Both `--ref main` and `--ref=main` are accepted.
 
 Setup requires 64-bit Linux, a non-root user, a writable home, and Bash, Git, curl, jq and `sha256sum`.
 Guidance currently targets `~/.codex`; a different `CODEX_HOME` is rejected. Bootbox provisions its
@@ -53,7 +54,6 @@ not establish that a fresh Cloud task will discover the setup.
 | `--check`      | Check readiness without downloading or changing setup.                  |
 | `--dry-run`    | Preview without network access or changes.                              |
 | `--debug`      | Enable wrapper diagnostics on stderr.                                   |
-| `--debug=BOOL` | Override diagnostics; `0`, `false`, `no` and `off` disable them.        |
 | `--version`    | Print the running script version.                                       |
 | `-h`, `--help` | Print usage and options.                                                |
 

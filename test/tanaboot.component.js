@@ -161,6 +161,23 @@ describe('tanaboot delegation', () => {
     assert.doesNotMatch(result.stdout + result.stderr, /private-marker|vault-marker/);
   });
 
+  it('should forward the selected diagnostic state instead of inherited Bootbox defaults', () => {
+    const bootbox = path.join(f.dir, 'bootbox.sh');
+    writeFileSync(
+      bootbox,
+      '#!/bin/bash\nset -eu\ntest "$BOOTBOX_DEBUG" = 0\ntest "$BOOTBOX_QUIET" = 1\n',
+    );
+    const result = shell(
+      'DEBUG=0; DATA_DIR="$1"; BOOTBOX_SCRIPT="$2"; run_bootbox',
+      [f.dir, bootbox],
+      {
+        ...f.env,
+        BOOTBOX_DEBUG: '1',
+      },
+    );
+    assert.equal(result.status, 0, result.stderr);
+  });
+
   it('should never execute or retain a dependency with a bad checksum', () => {
     f.executable('curl', 'printf "invalid script" > "$4"');
     const result = shell(

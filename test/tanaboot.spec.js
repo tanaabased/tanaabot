@@ -35,6 +35,19 @@ describe('tanaboot', () => {
     assert.equal(result.stderr, '');
   });
 
+  it('should accept the inline reference spelling', () => {
+    const result = shell('parse_args --ref=pilot; printf "%s" "$SOURCE_REF"');
+    assert.equal(result.status, 0, result.stderr);
+    assert.equal(result.stdout, 'pilot');
+  });
+
+  it('should show usage with a rejected value without exposing it', () => {
+    const result = shell('parse_args --op-token=private-example');
+    assert.equal(result.status, 2);
+    assert.match(result.stdout, /Usage:/);
+    assert.doesNotMatch(result.stdout + result.stderr, /private-example/);
+  });
+
   const branch = '1'.repeat(40);
   const tag = '2'.repeat(40);
   const commit = '3'.repeat(40);

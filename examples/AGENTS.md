@@ -8,10 +8,11 @@ operator authorization.
 
 - Unit tests belong in `test/*.spec.js`: isolated decisions with injected boundaries.
 - Component tests belong in `test/*.component.js`: subsystem wiring with fake external services.
-- Leia examples own public CLI and installed-product flows. `inputs` covers options and errors;
-  `defaults`, `host` and `agent` cover their corresponding setup modes.
+- Leia examples own public CLI and installed-product flows. Use the `tanaaboot-` directory prefix.
+  `tanaaboot-inputs` covers options and errors; `tanaaboot-defaults`, `tanaaboot-host` and
+  `tanaaboot-agent` cover their corresponding setup modes.
 - Keep constant fixtures beside their scenario. Add another folder only for a distinct flow or
-  incompatible setup, and add its name to the PR examples matrix.
+  incompatible setup, and add its name to the `pr-tanaboot-tests.yml` matrix.
 
 ## Scenario style
 

@@ -43,6 +43,7 @@ tty_dim="$(tty_escape 2)"
 tty_tp="$(tty_escape '38;2;0;200;138')"
 tty_ts="$(tty_escape '38;2;219;39;119')"
 tty_reset="$(tty_escape 0)"
+tty_green="$(tty_escape 32)"
 err_red="$(tty_escape '1;31' 2)"
 err_dim="$(tty_escape 2 2)"
 err_reset="$(tty_escape 0 2)"
@@ -60,6 +61,10 @@ debug() {
 
 note() {
   printf '%snote%s: %s\n' "${tty_ts}" "${tty_reset}" "$*"
+}
+
+success() {
+  printf '%sdone%s: %s\n' "${tty_green}" "${tty_reset}" "$*"
 }
 
 plan_action() {
@@ -82,20 +87,24 @@ Prepare a Linux Codex Cloud environment for tanaabot.
 The default mode selects host then agent. Choose one mode and one action.
 
 ${tty_tp}Options:${tty_reset}
-  --ref REF     Resolve a canonical branch, tag or full commit SHA, then run it
+  --ref REF     Resolve a canonical branch, tag or full commit SHA ${tty_dim}[default: ${SOURCE_REF:-this checkout}]${tty_reset}
   --host        Select host dependencies only
   --agent       Select guidance, dotpackages and Codex plugins only
   --check       Check the selected setup without installing or downloading
   --dry-run     Preview delegation without downloads or changes
   --debug       Show diagnostics ${tty_dim}[default: ${debug_display}]${tty_reset}
-  --debug=BOOL  Override debug output; 0, false, no and off disable it
   --version     Show the script version
   -h, --help    Show this help
 
 ${tty_tp}Environment Variables:${tty_reset}
-  TANABOOT_DEBUG  Same as --debug=BOOL
+  TANABOOT_DEBUG  Same as --debug
 
 HELP
+}
+
+option_error() {
+  usage
+  fail "$1" 2
 }
 
 parse_args() {
@@ -103,26 +112,31 @@ parse_args() {
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --host | --agent)
-        [[ "${TARGET}" == bootstrap ]] || fail 'Choose only one setup mode.' 2
+        [[ "${TARGET}" == bootstrap ]] || option_error 'Choose only one setup mode.'
         TARGET="${1#--}"
         ;;
       --check | --dry-run)
-        [[ "${ACTION}" == apply ]] || fail 'Choose only one of --check or --dry-run.' 2
+        [[ "${ACTION}" == apply ]] || option_error 'Choose only one of --check or --dry-run.'
         if [[ "$1" == --check ]]; then ACTION="check"; else ACTION="plan"; fi
         ;;
       --ref)
-        [[ $# -gt 1 && -n "$2" && "$2" != -* ]] || fail 'Provide a branch, tag or full commit SHA after --ref.' 2
-        [[ -z "${SOURCE_REF}" ]] || fail 'Choose only one reference.' 2
+        [[ $# -gt 1 && -n "$2" && "$2" != -* ]] || option_error 'Provide a branch, tag or full commit SHA after --ref.'
+        [[ -z "${SOURCE_REF}" ]] || option_error 'Choose only one reference.'
         SOURCE_REF="$2"
         shift
+        ;;
+      --ref=*)
+        [[ -z "${SOURCE_REF}" ]] || option_error 'Choose only one reference.'
+        SOURCE_REF="${1#*=}"
+        [[ -n "${SOURCE_REF}" && "${SOURCE_REF}" != -* ]] || option_error 'Provide a branch, tag or full commit SHA after --ref.'
         ;;
       --debug) DEBUG="1" ;;
       --debug=*) DEBUG="${1#*=}" ;;
       -h | --help | --version)
-        [[ -z "${info}" ]] || fail 'Choose only one of --help or --version.' 2
+        [[ -z "${info}" ]] || option_error 'Choose only one of --help or --version.'
         info="$1"
         ;;
-      *) fail 'Unknown option. Use tanaboot.sh --help.' 2 ;;
+      *) option_error 'Unknown option. See usage above.' ;;
     esac
     shift
   done
@@ -264,7 +278,7 @@ run_bootbox() (
     unset "${variable}"
   done
   cd -- "${DATA_DIR}"
-  NONINTERACTIVE=1 BOOTBOX_QUIET=1 bash "${script}" "$@"
+  NONINTERACTIVE=1 BOOTBOX_QUIET=1 BOOTBOX_DEBUG="${DEBUG}" bash "${script}" "$@"
 )
 
 activate_tools() {
@@ -392,7 +406,7 @@ main() (
   if [[ "${TARGET}" == bootstrap || "${TARGET}" == agent ]]; then
     if [[ "${ACTION}" == apply ]]; then apply_agent; else check_agent; fi
   fi
-  note "${TARGET} ${ACTION} complete. Fresh-task Cloud verification is separate."
+  success "${TARGET} ${ACTION} complete."
 )
 
 if [[ "${BASH_SOURCE[0]}" == "$0" ]]; then main "$@"; fi

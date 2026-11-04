@@ -46,7 +46,7 @@ bun run lint
 bun run test
 ```
 
-Lint runs ESLint, Prettier and ShellCheck. Unit and component suites cover revision selection, delegation and failure handling. The [Leia examples](https://github.com/tanaabased/tanaabot/tree/main/examples) exercise packaged Tanaboot previews in CI; fresh-task
+Lint runs ESLint, Prettier and ShellCheck. Unit and component suites cover revision selection, delegation and failure handling. The [Leia examples](https://github.com/tanaabased/tanaabot/tree/main/examples) exercise the packaged CLI and Linux setup in CI; fresh-task
 Cloud verification remains pending.
 
 The [release workflow](https://github.com/tanaabased/tanaabot/blob/main/.github/workflows/release.yml) publishes independently to npm and the
