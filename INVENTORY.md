@@ -9,10 +9,8 @@ Tanaabot's Codex Cloud sources and their current status. See [Tanaboot](./TANABO
 | [Tanaabot Voice](./skills/voice/SKILL.md)               | Replies and documentation in tanaabot's voice | None                                                |
 | [Tanaabot Skill Author](./skills/skill-author/SKILL.md) | Create, maintain and validate tanaabot skills | Host-available `tanaab:tanaab-skill-author` and Bun |
 
-Skill Author customizes Canon's methods; manual source loading does not install Canon or Bun. Tanaboot installs the pinned Canon source and host tools.
-Read selected skills and their required references through the executing host. Manual bootstrap
-also describes separately pinned shared sources. Missing required tools or references leave the
-dependent task incomplete.
+Skill Author customizes Canon's methods. Install Canon explicitly with `--codex-plugin` when needed;
+it is not part of the default setup. Missing required tools or references leave the dependent task incomplete.
 
 ## Dotpackages
 
@@ -29,13 +27,12 @@ Git, GitHub and SSH configuration remain inactive stubs. Fresh-task Cloud discov
 
 ## Dependencies
 
-| Source                                                              | Purpose                                      | Status                                                      |
-| ------------------------------------------------------------------- | -------------------------------------------- | ----------------------------------------------------------- |
-| [Brewfile](./Brewfile)                                              | GitHub CLI, Node and Bun beyond Bootbox core | Declared; no Cloud installation tested                      |
-| [Bootbox](https://github.com/tanaabased/bootbox)                    | Host provisioning and dotpackage application | Revision and checksum pinned in `package.json`              |
-| [Codex Tools](https://github.com/tanaabased/codex-tools)            | Plugin installation and cache maintenance    | Runtime dependency; Cloud use unverified                    |
-| [Canon](https://github.com/tanaabased/canon)                        | Shared skill-authoring methods               | Revision pinned in `package.json`; installed by agent setup |
-| [Agent System](https://github.com/tanaabased/openclaw-agent-system) | Shared manifest and setup metadata format    | Format adopted; runtime not required                        |
+| Source                                                   | Purpose                                      | Status                                    |
+| -------------------------------------------------------- | -------------------------------------------- | ----------------------------------------- |
+| [Brewfile](./Brewfile)                                   | Linux Cloud CLI tools and runtimes           | Declared; no Cloud installation tested    |
+| [Bootbox](https://github.com/tanaabased/bootbox)         | Host provisioning and dotpackage application | Current hosted script downloaded at setup |
+| [Codex Tools](https://github.com/tanaabased/codex-tools) | Plugin installation and cache maintenance    | Runtime dependency; Cloud use unverified  |
+| [Canon](https://github.com/tanaabased/canon)             | Shared skill-authoring methods               | Optional Codex plugin                     |
 
 ## Plugins
 

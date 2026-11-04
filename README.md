@@ -22,7 +22,7 @@ remains pending in [#5](https://github.com/tanaabased/tanaabot/issues/5).
 - [Dependencies](./INVENTORY.md#dependencies): The Brewfile and shared provisioning tools.
 - [Dotpackages](./INVENTORY.md#dotpackages): Global guidance and configuration stubs.
 - [Skills](./INVENTORY.md#skills): Tanaabot Voice and Skill Author.
-- [Configuration files](./INVENTORY.md#configuration-files): Agent System metadata and Codex plugin sources.
+- [Configuration files](./INVENTORY.md#configuration-files): Setup declarations and Codex plugin sources.
 - [Automations](./INVENTORY.md#automations): Current inventory; none declared yet.
 
 ## Install
@@ -34,6 +34,7 @@ From a source checkout in a Linux Cloud setup, as its non-root user:
 ```
 
 Choose a branch, tag or full commit SHA with `--ref`. Add `--dry-run` for an offline preview.
+Use repeatable `--codex-plugin` options to select additional published or source plugins.
 See [Tanaboot](./TANABOOT.md) for prerequisites, setup modes and recovery.
 
 ## Development
@@ -43,10 +44,9 @@ Use the runtimes declared in [`.bun-version`](./.bun-version) and [`.node-versio
 ```sh
 bun install --frozen-lockfile --ignore-scripts
 bun run lint
-bun run test
 ```
 
-Lint runs ESLint, Prettier and ShellCheck. Unit and component suites cover revision selection, delegation and failure handling. The [Leia examples](https://github.com/tanaabased/tanaabot/tree/main/examples) exercise the packaged CLI and Linux setup in CI; fresh-task
+Lint runs ESLint, Prettier and ShellCheck. The [Leia examples](https://github.com/tanaabased/tanaabot/tree/main/examples) exercise the packaged CLI, revision selection, failure handling and Linux setup in CI; fresh-task
 Cloud verification remains pending.
 
 The [release workflow](https://github.com/tanaabased/tanaabot/blob/main/.github/workflows/release.yml) publishes independently to npm and the

@@ -15,12 +15,14 @@ fi
 REPO_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 SCRIPT_VERSION="${SCRIPT_VERSION:-$(git -C "${REPO_DIR}" describe --tags --always 2>/dev/null || printf '%s' '0.0.0-unreleased')}"
 SOURCE_URL="https://github.com/tanaabased/tanaabot.git"
-CANON_URL="https://github.com/tanaabased/canon.git"
+BOOTBOX_URL="https://bootbox.tanaab.sh/bootbox.sh"
 DATA_DIR="${XDG_DATA_HOME:-${HOME}/.local/share}/tanaabot"
 SOURCE_REF=""
 DEBUG="${TANABOOT_DEBUG:-${DEBUG:-${RUNNER_DEBUG:-}}}"
 TARGET="bootstrap"
 ACTION="apply"
+PLUGIN_SOURCES=()
+IFS=',' read -r -a PLUGIN_SOURCES <<< "${TANABOOT_CODEX_PLUGIN:-}"
 # The receiving shell expands HOME when it loads this line.
 # shellcheck disable=SC2016
 SHELL_INIT_LINE='[ ! -r "$HOME/.config/tanaabot/env.sh" ] || . "$HOME/.config/tanaabot/env.sh"'
@@ -78,26 +80,31 @@ plan_command() {
 }
 
 usage() {
-  local debug_display="off"
+  local debug_display="off" plugins_display="none"
+  if [[ ${#PLUGIN_SOURCES[@]} -gt 0 ]]; then plugins_display="$(IFS=,; printf '%s' "${PLUGIN_SOURCES[*]}")"; fi
   if value_enabled "${DEBUG}"; then debug_display="on"; fi
   cat <<HELP
-Usage: ${tty_bold}tanaboot.sh${tty_reset} ${tty_dim}[options]${tty_reset}
+Usage: ${tty_bold}tanaboot.sh${tty_reset} ${tty_dim}[TANABOOT_*...] [options]${tty_reset}
 
 Prepare a Linux Codex Cloud environment for tanaabot.
 The default mode selects host then agent. Choose one mode and one action.
 
 ${tty_tp}Options:${tty_reset}
-  --ref REF     Resolve a canonical branch, tag or full commit SHA ${tty_dim}[default: ${SOURCE_REF:-this checkout}]${tty_reset}
-  --host        Select host dependencies only
-  --agent       Select guidance, dotpackages and Codex plugins only
-  --check       Check the selected setup without installing or downloading
-  --dry-run     Preview delegation without downloads or changes
-  --debug       Show diagnostics ${tty_dim}[default: ${debug_display}]${tty_reset}
-  --version     Show the script version
-  -h, --help    Show this help
+  --ref REF           Resolve a canonical branch, tag or full commit SHA ${tty_dim}[default: ${SOURCE_REF:-this checkout}]${tty_reset}
+  --codex-plugin SRC  Install a Codex plugin; repeatable ${tty_dim}[default: ${plugins_display}]${tty_reset}
+  --host              Select host dependencies only
+  --agent             Select guidance, dotpackages and Codex plugins only
+  --check             Check base setup without installing; omit --codex-plugin
+  --dry-run           Preview delegation without downloads or changes
+  --debug             Show diagnostics ${tty_dim}[default: ${debug_display}]${tty_reset}
+  --version           Show the script version
+  -h, --help          Show this help
 
 ${tty_tp}Environment Variables:${tty_reset}
-  TANABOOT_DEBUG  Same as --debug
+  TANABOOT_DEBUG        Same as --debug
+  TANABOOT_CODEX_PLUGIN Same as --codex-plugin; comma-separated sources
+
+Plugin sources: npm:<package>[@version] or tanaabased repo[#ref] (default: main).
 
 HELP
 }
@@ -108,7 +115,7 @@ option_error() {
 }
 
 parse_args() {
-  local info=""
+  local info="" plugins_cli=""
   while [[ $# -gt 0 ]]; do
     case "$1" in
       --host | --agent)
@@ -130,6 +137,17 @@ parse_args() {
         SOURCE_REF="${1#*=}"
         [[ -n "${SOURCE_REF}" && "${SOURCE_REF}" != -* ]] || option_error 'Provide a branch, tag or full commit SHA after --ref.'
         ;;
+      --codex-plugin | --codex-plugin=*)
+        if [[ -z "${plugins_cli}" ]]; then PLUGIN_SOURCES=(); plugins_cli=1; fi
+        if [[ "$1" == --codex-plugin ]]; then
+          [[ $# -gt 1 && -n "$2" && "$2" != -* ]] || option_error 'Provide a Codex plugin source after --codex-plugin.'
+          PLUGIN_SOURCES+=("$2")
+          shift
+        else
+          [[ -n "${1#*=}" && "${1#*=}" != -* ]] || option_error 'Provide a Codex plugin source after --codex-plugin.'
+          PLUGIN_SOURCES+=("${1#*=}")
+        fi
+        ;;
       --debug) DEBUG="1" ;;
       --debug=*) DEBUG="${1#*=}" ;;
       -h | --help | --version)
@@ -140,10 +158,31 @@ parse_args() {
     esac
     shift
   done
+  validate_plugins
   case "${info}" in
     -h | --help) usage; exit 0 ;;
     --version) printf '%s\n' "${SCRIPT_VERSION}"; exit 0 ;;
   esac
+}
+
+validate_plugins() {
+  local selection repo ref
+  for selection in ${PLUGIN_SOURCES[@]+"${PLUGIN_SOURCES[@]}"}; do
+    if [[ "${selection}" == npm:* ]]; then
+      [[ -n "${selection#npm:}" ]] || option_error 'Provide a package after npm:.'
+      continue
+    fi
+    repo="${selection%%#*}"
+    [[ "${repo}" =~ ^[A-Za-z0-9][A-Za-z0-9._-]*$ && ${#repo} -le 100 ]] || option_error 'Use npm:<package>[@version] or a tanaabased repository name[#ref].'
+    if [[ "${selection}" == *#* ]]; then
+      ref="${selection#*#}"
+      validate_ref "${ref}"
+    fi
+  done
+  if [[ ${#PLUGIN_SOURCES[@]} -gt 0 ]]; then
+    [[ "${TARGET}" != host ]] || option_error '--codex-plugin requires agent or default setup.'
+    [[ "${ACTION}" != check ]] || option_error '--check verifies base setup; omit --codex-plugin.'
+  fi
 }
 
 plan_host() {
@@ -158,7 +197,8 @@ plan_agent() {
   plan_action stow 'Home-relative dotpackages through Bootbox'
   plan_command bootbox.sh --dotpkg "${REPO_DIR}/dotfiles/ai" --dotpkg "${REPO_DIR}/dotfiles/shell"
   plan_action install "Tanaabot plugin from ${REPO_DIR} through Codex Tools"
-  plan_action resolve 'Canon plugin at the revision pinned in package.json'
+  local selection
+  for selection in ${PLUGIN_SOURCES[@]+"${PLUGIN_SOURCES[@]}"}; do plan_action install "Codex plugin: ${selection}"; done
 }
 
 require_tool() {
@@ -241,34 +281,12 @@ preflight() {
   require_tool jq
 }
 
-load_dependencies() {
-  BOOTBOX_REV="$(jq -er '.tanaboot.bootbox.revision' "${REPO_DIR}/package.json")"
-  BOOTBOX_SHA="$(jq -er '.tanaboot.bootbox.sha256' "${REPO_DIR}/package.json")"
-  CANON_REV="$(jq -er '.tanaboot.canon.revision' "${REPO_DIR}/package.json")"
-  [[ "${BOOTBOX_REV}" =~ ^[a-f0-9]{40}$ && "${CANON_REV}" =~ ^[a-f0-9]{40}$ && "${BOOTBOX_SHA}" =~ ^[a-f0-9]{64}$ ]] || fail 'Dependency pins in package.json are invalid.'
-  BOOTBOX_SCRIPT="${DATA_DIR}/dependencies/bootbox-${BOOTBOX_REV}.sh"
-}
-
 prepare_bootbox() {
-  local stage=""
-  require_tool sha256sum
-  [[ ! -L "${BOOTBOX_SCRIPT}" && ( ! -e "${BOOTBOX_SCRIPT}" || -f "${BOOTBOX_SCRIPT}" ) ]] || fail 'Pinned Bootbox path conflicts with an existing file type. Preserve it before retrying.'
-  if [[ ! -f "${BOOTBOX_SCRIPT}" ]]; then
-    [[ "${ACTION}" != check ]] || fail 'Pinned Bootbox is missing. Run host setup first.'
-    require_tool curl
-    mkdir -p -- "$(dirname -- "${BOOTBOX_SCRIPT}")"
-    stage="$(mktemp "${BOOTBOX_SCRIPT}.XXXXXX")"
-    if ! curl -fsSL "https://raw.githubusercontent.com/tanaabased/bootbox/${BOOTBOX_REV}/bootbox.sh" -o "${stage}"; then
-      rm -f -- "${stage}"
-      fail 'Pinned Bootbox download failed. Check Cloud network access and retry.'
-    fi
-    if [[ "$(sha256sum "${stage}" | cut -d ' ' -f 1)" != "${BOOTBOX_SHA}" ]]; then
-      rm -f -- "${stage}"
-      fail 'Bootbox checksum failed; its script was not executed.'
-    fi
-    mv -- "${stage}" "${BOOTBOX_SCRIPT}"
-  fi
-  [[ ! -L "${BOOTBOX_SCRIPT}" && "$(sha256sum "${BOOTBOX_SCRIPT}" | cut -d ' ' -f 1)" == "${BOOTBOX_SHA}" ]] || fail 'Pinned Bootbox checksum failed. Preserve and inspect the conflicting file before retrying.'
+  require_tool curl
+  boot_tmpdir="$(mktemp -d -t tanaboot.XXXXXX)"
+  BOOTBOX_SCRIPT="${boot_tmpdir}/bootbox.sh"
+  curl -fsSL "${BOOTBOX_URL}" -o "${BOOTBOX_SCRIPT}" || fail 'Bootbox download failed. Check network access and retry.'
+  chmod 700 "${BOOTBOX_SCRIPT}"
 }
 
 run_bootbox() (
@@ -277,7 +295,7 @@ run_bootbox() (
   for variable in ${!BOOTBOX_@} ${!TANAAB_@} OP_SERVICE_ACCOUNT_TOKEN INTERACTIVE; do
     unset "${variable}"
   done
-  cd -- "${DATA_DIR}"
+  cd -- "$(dirname -- "${script}")"
   NONINTERACTIVE=1 BOOTBOX_QUIET=1 BOOTBOX_DEBUG="${DEBUG}" bash "${script}" "$@"
 )
 
@@ -318,8 +336,24 @@ check_plugin() {
   jq -e '.ok == true and .inspection.installed == true and .inspection.enabled == true' <<< "${output}" >/dev/null || fail 'Plugin is not installed and enabled. Resolve its Codex state before retrying.'
 }
 
+install_plugins() {
+  local selection repo ref sha source
+  for selection in ${PLUGIN_SOURCES[@]+"${PLUGIN_SOURCES[@]}"}; do
+    source="${selection}"
+    if [[ "${selection}" != npm:* ]]; then
+      repo="${selection%%#*}"
+      ref=main
+      if [[ "${selection}" == *#* ]]; then ref="${selection#*#}"; fi
+      sha="$(resolve_ref "https://github.com/tanaabased/${repo}.git" "${ref}")"
+      note "Plugin source: ${repo}#${ref} (${sha})"
+      source="$(acquire_source "${repo}" "https://github.com/tanaabased/${repo}.git" "${sha}")"
+    fi
+    codex_tools install "${source}"
+  done
+}
+
 check_agent() {
-  local canon file
+  local file
   [[ -d "${HOME}/.codex" && ! -L "${HOME}/.codex" ]] || fail 'Codex home must be a real directory so runtime state stays outside the source checkout.'
   [[ -x "${REPO_DIR}/node_modules/.bin/codex-tools" ]] || fail 'Codex Tools is missing. Run agent setup.'
   cmp -s "${REPO_DIR}/dotfiles/ai/.codex/AGENTS.md" "${HOME}/.codex/AGENTS.md" || fail 'Global guidance is missing or differs. Run agent setup; preserve any conflicting guidance.'
@@ -327,13 +361,11 @@ check_agent() {
   for file in .profile .bashrc; do
     grep -Fxq "${SHELL_INIT_LINE}" "${HOME}/${file}" || fail 'Shell startup is incomplete. Run agent setup.'
   done
-  canon="$(acquire_source canon "${CANON_URL}" "${CANON_REV}")"
   check_plugin "${REPO_DIR}"
-  check_plugin "${canon}"
 }
 
 apply_agent() {
-  local canon file
+  local file
   [[ -f "${REPO_DIR}/bun.lock" ]] || fail 'The selected revision is missing bun.lock.'
   for file in .profile .bashrc; do
     [[ ! -L "${HOME}/${file}" && ( ! -e "${HOME}/${file}" || ( -f "${HOME}/${file}" && -w "${HOME}/${file}" ) ) ]] || fail 'Shell startup conflicts with an existing path. Preserve it and resolve the conflict before retrying.'
@@ -343,8 +375,6 @@ apply_agent() {
   done
   require_tool stow
   stow --simulate --dir "${REPO_DIR}/dotfiles" --target "${HOME}" ai shell >/dev/null 2>&1 || fail 'Guidance or shell dotfiles conflict with existing configuration. Preserve it and resolve the conflict before retrying.'
-  canon="$(acquire_source canon "${CANON_URL}" "${CANON_REV}")"
-  note "Canon commit: ${CANON_REV}"
   # Prevent Stow directory folding from sending private runtime writes into Git sources.
   mkdir -p -- "${HOME}/.codex" "${HOME}/.config"
   run_bootbox --dotpkg "${REPO_DIR}/dotfiles/ai" --dotpkg "${REPO_DIR}/dotfiles/shell"
@@ -355,13 +385,15 @@ apply_agent() {
   done
   (cd -- "${REPO_DIR}" && bun install --production --frozen-lockfile --ignore-scripts)
   codex_tools install "${REPO_DIR}"
-  codex_tools install "${canon}"
+  install_plugins
   check_agent
 }
 
 main() (
-  local sha source
+  local sha source selection lock
   setup_lock=""
+  boot_tmpdir=""
+  trap '[[ -z "${boot_tmpdir}" ]] || rm -rf -- "${boot_tmpdir}"; [[ -z "${setup_lock}" ]] || rmdir -- "${setup_lock}"' EXIT
   parse_args "$@"
   debug "target=${TARGET} action=${ACTION}"
   if [[ "${ACTION}" == plan ]]; then
@@ -369,7 +401,8 @@ main() (
     if [[ -n "${SOURCE_REF}" ]]; then
       validate_ref "${SOURCE_REF}"
       plan_action resolve "${SOURCE_REF} from canonical tanaabased/tanaabot (not resolved offline)"
-      plan_action run "That revision's ${TARGET} setup; its dependency pins determine the plan"
+      plan_action run "That revision's ${TARGET} setup"
+      for selection in ${PLUGIN_SOURCES[@]+"${PLUGIN_SOURCES[@]}"}; do plan_action install "Codex plugin: ${selection}"; done
       return
     fi
     if [[ "${TARGET}" == bootstrap || "${TARGET}" == host ]]; then plan_host; fi
@@ -386,15 +419,15 @@ main() (
     local -a forwarded=("--debug=${DEBUG}")
     [[ "${TARGET}" == bootstrap ]] || forwarded+=("--${TARGET}")
     [[ "${ACTION}" != check ]] || forwarded+=(--check)
+    for selection in ${PLUGIN_SOURCES[@]+"${PLUGIN_SOURCES[@]}"}; do forwarded+=(--codex-plugin "${selection}"); done
     bash "${source}/tanaboot.sh" "${forwarded[@]}"
     return
   fi
-  load_dependencies
   if [[ "${ACTION}" != check ]]; then
     mkdir -p -- "${DATA_DIR}"
-    setup_lock="${DATA_DIR}/setup.lock"
-    mkdir -- "${setup_lock}" 2>/dev/null || fail 'Setup is already running or its lock needs operator inspection.'
-    trap 'rmdir -- "${setup_lock}"' EXIT
+    lock="${DATA_DIR}/setup.lock"
+    mkdir -- "${lock}" 2>/dev/null || fail 'Setup is already running or its lock needs operator inspection.'
+    setup_lock="${lock}"
   fi
   prepare_bootbox
   if [[ "${TARGET}" == bootstrap || "${TARGET}" == host ]]; then

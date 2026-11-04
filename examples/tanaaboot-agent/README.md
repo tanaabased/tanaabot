@@ -1,7 +1,7 @@
 # Tanaboot agent
 
 Prepare host tools, apply the packaged agent mode, and rerun it to check convergence. The scenario
-owns guidance, shell initialization and enabled plugins in an isolated Linux runner home. It does
+owns guidance, shell initialization and enabled plugins on a disposable Linux runner. It does
 not configure accounts, retrieve secrets or establish fresh-task Codex Cloud discovery.
 
 ## Setup
@@ -38,4 +38,17 @@ tanaboot.sh --agent --check
 test -x "$TANABOOT_PACKAGE_ROOT/node_modules/.bin/codex-tools"
 test ! -e "$TANABOOT_PACKAGE_ROOT/node_modules/mocha"
 test ! -e "$TANABOOT_PACKAGE_ROOT/node_modules/eslint"
+
+# should install repeated published and git plugin selections
+cp -R plugin "$TMPDIR/plugin"
+git -C "$TMPDIR/plugin" init -q -b main
+git -C "$TMPDIR/plugin" add .
+git -C "$TMPDIR/plugin" -c user.name=Test -c user.email=test@example.invalid commit -qm 'plugin fixture'
+sha=$(git -C "$TMPDIR/plugin" rev-parse HEAD)
+GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.$TMPDIR/plugin.insteadOf" GIT_CONFIG_VALUE_0=https://github.com/tanaabased/tanaboot-probe.git \
+  tanaboot.sh --agent --codex-plugin npm:@tanaab/codex-tools@1.0.3 --codex-plugin "tanaboot-probe#$sha"
+source="${XDG_DATA_HOME:-$HOME/.local/share}/tanaabot/sources/tanaboot-probe/$sha"
+test "$(git -C "$source" rev-parse HEAD)" = "$sha"
+bun "$TANABOOT_PACKAGE_ROOT/node_modules/.bin/codex-tools" status --repo-root "$source" --json | \
+  jq -e '.ok and .inspection.installed and .inspection.enabled'
 ```

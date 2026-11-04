@@ -14,7 +14,6 @@ jobs:
   examples:
     name: ${{ matrix.example }}
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
@@ -23,6 +22,7 @@ jobs:
           - tanaaboot-defaults
           - tanaaboot-host
           - tanaaboot-agent
+          - tanaaboot-revisions
     steps:
       - name: Checkout code
         uses: actions/checkout@v7
@@ -47,7 +47,7 @@ jobs:
       - name: Pack candidate
         id: pack
         uses: tanaabased/actions/npm-pack@v1
-      - name: Prepare isolated runner state and packaged Tanaboot
+      - name: Prepare packaged Tanaboot
         env:
           TARBALL: ${{ steps.pack.outputs.tarball-path }}
         run: |
@@ -56,17 +56,11 @@ jobs:
           echo "$package_root" >> "$GITHUB_PATH"
           echo "/home/linuxbrew/.linuxbrew/bin" >> "$GITHUB_PATH"
           echo "TANABOOT_PACKAGE_ROOT=$package_root" >> "$GITHUB_ENV"
-          mkdir -p "$RUNNER_TEMP/tanaaboot-home" "$RUNNER_TEMP/tanaaboot-cache"
       - name: Refresh Homebrew when needed
         run: HOMEBREW_NO_AUTO_UPDATE= brew update-if-needed
       - name: Run Leia-backed example
         uses: tanaabased/actions/run-leia@v1
         env:
-          HOME: ${{ runner.temp }}/tanaaboot-home
-          CODEX_HOME: ${{ runner.temp }}/tanaaboot-home/.codex
-          XDG_CONFIG_HOME: ${{ runner.temp }}/tanaaboot-home/.config
-          XDG_DATA_HOME: ${{ runner.temp }}/tanaaboot-home/.local/share
-          XDG_CACHE_HOME: ${{ runner.temp }}/tanaaboot-cache
           NO_COLOR: '1'
         with:
           scenarios: examples/${{ matrix.example }}/README.md

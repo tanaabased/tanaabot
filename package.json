@@ -23,9 +23,6 @@
     "format:write": "bun run --bun prettier . --write --ignore-unknown",
     "lint:eslint": "bun run --bun eslint .",
     "lint:shellcheck": "shellcheck tanaboot.sh",
-    "test": "bun run test:unit && bun run test:component",
-    "test:unit": "bun ./node_modules/mocha/bin/mocha.js \"test/*.spec.js\"",
-    "test:component": "bun ./node_modules/mocha/bin/mocha.js \"test/*.component.js\"",
     "leia": "bun ./node_modules/.bin/leia"
   },
   "devDependencies": {
@@ -34,7 +31,6 @@
     "eslint": "^10.10.0",
     "eslint-config-prettier": "^10.1.1",
     "globals": "^17.12.0",
-    "mocha": "^12.0.2",
     "prettier": "^3.9.8",
     "shellcheck": "^4.1.0"
   },
@@ -93,15 +89,6 @@
   ],
   "publishConfig": {
     "access": "public"
-  },
-  "tanaboot": {
-    "bootbox": {
-      "revision": "a68c2be246783543b926df93842510c13ebd94fb",
-      "sha256": "086da3ee48cd374e7e21b72827175bbda3b68794fd17367408609041583df1b0"
-    },
-    "canon": {
-      "revision": "e76bc0a89dfe96298fe33756f335c82f855e0188"
-    }
   },
   "dependencies": {
     "@tanaab/codex-tools": "^1.0.3"

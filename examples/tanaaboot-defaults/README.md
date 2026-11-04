@@ -1,12 +1,17 @@
 # Tanaboot defaults
 
 Run the packaged entrypoint once with no mode selection, then inspect the resulting Linux tools,
-guidance and plugins. CI supplies an isolated writable home and the prepared package; this proves
+guidance and its plugin. CI supplies the prepared package on a disposable runner; this proves
 runner installation, while fresh-task Codex Cloud discovery remains a separate acceptance check.
 
 ## Setup
 
 ```bash
+# should record existing identity and access configuration
+for file in .gitconfig .ssh/config .config/gh/hosts.yml; do
+  if test -f "$HOME/$file"; then sha256sum "$HOME/$file"; else printf 'missing %s\n' "$file"; fi
+done > "$TMPDIR/access-before"
+
 # should run the default setup once
 set -o pipefail
 tanaboot.sh 2>&1 | tee "$TMPDIR/setup.log"
@@ -37,11 +42,15 @@ test -L "$HOME/.codex/AGENTS.md"
 cmp -s "$HOME/.codex/AGENTS.md" "$TANABOOT_PACKAGE_ROOT/dotfiles/ai/.codex/AGENTS.md"
 test ! -e "$TANABOOT_PACKAGE_ROOT/dotfiles/ai/.codex/config.toml"
 
-# should verify both enabled plugins and the completed setup
+# should verify the enabled tanaabot plugin and completed setup
 tanaboot.sh --check
 
-# should leave deferred identity and access configuration inactive
-test ! -e "$HOME/.gitconfig"
-test ! -e "$HOME/.ssh/config"
-test ! -e "$HOME/.config/gh/hosts.yml"
+# should not acquire canon by default
+test ! -e "${XDG_DATA_HOME:-$HOME/.local/share}/tanaabot/sources/canon"
+
+# should preserve existing identity and access configuration
+for file in .gitconfig .ssh/config .config/gh/hosts.yml; do
+  if test -f "$HOME/$file"; then sha256sum "$HOME/$file"; else printf 'missing %s\n' "$file"; fi
+done > "$TMPDIR/access-after"
+cmp "$TMPDIR/access-before" "$TMPDIR/access-after"
 ```
