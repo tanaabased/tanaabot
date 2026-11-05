@@ -14,10 +14,8 @@ fi
 
 REPO_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 SCRIPT_VERSION="${SCRIPT_VERSION:-$(git -C "${REPO_DIR}" describe --tags --always 2>/dev/null || printf '%s' '0.0.0-unreleased')}"
-SOURCE_URL="https://github.com/tanaabased/tanaabot.git"
 BOOTBOX_URL="https://bootbox.tanaab.sh/bootbox.sh"
 DATA_DIR="${XDG_DATA_HOME:-${HOME}/.local/share}/tanaabot"
-SOURCE_REF=""
 DEBUG="${TANABOOT_DEBUG:-${DEBUG:-${RUNNER_DEBUG:-}}}"
 TARGET="bootstrap"
 ACTION="apply"
@@ -90,7 +88,6 @@ Prepare a Linux Codex Cloud environment for tanaabot.
 The default mode selects host then agent. Choose one mode and one action.
 
 ${tty_tp}Options:${tty_reset}
-  --ref REF           Resolve a canonical branch, tag or full commit SHA ${tty_dim}[default: ${SOURCE_REF:-this checkout}]${tty_reset}
   --codex-plugin SRC  Install a Codex plugin; repeatable ${tty_dim}[default: ${plugins_display}]${tty_reset}
   --host              Select host dependencies only
   --agent             Select guidance, dotpackages and Codex plugins only
@@ -125,17 +122,6 @@ parse_args() {
       --check | --dry-run)
         [[ "${ACTION}" == apply ]] || option_error 'Choose only one of --check or --dry-run.'
         if [[ "$1" == --check ]]; then ACTION="check"; else ACTION="plan"; fi
-        ;;
-      --ref)
-        [[ $# -gt 1 && -n "$2" && "$2" != -* ]] || option_error 'Provide a branch, tag or full commit SHA after --ref.'
-        [[ -z "${SOURCE_REF}" ]] || option_error 'Choose only one reference.'
-        SOURCE_REF="$2"
-        shift
-        ;;
-      --ref=*)
-        [[ -z "${SOURCE_REF}" ]] || option_error 'Choose only one reference.'
-        SOURCE_REF="${1#*=}"
-        [[ -n "${SOURCE_REF}" && "${SOURCE_REF}" != -* ]] || option_error 'Provide a branch, tag or full commit SHA after --ref.'
         ;;
       --codex-plugin | --codex-plugin=*)
         if [[ -z "${plugins_cli}" ]]; then PLUGIN_SOURCES=(); plugins_cli=1; fi
@@ -242,7 +228,7 @@ verify_source() {
 acquire_source() (
   local project="$1" url="$2" sha="$3" dir parent
   acquisition_stage=""
-  dir="${DATA_DIR}/sources/${project}/${sha}"
+  dir="${DATA_DIR}/sources/${project}"
   if [[ "${ACTION}" == check ]]; then
     [[ -d "${dir}" ]] || fail 'Selected source is missing. Run setup to acquire the requested revision.'
     verify_source "${dir}" "${url}" "${sha}"
@@ -322,7 +308,7 @@ check_host() {
   node_major="$(cut -d . -f 1 "${REPO_DIR}/.node-version")"
   node_version="$(node --version)"
   [[ "${node_version}" == "v${node_major}."* ]] || fail 'Node does not match the major version in .node-version. Run host setup and check its PATH.'
-  [[ "$(bun --version)" == "$(cat "${REPO_DIR}/.bun-version")" ]] || fail 'Bun does not match .bun-version. Select that runtime in the Cloud setup and retry.'
+  [[ "$(bun --version)" == "$(cut -d . -f 1 "${REPO_DIR}/.bun-version")."* ]] || fail 'Bun does not match the major version in .bun-version. Select that runtime in the Cloud setup and retry.'
 }
 
 codex_tools() (
@@ -403,7 +389,7 @@ apply_agent() {
 }
 
 main() (
-  local sha source selection lock
+  local lock
   setup_lock=""
   boot_tmpdir=""
   trap '[[ -z "${boot_tmpdir}" ]] || rm -rf -- "${boot_tmpdir}"; [[ -z "${setup_lock}" ]] || rmdir -- "${setup_lock}"' EXIT
@@ -411,31 +397,11 @@ main() (
   debug "target=${TARGET} action=${ACTION}"
   if [[ "${ACTION}" == plan ]]; then
     note 'Preview only. Commands below are not executed.'
-    if [[ -n "${SOURCE_REF}" ]]; then
-      validate_ref "${SOURCE_REF}"
-      plan_action resolve "${SOURCE_REF} from canonical tanaabased/tanaabot (not resolved offline)"
-      plan_action run "That revision's ${TARGET} setup"
-      for selection in ${PLUGIN_SOURCES[@]+"${PLUGIN_SOURCES[@]}"}; do plan_action install "Codex plugin: ${selection}"; done
-      return
-    fi
     if [[ "${TARGET}" == bootstrap || "${TARGET}" == host ]]; then plan_host; fi
     if [[ "${TARGET}" == bootstrap || "${TARGET}" == agent ]]; then plan_agent; fi
     return
   fi
   preflight
-  if [[ -n "${SOURCE_REF}" ]]; then
-    sha="$(resolve_ref "${SOURCE_URL}" "${SOURCE_REF}")"
-    note "Requested reference: ${SOURCE_REF}"
-    note "Resolved commit: ${sha}"
-    source="$(acquire_source tanaabot "${SOURCE_URL}" "${sha}")"
-    [[ -f "${source}/tanaboot.sh" ]] || fail 'Selected revision has no tanaboot.sh entrypoint.'
-    local -a forwarded=("--debug=${DEBUG}")
-    [[ "${TARGET}" == bootstrap ]] || forwarded+=("--${TARGET}")
-    [[ "${ACTION}" != check ]] || forwarded+=(--check)
-    for selection in ${PLUGIN_SOURCES[@]+"${PLUGIN_SOURCES[@]}"}; do forwarded+=(--codex-plugin "${selection}"); done
-    bash "${source}/tanaboot.sh" "${forwarded[@]}"
-    return
-  fi
   if [[ "${ACTION}" != check ]]; then
     mkdir -p -- "${DATA_DIR}"
     lock="${DATA_DIR}/setup.lock"

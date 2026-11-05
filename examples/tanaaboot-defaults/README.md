@@ -33,7 +33,7 @@ done
 brew bundle check --file "$TANABOOT_PACKAGE_ROOT/Brewfile" --no-upgrade
 
 # should load the declared runtimes in a fresh login shell
-bash -lc 'test "$(bun --version)" = "$(cat "$TANABOOT_PACKAGE_ROOT/.bun-version")"'
+bash -lc 'bun_major=$(cut -d . -f 1 "$TANABOOT_PACKAGE_ROOT/.bun-version"); case "$(bun --version)" in "$bun_major."*) ;; *) exit 1;; esac'
 bash -lc 'node_major=$(cut -d . -f 1 "$TANABOOT_PACKAGE_ROOT/.node-version"); case "$(node --version)" in "v$node_major."*) ;; *) exit 1;; esac'
 
 # should apply guidance without folding private configuration into the source

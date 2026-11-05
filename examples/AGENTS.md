@@ -8,8 +8,8 @@ operator authorization.
 
 - Leia examples own public CLI and installed-product flows. Use the `tanaaboot-` directory prefix.
   `tanaaboot-inputs` covers options and errors; `tanaaboot-defaults`, `tanaaboot-host` and
-  `tanaaboot-agent` cover their corresponding setup modes. `tanaaboot-revisions` covers reference
-  selection and source-acquisition failures through the entrypoint.
+  `tanaaboot-agent` cover their corresponding setup modes. `tanaaboot-cloud-setup` covers workspace
+  revision selection and invocation of that revision's entrypoint.
 - `tanaaboot-codex-plugin` owns real Canon source and published-release installation on separate
   runners. Codex Tools provisions the native Codex CLI; no model call is needed for installation.
 - Keep constant fixtures beside their scenario. Add another folder only for a distinct flow or

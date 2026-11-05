@@ -13,7 +13,7 @@
 tanaabot prepares a Codex Cloud environment with its tools, guidance and skills for managed and
 scheduled tasks. Its assistant has a courteous protocol-droid voice, with a little grandmotherly concern.
 
-Tanaboot installs a selected revision through Bootbox and Codex Tools. Fresh-task Cloud verification
+Tanaboot provisions its source checkout through Bootbox and Codex Tools. Fresh-task Cloud verification
 remains pending in [#5](https://github.com/tanaabased/tanaabot/issues/5).
 
 ## What ships
@@ -30,10 +30,13 @@ remains pending in [#5](https://github.com/tanaabased/tanaabot/issues/5).
 From a source checkout in a Linux Cloud setup, as its non-root user:
 
 ```sh
-./tanaboot.sh --ref main --codex-plugin canon#main
+./tanaboot.sh --codex-plugin canon#main
 ```
 
-Choose a branch, tag or full commit SHA with `--ref`. Add `--dry-run` for an offline preview.
+For Codex Cloud, select the workspace revision and run setup with
+`bash scripts/cloud-setup.sh main --codex-plugin canon#main`. The first argument accepts a branch,
+tag or full commit SHA; remaining arguments pass to that revision's Tanaboot.
+Use `./tanaboot.sh --dry-run` to preview the current checkout without changes.
 The standard agent setup selects Canon from `main`. Use repeatable `--codex-plugin` options to select
 published or source plugins.
 See [Tanaboot](./TANABOOT.md) for prerequisites, setup modes and recovery.

@@ -27,12 +27,12 @@ Git, GitHub and SSH configuration remain inactive stubs. Fresh-task Cloud discov
 
 ## Dependencies
 
-| Source                                                   | Purpose                                      | Status                                    |
-| -------------------------------------------------------- | -------------------------------------------- | ----------------------------------------- |
-| [Brewfile](./Brewfile)                                   | Linux Cloud CLI tools and runtimes           | Declared; no Cloud installation tested    |
-| [Bootbox](https://github.com/tanaabased/bootbox)         | Host provisioning and dotpackage application | Current hosted script downloaded at setup |
-| [Codex Tools](https://github.com/tanaabased/codex-tools) | Plugin installation and cache maintenance    | Runtime dependency; Cloud use unverified  |
-| [Canon](https://github.com/tanaabased/canon)             | Shared skill-authoring methods               | Selected from main by agent setup         |
+| Source                                                   | Purpose                                      | Status                                         |
+| -------------------------------------------------------- | -------------------------------------------- | ---------------------------------------------- |
+| [Brewfile](./Brewfile)                                   | Linux Cloud CLI tools and runtimes           | Installation covered on disposable CI runners  |
+| [Bootbox](https://github.com/tanaabased/bootbox)         | Host provisioning and dotpackage application | Current hosted script downloaded at setup      |
+| [Codex Tools](https://github.com/tanaabased/codex-tools) | Plugin installation and cache maintenance    | Runtime dependency; installation covered in CI |
+| [Canon](https://github.com/tanaabased/canon)             | Shared skill-authoring methods               | Selected from main by agent setup              |
 
 ## Plugins
 

@@ -22,7 +22,7 @@
     "format:check": "bun run --bun prettier . --check --ignore-unknown",
     "format:write": "bun run --bun prettier . --write --ignore-unknown",
     "lint:eslint": "bun run --bun eslint .",
-    "lint:shellcheck": "shellcheck tanaboot.sh",
+    "lint:shellcheck": "shellcheck tanaboot.sh scripts/cloud-setup.sh",
     "leia": "bun ./node_modules/.bin/leia"
   },
   "devDependencies": {
@@ -51,6 +51,7 @@
       "prompts",
       "skills",
       "tanaboot.sh",
+      "scripts/cloud-setup.sh",
       "AGENTS.md",
       "LICENSE",
       "README.md",
@@ -78,6 +79,7 @@
     "prompts/",
     "skills/",
     "tanaboot.sh",
+    "scripts/cloud-setup.sh",
     "AGENTS.md",
     "LICENSE",
     "README.md",

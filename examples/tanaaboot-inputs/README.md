@@ -19,7 +19,7 @@ tanaboot.sh --help | grep -F 'Usage: tanaboot.sh [TANABOOT_*...] [options]'
 
 # should document public options
 set -o pipefail
-for option in --ref --codex-plugin --host --agent --check --dry-run --debug --version --help; do
+for option in --codex-plugin --host --agent --check --dry-run --debug --version --help; do
   tanaboot.sh --help | grep -F -- "$option"
 done
 
@@ -31,12 +31,6 @@ tanaboot.sh --help | grep -F 'TANABOOT_CODEX_PLUGIN'
 ! tanaboot.sh --help | grep -F -- '--debug='
 ! tanaboot.sh --help | grep -F 'BOOTBOX_'
 ! tanaboot.sh --help | grep -F 'RUNNER_DEBUG'
-
-# should show reference defaults and both value spellings
-set -o pipefail
-tanaboot.sh --help | grep -F -- '--ref' | grep -F '[default: this checkout]'
-tanaboot.sh --ref pilot --help | grep -F -- '--ref' | grep -F '[default: pilot]'
-tanaboot.sh --ref=pilot --help | grep -F -- '--ref' | grep -F '[default: pilot]'
 
 # should show runner debug as the lowest priority default
 set -o pipefail
@@ -83,28 +77,13 @@ test "$status" -eq 2
 printf '%s\n' "$output" | grep -F 'Usage:'
 printf '%s\n' "$output" | grep -F 'Choose only one of --check or --dry-run'
 
-# should reject a missing reference value
+# should leave workspace revision selection to cloud setup
 status=0
-output=$(tanaboot.sh --ref 2>&1) || status=$?
+output=$(tanaboot.sh --ref main --dry-run 2>&1) || status=$?
 printf '%s\n' "$output"
 test "$status" -eq 2
-printf '%s\n' "$output" | grep -F 'Usage:'
-printf '%s\n' "$output" | grep -F 'Provide a branch, tag or full commit SHA'
-
-# should reject an empty reference value
-status=0
-output=$(tanaboot.sh --ref= 2>&1) || status=$?
-printf '%s\n' "$output"
-test "$status" -eq 2
-printf '%s\n' "$output" | grep -F 'Usage:'
-printf '%s\n' "$output" | grep -F 'Provide a branch, tag or full commit SHA'
-
-# should reject an option masquerading as a revision
-status=0
-output=$(tanaboot.sh --ref --host 2>&1) || status=$?
-printf '%s\n' "$output"
-test "$status" -eq 2
-printf '%s\n' "$output" | grep -F 'Provide a branch, tag or full commit SHA'
+printf '%s\n' "$output" | grep -F 'Unknown option'
+! tanaboot.sh --help | grep -F -- '--ref'
 
 # should reject unknown options without exposing their values
 status=0

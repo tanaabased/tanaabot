@@ -22,7 +22,7 @@ jobs:
           - tanaaboot-defaults
           - tanaaboot-host
           - tanaaboot-agent
-          - tanaaboot-revisions
+          - tanaaboot-cloud-setup
         include:
           - example: tanaaboot-codex-plugin
             name: tanaaboot-codex-plugin-source
@@ -60,6 +60,7 @@ jobs:
         run: |
           package_root="$(mktemp -d "$RUNNER_TEMP/tanaboot-candidate.XXXXXX")"
           tar -xzf "$TARBALL" -C "$package_root" --strip-components=1
+          bash -n "$package_root/tanaboot.sh" "$package_root/scripts/cloud-setup.sh"
           echo "$package_root" >> "$GITHUB_PATH"
           echo "/home/linuxbrew/.linuxbrew/bin" >> "$GITHUB_PATH"
           echo "TANABOOT_PACKAGE_ROOT=$package_root" >> "$GITHUB_ENV"

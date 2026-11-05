@@ -26,13 +26,11 @@ jq -e '.installed | any(.pluginId == "codex-tools@personal" and .installed == tr
 # should retain the requested source or exact published release
 case "$CODEX_PLUGIN_SOURCE" in
   canon#main)
-    for source in "${XDG_DATA_HOME:-$HOME/.local/share}/tanaabot/sources/canon/"*; do
-      sha=$(git -C "$source" rev-parse HEAD)
-      test "$(basename "$source")" = "$sha"
-      test "$(git -C "$source" config --get remote.origin.url)" = https://github.com/tanaabased/canon.git
-      grep -F "Plugin source: canon#main ($sha)" "$TMPDIR/setup.log"
-      tanaboot.sh --agent --codex-plugin "canon#$sha" --check
-    done
+    source="${XDG_DATA_HOME:-$HOME/.local/share}/tanaabot/sources/canon"
+    sha=$(git -C "$source" rev-parse HEAD)
+    test "$(git -C "$source" config --get remote.origin.url)" = https://github.com/tanaabased/canon.git
+    grep -F "Plugin source: canon#main ($sha)" "$TMPDIR/setup.log"
+    tanaboot.sh --agent --codex-plugin "canon#$sha" --check
     ;;
   npm:@tanaab/canon@0.13.0)
     jq -e '.plugins | any(.name == "tanaab" and .source.source == "npm" and .source.package == "@tanaab/canon" and .source.version == "0.13.0")' "$HOME/.agents/plugins/marketplace.json"
@@ -44,4 +42,15 @@ esac
 # should install canon skill resources in the native cache
 version=$(jq -r '.installed[] | select(.pluginId == "tanaab@personal") | .version' "$TMPDIR/plugins.json")
 test -f "$HOME/.codex/plugins/cache/personal/tanaab/$version/skills/task-author/SKILL.md"
+
+# should clean a failed plugin acquisition without leaving its lock or staging directory
+status=0
+output=$(tanaboot.sh --agent --codex-plugin codex-tools#ffffffffffffffffffffffffffffffffffffffff 2>&1) || status=$?
+printf '%s\n' "$output"
+test "$status" -eq 1
+printf '%s\n' "$output" | grep -F 'could not be fetched'
+sources="${XDG_DATA_HOME:-$HOME/.local/share}/tanaabot/sources"
+test ! -e "$sources/codex-tools"
+test ! -e "$sources/codex-tools.lock"
+test -z "$(find "$sources" -name '.acquire.*')"
 ```

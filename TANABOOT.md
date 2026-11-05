@@ -1,41 +1,62 @@
 # Tanaboot
 
-Use [`tanaboot.sh`](./tanaboot.sh) in a Linux Codex Cloud setup to install a selected tanaabot revision.
+Use [`tanaboot.sh`](./tanaboot.sh) to provision its source checkout in a Linux Codex Cloud setup.
 
 ## Usage
 
 From a source checkout:
 
 ```sh
-./tanaboot.sh --ref main --codex-plugin canon#main
-./tanaboot.sh --ref v0.1.0
-./tanaboot.sh --ref <full-commit-sha>
+./tanaboot.sh --codex-plugin canon#main
 ```
 
-Choose a branch, tag or full commit SHA from canonical `tanaabased/tanaabot`. Tanaboot reports the
-requested reference and resolved commit, then runs that commit's entrypoint. A missing reference,
-branch/tag collision, unavailable commit or modified managed checkout fails without selecting another
-revision. Use a full commit SHA to resolve a name collision.
-Both `--ref main` and `--ref=main` are accepted.
+For Cloud workspace revision selection, use the separate [Cloud wrapper](./scripts/cloud-setup.sh)
+from the existing workspace:
+
+```sh
+bash scripts/cloud-setup.sh main --codex-plugin canon#main
+bash scripts/cloud-setup.sh v0.1.0 --host
+bash scripts/cloud-setup.sh <full-commit-sha> --agent --codex-plugin canon#main
+```
+
+The required first argument selects a canonical `tanaabased/tanaabot` branch, tag or full commit SHA.
+The wrapper fetches that commit, checks it out directly in the workspace, and runs its `tanaboot.sh`
+with the remaining arguments unchanged.
+A modified workspace, unexpected origin, missing reference or branch/tag collision fails without
+selecting another revision. Use a full SHA to resolve a name collision. Tanaboot itself has no
+revision flag and creates no second Tanaabot checkout.
+
+The wrapper is only for Cloud startup; the host and agent setup declarations invoke Tanaboot directly.
+In the Cloud setup script area, use the first command above when the workspace contains the wrapper.
+For a revision without it, download the wrapper before selecting that revision:
+
+```sh
+set -e
+wrapper="$(mktemp)"
+trap 'rm -f "$wrapper"' EXIT
+curl -fsSL https://raw.githubusercontent.com/tanaabased/tanaabot/main/scripts/cloud-setup.sh -o "$wrapper"
+bash "$wrapper" main --codex-plugin canon#main
+```
 
 Setup requires 64-bit Linux, a non-root user, a writable home, and Bash, Git, curl and jq.
 Guidance currently targets `~/.codex`; a different `CODEX_HOME` is rejected. Bootbox provisions its
 standard foundation, including 1Password CLI, plus the [Brewfile](./Brewfile). Authentication, secret
 retrieval, SSH and identity setup are deferred. Tanaboot downloads the current hosted
 `https://bootbox.tanaab.sh/bootbox.sh` on each setup or check. Node and Bun must satisfy the selected revision's
-runtime declarations; Tanaboot checks Bun against `.bun-version`.
+runtime declarations; Tanaboot checks Node and Bun against their declared major versions.
 
 The default mode installs host dependencies before agent guidance and the Tanaabot plugin.
 The standard command and declared agent setup also select Canon from `main` through
 `--codex-plugin canon#main`. Direct callers select additional plugins explicitly. Agent mode requires the
-host tools first. Sources remain under `${XDG_DATA_HOME:-$HOME/.local/share}/tanaabot`; keep them while
-using the installed guidance and plugins. Existing configuration conflicts fail without forced
+host tools first. Keep the workspace while using its installed guidance and plugin. Additional Git
+plugins use one directory per repository under `${XDG_DATA_HOME:-$HOME/.local/share}/tanaabot/sources`;
+an existing checkout at a different commit is a conflict, not an automatic update. Existing configuration conflicts fail without forced
 replacement. Preserve conflicting files or local edits, resolve the reported conflict, then retry.
 Do not remove a lock until you have confirmed that its setup or acquisition process has stopped.
 
 ```sh
-# Preview without downloads or changes; a reference remains unresolved offline
-./tanaboot.sh --ref main --dry-run
+# Preview the current checkout without downloads or changes
+./tanaboot.sh --dry-run
 
 # Install or check the current source checkout
 ./tanaboot.sh --host
@@ -43,11 +64,12 @@ Do not remove a lock until you have confirmed that its setup or acquisition proc
 ./tanaboot.sh --check
 ```
 
-`--check` downloads Bootbox for its checks but does not install. With `--ref`, it resolves names but requires the exact revision
-already present locally. It checks tool, guidance and enabled-plugin state. A successful check does
+`--check` downloads Bootbox for its checks but does not install. It checks tool, guidance and enabled-plugin state. A successful check does
 not establish that a fresh Cloud task will discover the setup. Include Git `--codex-plugin` selections
 to check their retained sources and installed/enabled state. npm selectors are install inputs;
 inspect those installations through Codex Tools or the native Codex CLI.
+When passed through the Cloud wrapper, `--check` and `--dry-run` apply to Tanaboot after workspace
+checkout; use Tanaboot directly for an offline preview without changing the workspace.
 
 ## Additional Codex plugins
 
@@ -65,17 +87,16 @@ it to Codex Tools. The checkout must already contain its installable plugin reso
 
 ## Options
 
-| Option               | Purpose                                                                 |
-| -------------------- | ----------------------------------------------------------------------- |
-| `--ref REF`          | Resolve and execute one canonical revision; omitted uses this checkout. |
-| `--codex-plugin SRC` | Install an additional Codex plugin; repeat for multiple sources.        |
-| `--host`             | Select host dependencies only.                                          |
-| `--agent`            | Select guidance, shell initialization and Codex plugins only.           |
-| `--check`            | Check setup and selected Git plugins without installing.                |
-| `--dry-run`          | Preview without network access or changes.                              |
-| `--debug`            | Enable wrapper diagnostics on stderr.                                   |
-| `--version`          | Print the running script version.                                       |
-| `-h`, `--help`       | Print usage and options.                                                |
+| Option               | Purpose                                                          |
+| -------------------- | ---------------------------------------------------------------- |
+| `--codex-plugin SRC` | Install an additional Codex plugin; repeat for multiple sources. |
+| `--host`             | Select host dependencies only.                                   |
+| `--agent`            | Select guidance, shell initialization and Codex plugins only.    |
+| `--check`            | Check setup and selected Git plugins without installing.         |
+| `--dry-run`          | Preview without network access or changes.                       |
+| `--debug`            | Enable wrapper diagnostics on stderr.                            |
+| `--version`          | Print the running script version.                                |
+| `-h`, `--help`       | Print usage and options.                                         |
 
 Choose at most one mode and one action. `TANABOOT_DEBUG` supplies the debug default, falling back
 to `DEBUG`, then `RUNNER_DEBUG`. `TANABOOT_CODEX_PLUGIN` supplies comma-separated plugin defaults;

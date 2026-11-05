@@ -76,10 +76,4 @@ export default defineConfig([
       'no-debugger': 'error',
     },
   },
-  {
-    files: ['test/**/*.{js,mjs,cjs}', '**/*.{spec,test}.{js,mjs,cjs}'],
-    languageOptions: {
-      globals: globals.mocha,
-    },
-  },
 ]);
