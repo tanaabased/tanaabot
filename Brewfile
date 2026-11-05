@@ -1,4 +1,4 @@
-# Initial CLI inventory only. Cloud provisioning and runtime selection remain unimplemented.
+# Linux Cloud tools.
 tap "oven-sh/bun", trusted: true
 
 brew "curl"

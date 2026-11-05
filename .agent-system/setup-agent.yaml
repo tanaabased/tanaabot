@@ -1,10 +1,9 @@
-# Scaffold: both commands fail explicitly until Cloud provisioning is implemented.
 steps:
   - id: cloud-agent
     runtimes: [codex]
     check:
       command: bash
-      args: [tanaboot.sh, --agent, --check]
+      args: [tanaboot.sh, --agent, --codex-plugin, canon#main, --check]
     apply:
       command: bash
-      args: [tanaboot.sh, --agent]
+      args: [tanaboot.sh, --agent, --codex-plugin, canon#main]

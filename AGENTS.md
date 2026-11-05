@@ -11,7 +11,7 @@ with normal sentence capitalization. Read the skill before writing; a requested 
 ## Implementation
 
 - Keep `tanaboot.sh` as the setup entrypoint, with host and agent modes. Delegate provisioning to
-  Bootbox and plugin installation to Codex Tools. Actual provisioning remains #5.
+  Bootbox and plugin installation to Codex Tools.
 - Follow Agent System's manifest and setup YAML formats. Its runtime is not required here.
 - Keep installed global guidance in `dotfiles/ai/.codex/AGENTS.md`, separate from contributor guidance.
 - Use [Tanaabot Skill Author](./skills/skill-author/SKILL.md) when changing skills. Keep shared
@@ -23,9 +23,8 @@ with normal sentence capitalization. Read the skill before writing; a requested 
 
 ## Validation
 
-Use the declared Bun version and `bun install --frozen-lockfile --ignore-scripts`. Run `bun run lint`,
-`bun run test` and `git diff --check`. Check changed local links, manifest paths and packed resources.
-Pending test placeholders establish scaffolding only.
+Use the declared Bun version and `bun install --frozen-lockfile --ignore-scripts`. Run `bun run lint`
+and `git diff --check`. Check changed local links, manifest paths and packed resources.
 
 Follow `examples/AGENTS.md` for repository Leia scenarios. Run scenarios in CI or a
 disposable Cloud test environment; developer-machine execution requires explicit authorization.

@@ -9,33 +9,30 @@ Tanaabot's Codex Cloud sources and their current status. See [Tanaboot](./TANABO
 | [Tanaabot Voice](./skills/voice/SKILL.md)               | Replies and documentation in tanaabot's voice | None                                                |
 | [Tanaabot Skill Author](./skills/skill-author/SKILL.md) | Create, maintain and validate tanaabot skills | Host-available `tanaab:tanaab-skill-author` and Bun |
 
-Skill Author customizes Canon's methods; installing tanaabot does not install Canon or Bun.
-Read selected skills and their required references through the executing host. Manual bootstrap
-also describes separately pinned shared sources. Missing required tools or references leave the
-dependent task incomplete.
+Skill Author customizes Canon's methods. The standard agent setup installs Canon from `main`
+through `--codex-plugin canon#main`. Missing required tools or references leave the dependent task incomplete.
 
 ## Dotpackages
 
-Packages use a home-relative layout. Only `ai` contains guidance; the other configuration files
-are inactive stubs. The Cloud target home and shell-loading behavior remain unverified.
+Packages use a home-relative layout. `ai` contains guidance and `shell` initializes Homebrew and Node for Bash.
+Git, GitHub and SSH configuration remain inactive stubs. Fresh-task Cloud discovery remains unverified.
 
-| Package | Source                                                        | Status                                                         |
-| ------- | ------------------------------------------------------------- | -------------------------------------------------------------- |
-| `ai`    | [Global guidance](./dotfiles/ai/.codex/AGENTS.md)             | Authored; not installed                                        |
-| `shell` | [Login profile](./dotfiles/shell/.profile)                    | PATH initialization stub                                       |
-| `git`   | [Git configuration](./dotfiles/git/.gitconfig)                | Identity and SSH signing stub                                  |
-| `gh`    | [GitHub CLI preferences](./dotfiles/gh/.config/gh/config.yml) | No account or authentication configured                        |
-| `ssh`   | [SSH configuration](./dotfiles/ssh/.ssh/config)               | Outbound authentication stub; inbound authorized keys deferred |
+| Package | Source                                                           | Status                                                         |
+| ------- | ---------------------------------------------------------------- | -------------------------------------------------------------- |
+| `ai`    | [Global guidance](./dotfiles/ai/.codex/AGENTS.md)                | Applied by agent setup                                         |
+| `shell` | [Shell initialization](./dotfiles/shell/.config/tanaabot/env.sh) | Homebrew and Node PATH; sourced by `.profile` and `.bashrc`    |
+| `git`   | [Git configuration](./dotfiles/git/.gitconfig)                   | Identity and SSH signing stub                                  |
+| `gh`    | [GitHub CLI preferences](./dotfiles/gh/.config/gh/config.yml)    | No account or authentication configured                        |
+| `ssh`   | [SSH configuration](./dotfiles/ssh/.ssh/config)                  | Outbound authentication stub; inbound authorized keys deferred |
 
 ## Dependencies
 
-| Source                                                              | Purpose                                       | Status                                          |
-| ------------------------------------------------------------------- | --------------------------------------------- | ----------------------------------------------- |
-| [Brewfile](./Brewfile)                                              | Git, GitHub CLI, curl, jq, Node, Bun and Stow | Declared; no Cloud installation tested          |
-| [Bootbox](https://github.com/tanaabased/bootbox)                    | Host provisioning and dotpackage application  | Planned delegation                              |
-| [Codex Tools](https://github.com/tanaabased/codex-tools)            | Plugin installation and cache maintenance     | Development dependency; Cloud use unverified    |
-| [Canon](https://github.com/tanaabased/canon)                        | Shared skill-authoring methods                | Source declared; not installed by this scaffold |
-| [Agent System](https://github.com/tanaabased/openclaw-agent-system) | Shared manifest and setup metadata format     | Format adopted; runtime not required            |
+| Source                                                   | Purpose                                      | Status                                         |
+| -------------------------------------------------------- | -------------------------------------------- | ---------------------------------------------- |
+| [Brewfile](./Brewfile)                                   | Linux Cloud CLI tools and runtimes           | Installation covered on disposable CI runners  |
+| [Bootbox](https://github.com/tanaabased/bootbox)         | Host provisioning and dotpackage application | Current hosted script downloaded at setup      |
+| [Codex Tools](https://github.com/tanaabased/codex-tools) | Plugin installation and cache maintenance    | Runtime dependency; installation covered in CI |
+| [Canon](https://github.com/tanaabased/canon)             | Shared skill-authoring methods               | Selected from main by agent setup              |
 
 ## Plugins
 
