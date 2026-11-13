@@ -11,8 +11,9 @@ not configure accounts, retrieve secrets or establish fresh-task Codex Cloud dis
 tanaboot.sh --host
 
 # should retain an existing login profile before agent setup
-test ! -e "$HOME/.bash_profile"
-cp bash-profile "$HOME/.bash_profile"
+printf '\n' >> "$HOME/.bash_profile"
+cat bash-profile >> "$HOME/.bash_profile"
+cp "$HOME/.bash_profile" "$TMPDIR/bash-profile-before-agent"
 
 # should install agent guidance and plugins
 set -o pipefail
@@ -27,6 +28,9 @@ grep -F 'done: agent apply complete.' "$TMPDIR/setup.log"
 
 # should satisfy agent readiness
 bash -lc 'bash "$TANABOOT_PACKAGE_ROOT/tanaboot.sh" --agent --check'
+
+# should preserve existing login profile contents when adding initialization
+head -c "$(wc -c < "$TMPDIR/bash-profile-before-agent")" "$HOME/.bash_profile" | cmp - "$TMPDIR/bash-profile-before-agent"
 
 # should initialize the published tools in a fresh interactive shell
 env -u BASH_ENV PATH=/usr/bin:/bin bash -ic 'set -e; command -v brew; command -v node; command -v bun'
