@@ -120,10 +120,7 @@ Allow GitHub source/raw/release downloads and the package hosts needed by Bootbo
 in the environment's network policy. Access failures must be resolved in the selected environment;
 Tanaboot does not select credentials or bypass its proxy.
 
-Set the environment's Start skill to [Tanaabot Startup Check](./skills/startup-check/SKILL.md)
-(`$tanaabot-startup-check`). After preparing and publishing the environment, start a fresh task from
-that saved configuration. Record the actual Tanaabot and Canon commits, command-launch mode, tool paths,
-loaded guidance, discoverable skills and a safe setup rerun there. Source tests and checks in an
-existing task do not establish this result.
-Saved Cloud configuration, publication and this fresh-task check remain operator-owned acceptance
-work for [#5](https://github.com/tanaabased/tanaabot/issues/5).
+Setup agents follow [Cloud environment onboarding](./AGENTS.md#cloud-environment-onboarding) for
+installation, startup verification and the evidence to report. After reviewing and publishing the
+environment, start a fresh task to verify the saved setup. This remains acceptance work for
+[#5](https://github.com/tanaabased/tanaabot/issues/5).

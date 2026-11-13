@@ -4,14 +4,16 @@ Tanaabot's Codex Cloud sources and their current status. See [Tanaboot](./TANABO
 
 ## Skills
 
-| Skill                                                     | Use                                              | Dependencies                                                       |
-| --------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------ |
-| [Tanaabot Voice](./skills/voice/SKILL.md)                 | Replies and documentation in tanaabot's voice    | None                                                               |
-| [Tanaabot Skill Author](./skills/skill-author/SKILL.md)   | Create, maintain and validate tanaabot skills    | Host-available `tanaab:tanaab-skill-author` and Bun                |
-| [Tanaabot Startup Check](./skills/startup-check/SKILL.md) | Verify saved tools, guidance and skill discovery | Installed Tanaboot workspace and network access for Bootbox checks |
+| Skill                                                   | Use                                           | Dependencies                                        |
+| ------------------------------------------------------- | --------------------------------------------- | --------------------------------------------------- |
+| [Tanaabot Voice](./skills/voice/SKILL.md)               | Replies and documentation in tanaabot's voice | None                                                |
+| [Tanaabot Skill Author](./skills/skill-author/SKILL.md) | Create, maintain and validate tanaabot skills | Host-available `tanaab:tanaab-skill-author` and Bun |
 
 Skill Author customizes Canon's methods. The standard agent setup installs Canon from `main`
 through `--codex-plugin canon#main`. Missing required tools or references leave the dependent task incomplete.
+
+The [repository startup check](https://github.com/tanaabased/tanaabot/tree/main/.agents/skills/tanaabot-startup-check)
+lives in `.agents/skills/` for Cloud onboarding and is excluded from the plugin.
 
 ## Dotpackages
 
@@ -37,9 +39,9 @@ Git, GitHub and SSH configuration remain inactive stubs. Fresh-task Cloud discov
 
 ## Plugins
 
-| Surface | Source                                         | Status                                 |
-| ------- | ---------------------------------------------- | -------------------------------------- |
-| Codex   | [Plugin manifest](./.codex-plugin/plugin.json) | Startup, voice and skill-author skills |
+| Surface | Source                                         | Status                        |
+| ------- | ---------------------------------------------- | ----------------------------- |
+| Codex   | [Plugin manifest](./.codex-plugin/plugin.json) | Voice and skill-author skills |
 
 The Codex plugin ships in `@tanaab/tanaabot`; installed-host behavior remains unverified.
 

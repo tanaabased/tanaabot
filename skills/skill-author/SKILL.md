@@ -68,11 +68,13 @@ remain read-only. A structural check does not prove that a future agent will fol
 
 1. Load the discovered Canon Skill Author and its applicable policies. Use its create, standardize,
    validate or optimize workflow; keep the shared method with its owner.
-2. Pass `--owner tanaab --namespace tanaabot --container codex-plugin` to Canon's scaffolder and
-   validator. Use unprefixed skill folders and `tanaabot-` machine names and prompts. For scaffolding,
-   also pass `--brand-color '#00ebfd'` and an explicit source homepage under
-   `https://github.com/tanaabased/tanaabot/tree/main/skills/`. Choose the type, category, display name,
-   emoji and description for the actual skill. Use normal sentence capitalization in prose.
+2. Pass `--owner tanaab --namespace tanaabot` to Canon's scaffolder and validator. For plugin skills
+   under `skills/`, pass `--container codex-plugin` and use unprefixed skill folders. For repository-only
+   skills under `.agents/skills/`, pass `--container standalone` and retain the `tanaabot-` folder
+   prefix. Keep `tanaabot-` machine names and prompts in both layouts. For scaffolding, also pass
+   `--brand-color '#00ebfd'` and an explicit source homepage matching the skill's repository path.
+   Choose the type, category, display name, emoji and description for the actual skill. Use normal
+   sentence capitalization in prose.
 3. Use regular-file copies of the plugin root's `assets/composer-icon.svg` and
    `assets/icon-large.png` in each skill's `assets/` directory. Set `icon_small` to
    `./assets/composer-icon.svg` and `icon_large` to `./assets/icon-large.png`. Keep the circle PNG
@@ -102,7 +104,8 @@ remain read-only. A structural check does not prove that a future agent will fol
 ## Validation
 
 Run the shared validator for each changed skill with the explicit tanaab owner, tanaabot namespace
-and plugin container. Review scope, reading triggers, names, prompts, homepages and icon resolution.
-Confirm the extracted package retains the resources without checkout dependencies or symlinks.
+and its selected container. Review scope, reading triggers, names, prompts, homepages and icon resolution.
+For plugin skills, confirm the extracted package retains the resources without checkout dependencies
+or symlinks. Keep repository-only skills outside the npm payload and plugin-managed paths.
 Report missing Canon tools and unrun native or instruction-following trials plainly; do not treat
 package validation as installation or behavioral proof.

@@ -1,6 +1,6 @@
 ---
 name: tanaabot-startup-check
-description: Verify the saved Tanaabot Cloud environment without changing it. Use as the Cloud Start skill or for a requested startup health check.
+description: Verify this repository's Tanaabot Cloud environment without changing it. Use during Cloud onboarding, as its Start skill or for a requested startup health check.
 license: MIT
 metadata:
   type: generic
@@ -11,20 +11,22 @@ metadata:
     - environment
   openclaw:
     emoji: '🩺'
-    homepage: https://github.com/tanaabased/tanaabot/tree/main/skills/startup-check
+    homepage: https://github.com/tanaabased/tanaabot/tree/main/.agents/skills/tanaabot-startup-check
 ---
 
 # Tanaabot Startup Check
 
 ## Overview
 
-Check the saved Cloud installation and this task's actual guidance and skill discovery. Verification
+This repository-only skill checks the saved Cloud installation and this task's actual guidance and
+skill discovery. It lives in `.agents/skills/` for repository discovery and is excluded from the
+plugin. Verification
 never provisions, upgrades, switches revisions, binds Agent System or activates schedules.
 
 ## Required Reading
 
-- **Always:** Read and apply [Tanaboot usage](../../TANABOOT.md#usage) for check behavior and limits.
-- **Before reporting:** Read and apply [Tanaabot Voice](../voice/SKILL.md).
+- **Always:** Read and apply [Tanaboot usage](../../../TANABOOT.md#usage) for check behavior and limits.
+- **Before reporting:** Read and apply [Tanaabot Voice](../../../skills/voice/SKILL.md).
 
 ## When to Use
 
@@ -52,9 +54,9 @@ separate operator-authorized scope. This skill inspects the saved installation o
    installed-file comparison proves installation only. If automatic loading cannot be established,
    report it as unverified; manually reading the file does not prove startup loaded it.
 4. Inspect the host's available skill catalog for Tanaabot and Canon skills. Confirm that
-   `tanaabot-startup-check`, `tanaabot-voice`, `tanaabot-skill-author` and `tanaab-skill-author` are
-   discoverable, allowing host-qualified plugin names. Open the catalog-provided Voice and Canon
-   Skill Author `SKILL.md` paths to verify access. Do not infer discovery from cache files or
+   the repository skill `tanaabot-startup-check` and installed plugin skills `tanaabot-voice`,
+   `tanaabot-skill-author` and `tanaab-skill-author` are discoverable, allowing host-qualified plugin
+   names. Open the catalog-provided Voice and Canon Skill Author `SKILL.md` paths to verify access. Do not infer discovery from cache files or
    installed/enabled plugin state, and do not install a missing skill.
 5. Report the revisions, tool paths and check result, loaded-guidance evidence, and skill-discovery
    result separately. Mark startup verified only when all are established in this task. On failure,
@@ -63,8 +65,8 @@ separate operator-authorized scope. This skill inspects the saved installation o
 
 ## Bundled Resources
 
-- [Tanaboot](../../tanaboot.sh): Shared host and agent readiness checks.
-- [Tanaabot Voice](../voice/SKILL.md): Courteous, concise reporting.
+- [Tanaboot](../../../tanaboot.sh): Shared host and agent readiness checks.
+- [Tanaabot Voice](../../../skills/voice/SKILL.md): Courteous, concise reporting.
 
 ## Validation
 

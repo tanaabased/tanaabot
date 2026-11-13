@@ -21,29 +21,29 @@ remains pending in [#5](https://github.com/tanaabased/tanaabot/issues/5).
 - [Tanaboot](./TANABOOT.md): The setup entrypoint, with host and agent modes.
 - [Dependencies](./INVENTORY.md#dependencies): The Brewfile and shared provisioning tools.
 - [Dotpackages](./INVENTORY.md#dotpackages): Global guidance and configuration stubs.
-- [Skills](./INVENTORY.md#skills): Startup verification, Tanaabot Voice and Skill Author.
+- [Skills](./INVENTORY.md#skills): Tanaabot Voice and Skill Author.
 - [Configuration files](./INVENTORY.md#configuration-files): Setup declarations and Codex plugin sources.
 - [Automations](./INVENTORY.md#automations): Current inventory; none declared yet.
 
 ## Install
 
-In the Tanaabot Cloud workspace, run the pilot install command as its non-root user:
+To run the installer yourself, use a Tanaabot source checkout on 64-bit Linux as its non-root user:
 
 ```sh
-bash scripts/cloud-setup.sh main --codex-plugin canon#main
+bash tanaboot.sh --codex-plugin canon#main
 ```
 
-This selects and reports the exact Tanaabot commit from `main`, then installs the tools, guidance,
-Tanaabot and Canon using the latest hosted Bootbox script and Codex Tools.
-Use [Tanaabot Startup Check](./skills/startup-check/SKILL.md) as the environment's Start skill
-(`$tanaabot-startup-check`). It verifies the saved installation and the fresh task's guidance and
-skill discovery without provisioning or updating it.
+This installs the current checkout's tools, guidance and Tanaabot plugin, plus Canon from `main`.
+See [Tanaboot](./TANABOOT.md) for prerequisites, previews and recovery.
 
-Environment configuration and publication require the operator's authorization. Publish the prepared
-environment and launch a fresh task to confirm startup; CI does not establish that result.
-See [Tanaboot](./TANABOOT.md) for prerequisites, alternate revisions, previews and recovery.
+To create a reusable Codex Cloud environment, select this repository at `main` and ask the setup
+agent to follow [Cloud environment onboarding](./AGENTS.md#cloud-environment-onboarding). Review the
+setup result, publish the environment and start a fresh task to verify it.
 
-## Development
+## Contributing
+
+The following commands prepare contributors to edit and validate the repository. Cloud runtime
+setup follows the onboarding instructions above.
 
 Use the runtimes declared in [`.bun-version`](./.bun-version) and [`.node-version`](./.node-version):
 
