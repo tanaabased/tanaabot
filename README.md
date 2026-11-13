@@ -6,35 +6,42 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/environment-Codex_Cloud-00c88a" alt="Environment: Codex Cloud" />
-  <a href="https://github.com/tanaabased/tanaabot/issues/5"><img src="https://img.shields.io/badge/status-scaffolding-00ebfd" alt="Status: scaffolding" /></a>
+  <a href="https://github.com/tanaabased/tanaabot/issues/5"><img src="https://img.shields.io/badge/status-Cloud_verification_pending-00ebfd" alt="Status: Cloud verification pending" /></a>
   <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-111827" alt="License: MIT" /></a>
 </p>
 
 tanaabot prepares a Codex Cloud environment with its tools, guidance and skills for managed and
 scheduled tasks. Its assistant has a courteous protocol-droid voice, with a little grandmotherly concern.
 
-Cloud provisioning is being developed in [#5](https://github.com/tanaabased/tanaabot/issues/5).
-The current scaffold previews setup; it does not yet install or check an environment.
+Tanaboot provisions its source checkout through Bootbox and Codex Tools. Fresh-task Cloud verification
+remains pending in [#5](https://github.com/tanaabased/tanaabot/issues/5).
 
 ## What ships
 
 - [Tanaboot](./TANABOOT.md): The setup entrypoint, with host and agent modes.
 - [Dependencies](./INVENTORY.md#dependencies): The Brewfile and shared provisioning tools.
 - [Dotpackages](./INVENTORY.md#dotpackages): Global guidance and configuration stubs.
-- [Skills](./INVENTORY.md#skills): Tanaabot Voice and Skill Author.
-- [Configuration files](./INVENTORY.md#configuration-files): Agent System metadata and Codex plugin sources.
+- [Skills](./INVENTORY.md#skills): Startup verification, Tanaabot Voice and Skill Author.
+- [Configuration files](./INVENTORY.md#configuration-files): Setup declarations and Codex plugin sources.
 - [Automations](./INVENTORY.md#automations): Current inventory; none declared yet.
 
-## Preview setup
+## Install
 
-From a source checkout:
+In the Tanaabot Cloud workspace, run the pilot install command as its non-root user:
 
 ```sh
-./tanaboot.sh --dry-run
+bash scripts/cloud-setup.sh main --codex-plugin canon#main
 ```
 
-Add `--host` or `--agent` to preview one group. See [Tanaboot](./TANABOOT.md) for the option reference
-and current limits.
+This selects and reports the exact Tanaabot commit from `main`, then installs the tools, guidance,
+Tanaabot and Canon using the latest hosted Bootbox script and Codex Tools.
+Use [Tanaabot Startup Check](./skills/startup-check/SKILL.md) as the environment's Start skill
+(`$tanaabot-startup-check`). It verifies the saved installation and the fresh task's guidance and
+skill discovery without provisioning or updating it.
+
+Environment configuration and publication require the operator's authorization. Publish the prepared
+environment and launch a fresh task to confirm startup; CI does not establish that result.
+See [Tanaboot](./TANABOOT.md) for prerequisites, alternate revisions, previews and recovery.
 
 ## Development
 
@@ -43,12 +50,10 @@ Use the runtimes declared in [`.bun-version`](./.bun-version) and [`.node-versio
 ```sh
 bun install --frozen-lockfile --ignore-scripts
 bun run lint
-bun run test
 ```
 
-Lint runs ESLint, Prettier and ShellCheck. Unit and component suites currently contain pending
-placeholders. The [Leia examples](https://github.com/tanaabased/tanaabot/tree/main/examples) exercise packaged Tanaboot previews in CI; actual
-Cloud provisioning remains pending.
+Lint runs ESLint, Prettier and ShellCheck. The [Leia examples](https://github.com/tanaabased/tanaabot/tree/main/examples) exercise the packaged CLI, revision selection, failure handling and Linux setup in CI; fresh-task
+Cloud verification remains pending.
 
 The [release workflow](https://github.com/tanaabased/tanaabot/blob/main/.github/workflows/release.yml) publishes independently to npm and the
 repository. Before the first release, configure npm trusted publishing and grant the repository
