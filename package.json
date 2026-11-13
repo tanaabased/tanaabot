@@ -22,7 +22,8 @@
     "format:check": "bun run --bun prettier . --check --ignore-unknown",
     "format:write": "bun run --bun prettier . --write --ignore-unknown",
     "lint:eslint": "bun run --bun eslint .",
-    "lint:shellcheck": "shellcheck tanaboot.sh scripts/cloud-setup.sh",
+    "lint:shellcheck": "shellcheck -x tanaboot.sh scripts/cloud-setup.sh test/homebrew.sh test/brew",
+    "test": "bash test/homebrew.sh",
     "leia": "bun ./node_modules/.bin/leia"
   },
   "devDependencies": {

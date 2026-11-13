@@ -39,7 +39,11 @@ bash "$wrapper" main --codex-plugin canon#main
 ```
 
 Setup requires 64-bit Linux, a non-root user, a writable home, and Bash, Git, curl and jq.
-Guidance currently targets `~/.codex`; a different `CODEX_HOME` is rejected. Bootbox provisions its
+Guidance currently targets `~/.codex`; a different `CODEX_HOME` is rejected. Host setup reuses Homebrew
+from PATH, `~/.linuxbrew` or `/home/linuxbrew/.linuxbrew`. If absent, it runs the official installer
+without sudo into `~/.linuxbrew`; the absolute prefix must be no longer than 26 bytes. Homebrew's
+[Linux build prerequisites](https://docs.brew.sh/Homebrew-on-Linux#requirements) must already exist.
+Bootbox then runs with `--no-sudo` and provisions its
 standard foundation, including 1Password CLI, plus the [Brewfile](./Brewfile). Authentication, secret
 retrieval, SSH and identity setup are deferred. Tanaboot downloads the current hosted
 `https://bootbox.tanaab.sh/bootbox.sh` on each setup or check. Node and Bun must satisfy the selected revision's
@@ -69,6 +73,7 @@ Homebrew, Node and Bun on the caller's effective PATH before any activation, the
 non-interactive, login and interactive Bash discovery for agent setup. Persistent PATH initialization
 lives in the shell dotpackage; setup appends its loader to the first readable Bash login file
 (`.bash_profile`, `.bash_login`, then `.profile`) and `.bashrc`, preserving their other contents.
+The loader discovers Homebrew on PATH, in `~/.linuxbrew` or at the standard Linux prefix.
 It does not configure other command launchers; verify the actual Cloud shell before adding wiring.
 
 A successful check establishes installed guidance and enabled-plugin state, not native skill discovery

@@ -1,0 +1,10 @@
+#!/bin/bash
+set -euo pipefail
+prefix="$(cd -- "$(dirname -- "$0")/.." && pwd -P)"
+# shellcheck disable=SC2016
+case "$*" in
+  --prefix) printf '%s\n' "$prefix" ;;
+  '--prefix node@26') printf '%s/opt/node@26\n' "$prefix" ;;
+  shellenv) printf 'export PATH=%q/bin:"$PATH"\n' "$prefix" ;;
+  *) exit 1 ;;
+esac

@@ -173,15 +173,16 @@ validate_plugins() {
 
 plan_host() {
   printf '\n%shost%s\n' "${tty_tp}" "${tty_reset}"
+  plan_action ensure "Existing Homebrew or a no-sudo installation at ${HOME}/.linuxbrew"
   plan_action provision 'Bootbox dependencies and Brewfile'
-  plan_command bootbox.sh --brewfile "${REPO_DIR}/Brewfile"
+  plan_command bootbox.sh --no-sudo --brewfile "${REPO_DIR}/Brewfile"
   plan_action configure 'Homebrew and Node PATH for this setup'
 }
 
 plan_agent() {
   printf '\n%sagent%s\n' "${tty_tp}" "${tty_reset}"
   plan_action stow 'Home-relative dotpackages through Bootbox'
-  plan_command bootbox.sh --dotpkg "${REPO_DIR}/dotfiles/ai" --dotpkg "${REPO_DIR}/dotfiles/shell"
+  plan_command bootbox.sh --no-sudo --dotpkg "${REPO_DIR}/dotfiles/ai" --dotpkg "${REPO_DIR}/dotfiles/shell"
   plan_action install "Tanaabot plugin from ${REPO_DIR} through Codex Tools"
   local selection
   for selection in ${PLUGIN_SOURCES[@]+"${PLUGIN_SOURCES[@]}"}; do plan_action install "Codex plugin: ${selection}"; done
@@ -271,21 +272,52 @@ prepare_bootbox() {
 }
 
 run_bootbox() (
-  local variable script="${BOOTBOX_SCRIPT}"
+  local variable prefix script="${BOOTBOX_SCRIPT}"
   # Inherited profile inputs must not add secrets, SSH keys or overwrite behavior.
   for variable in ${!BOOTBOX_@} ${!TANAAB_@} OP_SERVICE_ACCOUNT_TOKEN INTERACTIVE; do
     unset "${variable}"
   done
+  prefix="$(brew --prefix)" || fail 'Cannot determine the selected Homebrew prefix.'
   cd -- "$(dirname -- "${script}")"
-  NONINTERACTIVE=1 BOOTBOX_QUIET=1 BOOTBOX_DEBUG="${DEBUG}" bash "${script}" "$@"
+  HOMEBREW_PREFIX="${prefix}" HOMEBREW_NO_SUDO=1 NONINTERACTIVE=1 BOOTBOX_QUIET=1 BOOTBOX_DEBUG="${DEBUG}" bash "${script}" --no-sudo "$@"
 )
 
-activate_tools() {
-  local node_prefix brew_prefix
-  if ! command -v brew >/dev/null 2>&1 && [[ -x /home/linuxbrew/.linuxbrew/bin/brew ]]; then
-    export PATH="/home/linuxbrew/.linuxbrew/bin:${PATH}"
+find_homebrew() {
+  local candidate
+  if command -v brew >/dev/null 2>&1; then
+    command -v brew
+    return
   fi
-  require_tool brew
+  for candidate in "${HOME}/.linuxbrew/bin/brew" /home/linuxbrew/.linuxbrew/bin/brew; do
+    if [[ -x "${candidate}" ]]; then
+      printf '%s\n' "${candidate}"
+      return
+    fi
+  done
+  return 1
+}
+
+ensure_homebrew() {
+  local brew_path installer="${boot_tmpdir}/homebrew-install.sh"
+  if ! brew_path="$(find_homebrew)"; then
+    note "Installing Homebrew at ${HOME}/.linuxbrew without sudo."
+    curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh -o "${installer}" || fail 'Homebrew installer download failed. Check network access and retry.'
+    (
+      unset INTERACTIVE
+      HOMEBREW_NO_SUDO=1 NONINTERACTIVE=1 bash "${installer}" --path "${HOME}/.linuxbrew"
+    ) || fail 'Homebrew installation failed. Inspect its prefix, system prerequisite and network diagnostics before retrying.'
+    brew_path="${HOME}/.linuxbrew/bin/brew"
+    [[ -x "${brew_path}" ]] || fail 'Homebrew installation finished without the expected brew executable.'
+  fi
+  PATH="$(dirname -- "${brew_path}"):${PATH}"
+  export PATH
+}
+
+activate_tools() {
+  local node_prefix brew_prefix brew_path
+  brew_path="$(find_homebrew)" || fail 'brew is required. Run host setup first.'
+  PATH="$(dirname -- "${brew_path}"):${PATH}"
+  export PATH
   node_prefix="$(brew --prefix node@26)"
   brew_prefix="$(brew --prefix)"
   PATH="${node_prefix}/bin:${brew_prefix}/bin:${PATH}"
@@ -448,7 +480,10 @@ main() (
   fi
   prepare_bootbox
   if [[ "${TARGET}" == bootstrap || "${TARGET}" == host ]]; then
-    if [[ "${ACTION}" == apply ]]; then run_bootbox --brewfile "${REPO_DIR}/Brewfile"; fi
+    if [[ "${ACTION}" == apply ]]; then
+      ensure_homebrew
+      run_bootbox --brewfile "${REPO_DIR}/Brewfile"
+    fi
   fi
   if [[ "${ACTION}" == apply ]]; then activate_tools; fi
   check_host
