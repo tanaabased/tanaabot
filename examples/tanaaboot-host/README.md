@@ -18,7 +18,7 @@ tanaboot.sh --host 2>&1 | tee "$TMPDIR/setup.log"
 grep -F 'done: host apply complete.' "$TMPDIR/setup.log"
 
 # should satisfy host readiness
-tanaboot.sh --host --check
+PATH="$(brew --prefix node@26)/bin:$PATH" tanaboot.sh --host --check
 brew bundle check --file "$TANABOOT_PACKAGE_ROOT/Brewfile" --no-upgrade
 
 # should leave agent guidance and plugin configuration absent

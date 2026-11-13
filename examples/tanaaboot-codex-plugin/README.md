@@ -30,7 +30,7 @@ case "$CODEX_PLUGIN_SOURCE" in
     sha=$(git -C "$source" rev-parse HEAD)
     test "$(git -C "$source" config --get remote.origin.url)" = https://github.com/tanaabased/canon.git
     grep -F "Plugin source: canon#main ($sha)" "$TMPDIR/setup.log"
-    tanaboot.sh --agent --codex-plugin "canon#$sha" --check
+    bash -lc 'bash "$TANABOOT_PACKAGE_ROOT/tanaboot.sh" --agent --codex-plugin "canon#$1" --check' _ "$sha"
     ;;
   npm:@tanaab/canon@0.13.0)
     jq -e '.plugins | any(.name == "tanaab" and .source.source == "npm" and .source.package == "@tanaab/canon" and .source.version == "0.13.0")' "$HOME/.agents/plugins/marketplace.json"
@@ -38,6 +38,13 @@ case "$CODEX_PLUGIN_SOURCE" in
     ;;
   *) exit 1 ;;
 esac
+
+# should check retained canon without consulting a newer or unavailable upstream revision
+if test "$CODEX_PLUGIN_SOURCE" = canon#main; then
+  git() { case "$1" in ls-remote | fetch) return 99;; *) command git "$@";; esac; }
+  export -f git
+  bash -lc 'bash "$TANABOOT_PACKAGE_ROOT/tanaboot.sh" --agent --codex-plugin canon#main --check'
+fi
 
 # should install canon skill resources in the native cache
 version=$(jq -r '.installed[] | select(.pluginId == "tanaab@personal") | .version' "$TMPDIR/plugins.json")

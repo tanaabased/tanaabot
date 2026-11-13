@@ -4,10 +4,11 @@ Tanaabot's Codex Cloud sources and their current status. See [Tanaboot](./TANABO
 
 ## Skills
 
-| Skill                                                   | Use                                           | Dependencies                                        |
-| ------------------------------------------------------- | --------------------------------------------- | --------------------------------------------------- |
-| [Tanaabot Voice](./skills/voice/SKILL.md)               | Replies and documentation in tanaabot's voice | None                                                |
-| [Tanaabot Skill Author](./skills/skill-author/SKILL.md) | Create, maintain and validate tanaabot skills | Host-available `tanaab:tanaab-skill-author` and Bun |
+| Skill                                                     | Use                                              | Dependencies                                                       |
+| --------------------------------------------------------- | ------------------------------------------------ | ------------------------------------------------------------------ |
+| [Tanaabot Voice](./skills/voice/SKILL.md)                 | Replies and documentation in tanaabot's voice    | None                                                               |
+| [Tanaabot Skill Author](./skills/skill-author/SKILL.md)   | Create, maintain and validate tanaabot skills    | Host-available `tanaab:tanaab-skill-author` and Bun                |
+| [Tanaabot Startup Check](./skills/startup-check/SKILL.md) | Verify saved tools, guidance and skill discovery | Installed Tanaboot workspace and network access for Bootbox checks |
 
 Skill Author customizes Canon's methods. The standard agent setup installs Canon from `main`
 through `--codex-plugin canon#main`. Missing required tools or references leave the dependent task incomplete.
@@ -17,13 +18,13 @@ through `--codex-plugin canon#main`. Missing required tools or references leave 
 Packages use a home-relative layout. `ai` contains guidance and `shell` initializes Homebrew and Node for Bash.
 Git, GitHub and SSH configuration remain inactive stubs. Fresh-task Cloud discovery remains unverified.
 
-| Package | Source                                                           | Status                                                         |
-| ------- | ---------------------------------------------------------------- | -------------------------------------------------------------- |
-| `ai`    | [Global guidance](./dotfiles/ai/.codex/AGENTS.md)                | Applied by agent setup                                         |
-| `shell` | [Shell initialization](./dotfiles/shell/.config/tanaabot/env.sh) | Homebrew and Node PATH; sourced by `.profile` and `.bashrc`    |
-| `git`   | [Git configuration](./dotfiles/git/.gitconfig)                   | Identity and SSH signing stub                                  |
-| `gh`    | [GitHub CLI preferences](./dotfiles/gh/.config/gh/config.yml)    | No account or authentication configured                        |
-| `ssh`   | [SSH configuration](./dotfiles/ssh/.ssh/config)                  | Outbound authentication stub; inbound authorized keys deferred |
+| Package | Source                                                           | Status                                                                      |
+| ------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| `ai`    | [Global guidance](./dotfiles/ai/.codex/AGENTS.md)                | Applied by agent setup                                                      |
+| `shell` | [Shell initialization](./dotfiles/shell/.config/tanaabot/env.sh) | Homebrew and Node PATH; sourced by the active Bash login file and `.bashrc` |
+| `git`   | [Git configuration](./dotfiles/git/.gitconfig)                   | Identity and SSH signing stub                                               |
+| `gh`    | [GitHub CLI preferences](./dotfiles/gh/.config/gh/config.yml)    | No account or authentication configured                                     |
+| `ssh`   | [SSH configuration](./dotfiles/ssh/.ssh/config)                  | Outbound authentication stub; inbound authorized keys deferred              |
 
 ## Dependencies
 
@@ -36,9 +37,9 @@ Git, GitHub and SSH configuration remain inactive stubs. Fresh-task Cloud discov
 
 ## Plugins
 
-| Surface | Source                                         | Status                        |
-| ------- | ---------------------------------------------- | ----------------------------- |
-| Codex   | [Plugin manifest](./.codex-plugin/plugin.json) | Voice and skill-author skills |
+| Surface | Source                                         | Status                                 |
+| ------- | ---------------------------------------------- | -------------------------------------- |
+| Codex   | [Plugin manifest](./.codex-plugin/plugin.json) | Startup, voice and skill-author skills |
 
 The Codex plugin ships in `@tanaab/tanaabot`; installed-host behavior remains unverified.
 

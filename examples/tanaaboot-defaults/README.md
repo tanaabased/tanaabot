@@ -44,7 +44,7 @@ cmp -s "$HOME/.codex/AGENTS.md" "$TANABOOT_PACKAGE_ROOT/dotfiles/ai/.codex/AGENT
 test ! -e "$TANABOOT_PACKAGE_ROOT/dotfiles/ai/.codex/config.toml"
 
 # should verify the enabled tanaabot and canon plugins
-tanaboot.sh --codex-plugin canon#main --check
+bash -lc 'bash "$TANABOOT_PACKAGE_ROOT/tanaboot.sh" --codex-plugin canon#main --check'
 
 # should declare canon source installation and readiness through agent yaml
 bun - "$TANABOOT_PACKAGE_ROOT" <<'JS'

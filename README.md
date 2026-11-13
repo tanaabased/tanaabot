@@ -21,25 +21,27 @@ remains pending in [#5](https://github.com/tanaabased/tanaabot/issues/5).
 - [Tanaboot](./TANABOOT.md): The setup entrypoint, with host and agent modes.
 - [Dependencies](./INVENTORY.md#dependencies): The Brewfile and shared provisioning tools.
 - [Dotpackages](./INVENTORY.md#dotpackages): Global guidance and configuration stubs.
-- [Skills](./INVENTORY.md#skills): Tanaabot Voice and Skill Author.
+- [Skills](./INVENTORY.md#skills): Startup verification, Tanaabot Voice and Skill Author.
 - [Configuration files](./INVENTORY.md#configuration-files): Setup declarations and Codex plugin sources.
 - [Automations](./INVENTORY.md#automations): Current inventory; none declared yet.
 
 ## Install
 
-From a source checkout in a Linux Cloud setup, as its non-root user:
+In the Tanaabot Cloud workspace, run the pilot install command as its non-root user:
 
 ```sh
-./tanaboot.sh --codex-plugin canon#main
+bash scripts/cloud-setup.sh main --codex-plugin canon#main
 ```
 
-For Codex Cloud, select the workspace revision and run setup with
-`bash scripts/cloud-setup.sh main --codex-plugin canon#main`. The first argument accepts a branch,
-tag or full commit SHA; remaining arguments pass to that revision's Tanaboot.
-Use `./tanaboot.sh --dry-run` to preview the current checkout without changes.
-The standard agent setup selects Canon from `main`. Use repeatable `--codex-plugin` options to select
-published or source plugins.
-See [Tanaboot](./TANABOOT.md) for prerequisites, setup modes and recovery.
+This selects and reports the exact Tanaabot commit from `main`, then installs the tools, guidance,
+Tanaabot and Canon using the latest hosted Bootbox script and Codex Tools.
+Use [Tanaabot Startup Check](./skills/startup-check/SKILL.md) as the environment's Start skill
+(`$tanaabot-startup-check`). It verifies the saved installation and the fresh task's guidance and
+skill discovery without provisioning or updating it.
+
+Environment configuration and publication require the operator's authorization. Publish the prepared
+environment and launch a fresh task to confirm startup; CI does not establish that result.
+See [Tanaboot](./TANABOOT.md) for prerequisites, alternate revisions, previews and recovery.
 
 ## Development
 

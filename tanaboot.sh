@@ -229,12 +229,6 @@ acquire_source() (
   local project="$1" url="$2" sha="$3" dir parent
   acquisition_stage=""
   dir="${DATA_DIR}/sources/${project}"
-  if [[ "${ACTION}" == check ]]; then
-    [[ -d "${dir}" ]] || fail 'Selected source is missing. Run setup to acquire the requested revision.'
-    verify_source "${dir}" "${url}" "${sha}"
-    printf '%s\n' "${dir}"
-    return
-  fi
   parent="$(dirname -- "${dir}")"
   mkdir -p -- "${parent}" || fail 'Cannot create the managed source directory.'
   acquisition_lock="${dir}.lock"
@@ -298,17 +292,46 @@ activate_tools() {
   export PATH
 }
 
-check_host() {
-  local node_version node_major
-  activate_tools
-  run_bootbox --check-core || fail 'Bootbox core dependencies are incomplete. Run host setup.'
-  HOMEBREW_NO_AUTO_UPDATE=1 brew bundle check --file "${REPO_DIR}/Brewfile" --no-upgrade >/dev/null || fail 'Host dependencies are incomplete. Run host setup.'
-  require_tool node
-  require_tool bun
+check_tools() {
+  local node_version node_major tool
+  for tool in brew node bun; do
+    require_tool "${tool}"
+    note "Tool: ${tool} ($(command -v "${tool}"))"
+  done
   node_major="$(cut -d . -f 1 "${REPO_DIR}/.node-version")"
   node_version="$(node --version)"
   [[ "${node_version}" == "v${node_major}."* ]] || fail 'Node does not match the major version in .node-version. Run host setup and check its PATH.'
   [[ "$(bun --version)" == "$(cut -d . -f 1 "${REPO_DIR}/.bun-version")."* ]] || fail 'Bun does not match the major version in .bun-version. Select that runtime in the Cloud setup and retry.'
+  note "Runtimes: ${node_version}, Bun $(bun --version)"
+}
+
+check_host() {
+  check_tools
+  run_bootbox --check-core || fail 'Bootbox core check failed. Inspect its diagnostics and network access; verification did not complete.'
+  HOMEBREW_NO_AUTO_UPDATE=1 brew bundle check --file "${REPO_DIR}/Brewfile" --no-upgrade >/dev/null || fail 'Host dependency check failed. Inspect Homebrew diagnostics before running host setup.'
+}
+
+shell_startup_files() {
+  local file
+  for file in .bash_profile .bash_login .profile; do
+    if [[ -r "${HOME}/${file}" ]]; then
+      printf '%s\n' "${file}" .bashrc
+      return
+    fi
+  done
+  printf '%s\n' .profile .bashrc
+}
+
+check_shells() {
+  local mode
+  note 'Shell: inherited non-interactive Bash'
+  bash -c 'source "$1"; check_tools' _ "${REPO_DIR}/tanaboot.sh" || fail 'Non-interactive Bash cannot discover the declared tools. Check the Cloud command launcher environment.'
+  for mode in -lc -ic; do
+    note "Shell: fresh Bash ${mode} from system PATH"
+    # Remove inherited tool paths so startup files must supply them.
+    # shellcheck disable=SC2016
+    env -u BASH_ENV PATH=/usr/bin:/bin bash "${mode}" 'source "$1"; check_tools' _ "${REPO_DIR}/tanaboot.sh" || fail 'Fresh Bash cannot discover the declared tools. Check the active login file and .bashrc initialization.'
+  done
 }
 
 codex_tools() (
@@ -321,6 +344,7 @@ check_plugin() {
   local output
   output="$(codex_tools status --repo-root "$1" --json)" || fail 'Plugin readiness failed. Run agent setup and inspect Codex Tools diagnostics.'
   jq -e '.ok == true and .inspection.installed == true and .inspection.enabled == true' <<< "${output}" >/dev/null || fail 'Plugin is not installed and enabled. Resolve its Codex state before retrying.'
+  jq -r '.inspection | "note: Installed plugin: \(.name) \(.version) (\(.cachePath)); enabled=\(.enabled)"' <<< "${output}"
 }
 
 select_plugin_source() {
@@ -330,9 +354,20 @@ select_plugin_source() {
     repo="${selection%%#*}"
     ref=main
     if [[ "${selection}" == *#* ]]; then ref="${selection#*#}"; fi
-    sha="$(resolve_ref "https://github.com/tanaabased/${repo}.git" "${ref}")"
-    note "Plugin source: ${repo}#${ref} (${sha})"
-    PLUGIN_SOURCE="$(acquire_source "${repo}" "https://github.com/tanaabased/${repo}.git" "${sha}")"
+    if [[ "${ACTION}" == check ]]; then
+      PLUGIN_SOURCE="${DATA_DIR}/sources/${repo}"
+      [[ -d "${PLUGIN_SOURCE}" ]] || fail 'Selected source is missing. Run setup to acquire the requested revision.'
+      sha="$(git -C "${PLUGIN_SOURCE}" rev-parse HEAD)" || fail 'Cannot read the installed plugin source revision.'
+      if [[ "${ref}" =~ ^[a-fA-F0-9]{40}$ ]]; then
+        [[ "${sha}" == "$(printf '%s' "${ref}" | tr '[:upper:]' '[:lower:]')" ]] || fail 'Installed plugin source does not match the requested commit.'
+      fi
+      verify_source "${PLUGIN_SOURCE}" "https://github.com/tanaabased/${repo}.git" "${sha}"
+      note "Installed plugin source: ${repo} (${sha})"
+    else
+      sha="$(resolve_ref "https://github.com/tanaabased/${repo}.git" "${ref}")"
+      note "Plugin source: ${repo}#${ref} (${sha})"
+      PLUGIN_SOURCE="$(acquire_source "${repo}" "https://github.com/tanaabased/${repo}.git" "${sha}")"
+    fi
   fi
 }
 
@@ -350,9 +385,12 @@ check_agent() {
   [[ -x "${REPO_DIR}/node_modules/.bin/codex-tools" ]] || fail 'Codex Tools is missing. Run agent setup.'
   cmp -s "${REPO_DIR}/dotfiles/ai/.codex/AGENTS.md" "${HOME}/.codex/AGENTS.md" || fail 'Global guidance is missing or differs. Run agent setup; preserve any conflicting guidance.'
   cmp -s "${REPO_DIR}/dotfiles/shell/.config/tanaabot/env.sh" "${HOME}/.config/tanaabot/env.sh" || fail 'Shell initialization is missing or differs. Run agent setup.'
-  for file in .profile .bashrc; do
+  while IFS= read -r file; do
     grep -Fxq "${SHELL_INIT_LINE}" "${HOME}/${file}" || fail 'Shell startup is incomplete. Run agent setup.'
-  done
+  done < <(shell_startup_files)
+  check_shells
+  note "Guidance installed: ${HOME}/.codex/AGENTS.md (loaded guidance must be confirmed by the task)"
+  note "Tanaabot source revision: $(git -C "${REPO_DIR}" rev-parse HEAD 2>/dev/null || printf '%s' "${SCRIPT_VERSION}")"
   check_plugin "${REPO_DIR}"
   if [[ "${ACTION}" == check ]]; then
     local selection
@@ -366,9 +404,9 @@ check_agent() {
 apply_agent() {
   local file
   [[ -f "${REPO_DIR}/bun.lock" ]] || fail 'The selected revision is missing bun.lock.'
-  for file in .profile .bashrc; do
+  while IFS= read -r file; do
     [[ ! -L "${HOME}/${file}" && ( ! -e "${HOME}/${file}" || ( -f "${HOME}/${file}" && -w "${HOME}/${file}" ) ) ]] || fail 'Shell startup conflicts with an existing path. Preserve it and resolve the conflict before retrying.'
-  done
+  done < <(shell_startup_files)
   for file in .codex .config; do
     [[ ! -L "${HOME}/${file}" && ( ! -e "${HOME}/${file}" || ( -d "${HOME}/${file}" && -w "${HOME}/${file}" ) ) ]] || fail 'Shared configuration directories must be writable real directories. Preserve the conflicting path before retrying.'
   done
@@ -377,11 +415,11 @@ apply_agent() {
   # Prevent Stow directory folding from sending private runtime writes into Git sources.
   mkdir -p -- "${HOME}/.codex" "${HOME}/.config"
   run_bootbox --dotpkg "${REPO_DIR}/dotfiles/ai" --dotpkg "${REPO_DIR}/dotfiles/shell"
-  for file in .profile .bashrc; do
+  while IFS= read -r file; do
     if ! grep -Fxq "${SHELL_INIT_LINE}" "${HOME}/${file}" 2>/dev/null; then
       printf '\n%s\n' "${SHELL_INIT_LINE}" >> "${HOME}/${file}"
     fi
-  done
+  done < <(shell_startup_files)
   (cd -- "${REPO_DIR}" && bun install --production --frozen-lockfile --ignore-scripts)
   codex_tools install "${REPO_DIR}"
   install_plugins
@@ -411,10 +449,9 @@ main() (
   prepare_bootbox
   if [[ "${TARGET}" == bootstrap || "${TARGET}" == host ]]; then
     if [[ "${ACTION}" == apply ]]; then run_bootbox --brewfile "${REPO_DIR}/Brewfile"; fi
-    check_host
-  else
-    check_host
   fi
+  if [[ "${ACTION}" == apply ]]; then activate_tools; fi
+  check_host
   if [[ "${TARGET}" == bootstrap || "${TARGET}" == agent ]]; then
     if [[ "${ACTION}" == apply ]]; then apply_agent; else check_agent; fi
   fi

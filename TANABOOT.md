@@ -64,9 +64,17 @@ Do not remove a lock until you have confirmed that its setup or acquisition proc
 ./tanaboot.sh --check
 ```
 
-`--check` downloads Bootbox for its checks but does not install. It checks tool, guidance and enabled-plugin state. A successful check does
-not establish that a fresh Cloud task will discover the setup. Include Git `--codex-plugin` selections
-to check their retained sources and installed/enabled state. npm selectors are install inputs;
+`--check` downloads the latest hosted Bootbox for its core check but does not install. It checks
+Homebrew, Node and Bun on the caller's effective PATH before any activation, then checks fresh
+non-interactive, login and interactive Bash discovery for agent setup. Persistent PATH initialization
+lives in the shell dotpackage; setup appends its loader to the first readable Bash login file
+(`.bash_profile`, `.bash_login`, then `.profile`) and `.bashrc`, preserving their other contents.
+It does not configure other command launchers; verify the actual Cloud shell before adding wiring.
+
+A successful check establishes installed guidance and enabled-plugin state, not native skill discovery
+or automatically loaded guidance. Include Git `--codex-plugin` selections to inspect their retained
+sources and installed/enabled state. Symbolic refs such as `canon#main` check the installed commit
+without resolving today's upstream ref; explicit full SHAs must match. npm selectors are install inputs;
 inspect those installations through Codex Tools or the native Codex CLI.
 When passed through the Cloud wrapper, `--check` and `--dry-run` apply to Tanaboot after workspace
 checkout; use Tanaboot directly for an offline preview without changing the workspace.
@@ -112,8 +120,10 @@ Allow GitHub source/raw/release downloads and the package hosts needed by Bootbo
 in the environment's network policy. Access failures must be resolved in the selected environment;
 Tanaboot does not select credentials or bypass its proxy.
 
-After preparing and publishing the environment, start a fresh task from that saved configuration.
-Record the actual tanaabot commit and verify tool paths, loaded guidance, discoverable skills and a
-safe setup rerun there. Source tests and checks in an existing task do not establish this result.
+Set the environment's Start skill to [Tanaabot Startup Check](./skills/startup-check/SKILL.md)
+(`$tanaabot-startup-check`). After preparing and publishing the environment, start a fresh task from
+that saved configuration. Record the actual Tanaabot and Canon commits, command-launch mode, tool paths,
+loaded guidance, discoverable skills and a safe setup rerun there. Source tests and checks in an
+existing task do not establish this result.
 Saved Cloud configuration, publication and this fresh-task check remain operator-owned acceptance
 work for [#5](https://github.com/tanaabased/tanaabot/issues/5).
