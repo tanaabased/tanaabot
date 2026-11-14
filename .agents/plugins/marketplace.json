@@ -1,0 +1,13 @@
+{
+  "name": "tanaabot",
+  "plugins": [
+    {
+      "name": "tanaabot",
+      "source": { "source": "local", "path": "./" }
+    },
+    {
+      "name": "tanaab",
+      "source": { "source": "url", "url": "https://github.com/tanaabased/canon.git", "ref": "main" }
+    }
+  ]
+}

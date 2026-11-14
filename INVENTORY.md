@@ -9,11 +9,11 @@ Tanaabot's Codex Cloud sources and their current status. See [Tanaboot](./TANABO
 | [Tanaabot Voice](./skills/voice/SKILL.md)               | Replies and documentation in tanaabot's voice | None                                                |
 | [Tanaabot Skill Author](./skills/skill-author/SKILL.md) | Create, maintain and validate tanaabot skills | Host-available `tanaab:tanaab-skill-author` and Bun |
 
-Skill Author customizes Canon's methods. The standard agent setup installs Canon from `main`
-through `--codex-plugin canon#main`. Missing required tools or references leave the dependent task incomplete.
+| [Tanaabot Startup Check](./skills/startup-check/SKILL.md) | Verify a prepared Cloud environment without repairs | Prepared Tanaabot source and task catalog |
 
-The [repository startup check](https://github.com/tanaabased/tanaabot/tree/main/.agents/skills/tanaabot-startup-check)
-lives in `.agents/skills/` for Cloud onboarding and is excluded from the plugin.
+Skill Author customizes Canon's methods. Install Canon through the
+[workspace marketplace](./TANABOOT.md#workspace-plugins). Missing required tools or references leave
+the dependent task incomplete.
 
 ## Dotpackages
 
@@ -30,18 +30,18 @@ Git, GitHub and SSH configuration remain inactive stubs. Fresh-task Cloud discov
 
 ## Dependencies
 
-| Source                                                   | Purpose                                      | Status                                         |
-| -------------------------------------------------------- | -------------------------------------------- | ---------------------------------------------- |
-| [Brewfile](./Brewfile)                                   | Linux Cloud CLI tools and runtimes           | Installation covered on disposable CI runners  |
-| [Bootbox](https://github.com/tanaabased/bootbox)         | Host provisioning and dotpackage application | Current hosted script downloaded at setup      |
-| [Codex Tools](https://github.com/tanaabased/codex-tools) | Plugin installation and cache maintenance    | Runtime dependency; installation covered in CI |
-| [Canon](https://github.com/tanaabased/canon)             | Shared skill-authoring methods               | Selected from main by agent setup              |
+| Source                                                   | Purpose                                      | Status                                          |
+| -------------------------------------------------------- | -------------------------------------------- | ----------------------------------------------- |
+| [Brewfile](./Brewfile)                                   | Linux Cloud CLI tools and runtimes           | Installation covered on disposable CI runners   |
+| [Bootbox](https://github.com/tanaabased/bootbox)         | Host provisioning and dotpackage application | Current hosted script downloaded at setup       |
+| [Codex Tools](https://github.com/tanaabased/codex-tools) | Contributor plugin cache tooling             | Development dependency; not used by Cloud setup |
+| [Canon](https://github.com/tanaabased/canon)             | Shared skill-authoring methods               | Workspace marketplace selects main              |
 
 ## Plugins
 
-| Surface | Source                                         | Status                        |
-| ------- | ---------------------------------------------- | ----------------------------- |
-| Codex   | [Plugin manifest](./.codex-plugin/plugin.json) | Voice and skill-author skills |
+| Surface | Source                                         | Status                                       |
+| ------- | ---------------------------------------------- | -------------------------------------------- |
+| Codex   | [Plugin manifest](./.codex-plugin/plugin.json) | Voice, skill-author and startup-check skills |
 
 The Codex plugin ships in `@tanaab/tanaabot`; installed-host behavior remains unverified.
 

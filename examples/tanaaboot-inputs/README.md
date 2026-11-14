@@ -19,13 +19,12 @@ tanaboot.sh --help | grep -F 'Usage: tanaboot.sh [TANABOOT_*...] [options]'
 
 # should document public options
 set -o pipefail
-for option in --codex-plugin --host --agent --check --dry-run --debug --version --help; do
+for option in --host --agent --check --dry-run --debug --version --help; do
   tanaboot.sh --help | grep -F -- "$option"
 done
 
 # should document the wrapper debug environment variable
 tanaboot.sh --help | grep -F 'TANABOOT_DEBUG'
-tanaboot.sh --help | grep -F 'TANABOOT_CODEX_PLUGIN'
 
 # should keep internal diagnostic controls out of help
 ! tanaboot.sh --help | grep -F -- '--debug='
@@ -94,27 +93,11 @@ printf '%s\n' "$output" | grep -F 'Usage:'
 printf '%s\n' "$output" | grep -F 'Unknown option'
 ! printf '%s\n' "$output" | grep -F 'private-example'
 
-# should select no additional plugins by default
-set -o pipefail
-tanaboot.sh --help | grep -F -- '--codex-plugin' | grep -F '[default: none]'
-! tanaboot.sh --dry-run | grep -F 'Codex plugin:'
-
-# should accept repeated and inline plugin selections without installation
-output=$(tanaboot.sh --dry-run --codex-plugin 'npm:@tanaab/canon@0.13.0' --codex-plugin=canon#main)
-printf '%s\n' "$output" | grep -F 'Codex plugin: npm:@tanaab/canon@0.13.0'
-printf '%s\n' "$output" | grep -F 'Codex plugin: canon#main'
-
-# should replace environment plugin defaults with explicit selections
-output=$(TANABOOT_CODEX_PLUGIN='canon#main,codex-tools#main' tanaboot.sh --dry-run --codex-plugin 'npm:@tanaab/canon@0.13.0')
-printf '%s\n' "$output" | grep -F 'Codex plugin: npm:@tanaab/canon@0.13.0'
-! printf '%s\n' "$output" | grep -F 'Codex plugin: canon#main'
-! printf '%s\n' "$output" | grep -F 'Codex plugin: codex-tools#main'
-
-# should reject invalid plugin selections before provisioning
-for source in '' '../canon#main' 'canon#' 'npm:'; do
-  status=0
-  output=$(tanaboot.sh --codex-plugin="$source" --dry-run 2>&1) || status=$?
-  printf '%s\n' "$output"
-  test "$status" -eq 2
-done
+# should reject container plugin installation options
+status=0
+output=$(tanaboot.sh --codex-plugin canon#main --dry-run 2>&1) || status=$?
+test "$status" -eq 2
+printf '%s\n' "$output" | grep -F 'Unknown option'
+! tanaboot.sh --help | grep -F -- '--codex-plugin'
+! tanaboot.sh --dry-run | grep -F 'Codex'
 ```

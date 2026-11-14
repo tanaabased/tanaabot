@@ -55,9 +55,9 @@ printf 'ok: existing homebrew is reused without downloading\n'
   bash() {
     [[ "${HOMEBREW_PREFIX}" == "${test_dir}/existing" && "${HOMEBREW_NO_SUDO}" == 1 ]]
     [[ -z "${BOOTBOX_EXTERNAL_SUDO:-}" && -z "${BOOTBOX_NO_SUDO:-}" ]]
-    [[ "$1" == "${boot_tmpdir}/bootbox.sh" && "$2" == --no-sudo && "$3" == --check-core ]]
+    [[ "$1" == "${boot_tmpdir}/bootbox.sh" && "$2" == --no-sudo && "$3" == --brewfile ]]
   }
-  run_bootbox --check-core
+  run_bootbox --brewfile
 )
 printf 'ok: bootbox receives the existing prefix and explicit no-sudo mode\n'
 

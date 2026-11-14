@@ -7,16 +7,16 @@ Use [`tanaboot.sh`](./tanaboot.sh) to provision its source checkout in a Linux C
 From a source checkout:
 
 ```sh
-./tanaboot.sh --codex-plugin canon#main
+./tanaboot.sh
 ```
 
 For Cloud workspace revision selection, use the separate [Cloud wrapper](./scripts/cloud-setup.sh)
 from the existing workspace:
 
 ```sh
-bash scripts/cloud-setup.sh main --codex-plugin canon#main
+bash scripts/cloud-setup.sh main
 bash scripts/cloud-setup.sh v0.1.0 --host
-bash scripts/cloud-setup.sh <full-commit-sha> --agent --codex-plugin canon#main
+bash scripts/cloud-setup.sh <full-commit-sha> --agent
 ```
 
 The required first argument selects a canonical `tanaabased/tanaabot` branch, tag or full commit SHA.
@@ -35,7 +35,7 @@ set -e
 wrapper="$(mktemp)"
 trap 'rm -f "$wrapper"' EXIT
 curl -fsSL https://raw.githubusercontent.com/tanaabased/tanaabot/main/scripts/cloud-setup.sh -o "$wrapper"
-bash "$wrapper" main --codex-plugin canon#main
+bash "$wrapper" main
 ```
 
 Setup requires 64-bit Linux, a non-root user, a writable home, and Bash, Git, curl and jq.
@@ -46,17 +46,14 @@ without sudo into `~/.linuxbrew`; the absolute prefix must be no longer than 26 
 Bootbox then runs with `--no-sudo` and provisions its
 standard foundation, including 1Password CLI, plus the [Brewfile](./Brewfile). Authentication, secret
 retrieval, SSH and identity setup are deferred. Tanaboot downloads the current hosted
-`https://bootbox.tanaab.sh/bootbox.sh` on each setup or check. Node and Bun must satisfy the selected revision's
+`https://bootbox.tanaab.sh/bootbox.sh` during setup only. Node and Bun must satisfy the selected revision's
 runtime declarations; Tanaboot checks Node and Bun against their declared major versions.
 
-The default mode installs host dependencies before agent guidance and the Tanaabot plugin.
-The standard command and declared agent setup also select Canon from `main` through
-`--codex-plugin canon#main`. Direct callers select additional plugins explicitly. Agent mode requires the
-host tools first. Keep the workspace while using its installed guidance and plugin. Additional Git
-plugins use one directory per repository under `${XDG_DATA_HOME:-$HOME/.local/share}/tanaabot/sources`;
-an existing checkout at a different commit is a conflict, not an automatic update. Existing configuration conflicts fail without forced
-replacement. Preserve conflicting files or local edits, resolve the reported conflict, then retry.
-Do not remove a lock until you have confirmed that its setup or acquisition process has stopped.
+The default mode installs host dependencies before agent guidance and shell initialization.
+Agent mode requires the host tools first. Keep the prepared checkout while using its linked
+configuration. Existing configuration conflicts fail without forced replacement. Preserve conflicting
+files or local edits, resolve the reported conflict, then retry. Do not remove a setup lock until
+its process has stopped.
 
 ```sh
 # Preview the current checkout without downloads or changes
@@ -68,52 +65,50 @@ Do not remove a lock until you have confirmed that its setup or acquisition proc
 ./tanaboot.sh --check
 ```
 
-`--check` downloads the latest hosted Bootbox for its core check but does not install. It checks
-Homebrew, Node and Bun on the caller's effective PATH before any activation, then checks fresh
+`--check` runs offline without installing or requiring a writable home or Homebrew prefix. It checks
+Homebrew, Node, Bun and the Brewfile dependencies on the caller's effective PATH by executable
+discovery and version output, then checks fresh
 non-interactive, login and interactive Bash discovery for agent setup. Persistent PATH initialization
 lives in the shell dotpackage; setup appends its loader to the first readable Bash login file
 (`.bash_profile`, `.bash_login`, then `.profile`) and `.bashrc`, preserving their other contents.
 The loader discovers Homebrew on PATH, in `~/.linuxbrew` or at the standard Linux prefix.
 It does not configure other command launchers; verify the actual Cloud shell before adding wiring.
 
-A successful check establishes installed guidance and enabled-plugin state, not native skill discovery
-or automatically loaded guidance. Include Git `--codex-plugin` selections to inspect their retained
-sources and installed/enabled state. Symbolic refs such as `canon#main` check the installed commit
-without resolving today's upstream ref; explicit full SHAs must match. npm selectors are install inputs;
-inspect those installations through Codex Tools or the native Codex CLI.
-When passed through the Cloud wrapper, `--check` and `--dry-run` apply to Tanaboot after workspace
-checkout; use Tanaboot directly for an offline preview without changing the workspace.
+A successful check establishes machine readiness and readable installed guidance. It does not
+establish workspace plugin delivery, task skill discovery or automatically supplied instructions.
+When passed through the Cloud wrapper, `--check` and `--dry-run` apply after workspace checkout;
+run Tanaboot directly for an offline check or preview without changing the workspace.
 
-## Additional Codex plugins
+## Workspace plugins
 
-Repeat `--codex-plugin` to select additional plugins:
+Import this GitHub repository at `main` through the workspace Plugins UI, using
+[`.agents/plugins/marketplace.json`](./.agents/plugins/marketplace.json). Install its `tanaabot`
+plugin and Canon's `tanaab` plugin for the intended account, and inspect each plugin's Cloud/web
+compatibility. Tanaboot does not install, enable or remove container-local plugin copies.
 
-```sh
-./tanaboot.sh --codex-plugin npm:@tanaab/codex-tools@1.0.3 --codex-plugin canon#main
-./tanaboot.sh --agent --codex-plugin canon#<full-commit-sha>
-```
+The pilot tracks `main` for both repositories. Marketplace updates and workspace plugin installation
+are separate from environment publication, which preserves machine files. Record the delivered plugin
+revisions during the fresh-task trial; startup verification never resolves newer upstream revisions.
+A successful import or enabled plugin is not proof that a particular task discovers its skills.
 
-`npm:` sources pass unchanged to Codex Tools, which selects the package version, tag or range.
-For source installs, use a `tanaabased` repository name with an optional `#branch`, `#tag` or
-`#commit`; omitted refs use `main`. Tanaboot reports and retains the resolved checkout, then passes
-it to Codex Tools. The checkout must already contain its installable plugin resources.
+Persistent operating-guidance delivery is tracked in
+[#16](https://github.com/tanaabased/tanaabot/issues/16). The installed global file is the source for
+that work; importing a plugin does not establish that the task received it automatically.
 
 ## Options
 
-| Option               | Purpose                                                          |
-| -------------------- | ---------------------------------------------------------------- |
-| `--codex-plugin SRC` | Install an additional Codex plugin; repeat for multiple sources. |
-| `--host`             | Select host dependencies only.                                   |
-| `--agent`            | Select guidance, shell initialization and Codex plugins only.    |
-| `--check`            | Check setup and selected Git plugins without installing.         |
-| `--dry-run`          | Preview without network access or changes.                       |
-| `--debug`            | Enable wrapper diagnostics on stderr.                            |
-| `--version`          | Print the running script version.                                |
-| `-h`, `--help`       | Print usage and options.                                         |
+| Option         | Purpose                                          |
+| -------------- | ------------------------------------------------ |
+| `--host`       | Select host dependencies only.                   |
+| `--agent`      | Select guidance and shell initialization only.   |
+| `--check`      | Check installed tools and configuration offline. |
+| `--dry-run`    | Preview without network access or changes.       |
+| `--debug`      | Enable wrapper diagnostics on stderr.            |
+| `--version`    | Print the running script version.                |
+| `-h`, `--help` | Print usage and options.                         |
 
 Choose at most one mode and one action. `TANABOOT_DEBUG` supplies the debug default, falling back
-to `DEBUG`, then `RUNNER_DEBUG`. `TANABOOT_CODEX_PLUGIN` supplies comma-separated plugin defaults;
-one or more `--codex-plugin` options replace that list. Explicit CLI selection takes precedence.
+to `DEBUG`, then `RUNNER_DEBUG`. Explicit CLI selection takes precedence.
 
 Normal output goes to stdout; diagnostics go to stderr. Output respects `NO_COLOR` and `FORCE_COLOR`.
 Exit `0` means the selected command succeeded, `1` means a setup or readiness failure, and `2` means

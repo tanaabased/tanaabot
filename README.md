@@ -13,7 +13,7 @@
 tanaabot prepares a Codex Cloud environment with its tools, guidance and skills for managed and
 scheduled tasks. Its assistant has a courteous protocol-droid voice, with a little grandmotherly concern.
 
-Tanaboot provisions its source checkout through Bootbox and Codex Tools. Fresh-task Cloud verification
+Tanaboot provisions its source checkout through Bootbox. Fresh-task Cloud verification
 remains pending in [#5](https://github.com/tanaabased/tanaabot/issues/5).
 
 ## What ships
@@ -21,7 +21,7 @@ remains pending in [#5](https://github.com/tanaabased/tanaabot/issues/5).
 - [Tanaboot](./TANABOOT.md): The setup entrypoint, with host and agent modes.
 - [Dependencies](./INVENTORY.md#dependencies): The Brewfile and shared provisioning tools.
 - [Dotpackages](./INVENTORY.md#dotpackages): Global guidance and configuration stubs.
-- [Skills](./INVENTORY.md#skills): Tanaabot Voice and Skill Author.
+- [Skills](./INVENTORY.md#skills): Tanaabot Voice, Skill Author and Startup Check.
 - [Configuration files](./INVENTORY.md#configuration-files): Setup declarations and Codex plugin sources.
 - [Automations](./INVENTORY.md#automations): Current inventory; none declared yet.
 
@@ -30,10 +30,11 @@ remains pending in [#5](https://github.com/tanaabased/tanaabot/issues/5).
 To run the installer yourself, use a Tanaabot source checkout on 64-bit Linux as its non-root user:
 
 ```sh
-bash tanaboot.sh --codex-plugin canon#main
+bash tanaboot.sh
 ```
 
-This installs the current checkout's tools, guidance and Tanaabot plugin, plus Canon from `main`.
+This installs the current checkout's tools, guidance and shell configuration. Install Tanaabot and
+Canon separately through the [workspace marketplace](./TANABOOT.md#workspace-plugins).
 See [Tanaboot](./TANABOOT.md) for prerequisites, previews and recovery.
 
 To create a reusable Codex Cloud environment, select this repository at `main` and ask the setup

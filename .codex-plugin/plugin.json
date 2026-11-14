@@ -1,7 +1,7 @@
 {
   "name": "tanaabot",
   "version": "0.1.0",
-  "description": "Tanaabot's voice, skill authoring and global guidance for Codex.",
+  "description": "Tanaabot's voice, skill authoring and Cloud startup checks for Codex.",
   "author": {
     "name": "Tanaab",
     "url": "https://github.com/tanaabased"
@@ -14,7 +14,7 @@
   "interface": {
     "displayName": "tanaabot",
     "shortDescription": "Courteous assistance, with a little protocol-droid fussing",
-    "longDescription": "Write in tanaabot's courteous protocol-droid voice and author its skills using Canon's shared methods. The bundle includes global guidance sources; Cloud installation and setup are still being developed.",
+    "longDescription": "Write in tanaabot's courteous protocol-droid voice and author its skills using Canon's shared methods. Verify a prepared Tanaabot Cloud environment without applying repairs. The bundle also includes global guidance sources; automatic guidance delivery remains unverified.",
     "developerName": "Tanaab",
     "category": "Productivity",
     "capabilities": ["Interactive", "Write"],

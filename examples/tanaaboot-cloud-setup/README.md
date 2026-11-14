@@ -81,14 +81,13 @@ sha=$(cat "$TMPDIR/first")
 bash "$TANABOOT_PACKAGE_ROOT/scripts/cloud-setup.sh" "$sha" --host --check
 test "$(git rev-parse HEAD)" = "$sha"
 
-# should forward mode and repeated plugin options to the selected revision
+# should forward mode and action options to the selected revision
 cd "$TMPDIR/branch-workspace"
 export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.$TMPDIR/remote.insteadOf" GIT_CONFIG_VALUE_0=https://github.com/tanaabased/tanaabot.git
-output=$(bash "$TANABOOT_PACKAGE_ROOT/scripts/cloud-setup.sh" main -- --agent --dry-run --debug=false --codex-plugin 'npm:@tanaab/canon@0.13.0' --codex-plugin=canon#main)
+output=$(bash "$TANABOOT_PACKAGE_ROOT/scripts/cloud-setup.sh" main -- --agent --dry-run --debug=false)
 printf '%s\n' "$output"
 test "$(git rev-parse HEAD)" = "$(cat "$TMPDIR/second")"
-printf '%s\n' "$output" | grep -F 'Codex plugin: npm:@tanaab/canon@0.13.0'
-printf '%s\n' "$output" | grep -F 'Codex plugin: canon#main'
+printf '%s\n' "$output" | grep -F 'Home-relative dotpackages through Bootbox'
 ! printf '%s\n' "$output" | grep -F 'host'
 
 # should preserve local workspace changes without changing its revision

@@ -22,13 +22,14 @@
     "format:check": "bun run --bun prettier . --check --ignore-unknown",
     "format:write": "bun run --bun prettier . --write --ignore-unknown",
     "lint:eslint": "bun run --bun eslint .",
-    "lint:shellcheck": "shellcheck -x tanaboot.sh scripts/cloud-setup.sh test/homebrew.sh test/brew",
-    "test": "bash test/homebrew.sh",
+    "lint:shellcheck": "shellcheck -x tanaboot.sh scripts/cloud-setup.sh test/homebrew.sh test/check.sh test/brew",
+    "test": "bash test/homebrew.sh && bash test/check.sh",
     "leia": "bun ./node_modules/.bin/leia"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
     "@lando/leia": "^2.0.0",
+    "@tanaab/codex-tools": "^1.0.3",
     "eslint": "^10.10.0",
     "eslint-config-prettier": "^10.1.1",
     "globals": "^17.12.0",
@@ -42,6 +43,7 @@
       ".agent-system/agent.yaml",
       ".agent-system/setup-host.yaml",
       ".agent-system/setup-agent.yaml",
+      ".agents/plugins/marketplace.json",
       ".codex-plugin",
       "assets",
       "dotfiles/ai/.codex/AGENTS.md",
@@ -70,6 +72,7 @@
     ".agent-system/agent.yaml",
     ".agent-system/setup-host.yaml",
     ".agent-system/setup-agent.yaml",
+    ".agents/plugins/marketplace.json",
     ".codex-plugin/plugin.json",
     "assets/",
     "dotfiles/ai/.codex/AGENTS.md",
@@ -92,8 +95,5 @@
   ],
   "publishConfig": {
     "access": "public"
-  },
-  "dependencies": {
-    "@tanaab/codex-tools": "^1.0.3"
   }
 }

@@ -3,7 +3,7 @@ steps:
     runtimes: [codex]
     check:
       command: bash
-      args: [tanaboot.sh, --agent, --codex-plugin, canon#main, --check]
+      args: [tanaboot.sh, --agent, --check]
     apply:
       command: bash
-      args: [tanaboot.sh, --agent, --codex-plugin, canon#main]
+      args: [tanaboot.sh, --agent]

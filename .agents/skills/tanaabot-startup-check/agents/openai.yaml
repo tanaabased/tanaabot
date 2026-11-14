@@ -1,9 +1,0 @@
-interface:
-  display_name: 'Tanaabot Startup Check'
-  short_description: 'Verify saved tools, guidance and skill discovery without repairs'
-  icon_small: './assets/composer-icon.svg'
-  icon_large: './assets/icon-large.png'
-  brand_color: '#00ebfd'
-  default_prompt: 'Use $tanaabot-startup-check to verify this Cloud installation, loaded guidance and discoverable skills without changing the environment.'
-policy:
-  allow_implicit_invocation: true
