@@ -5,14 +5,14 @@
 This repository prepares tanaabot's Codex Cloud environment. Contributors retain their own trusted
 identity and accounts; editing this repository does not select tanaabot's persona or credentials.
 
-Use [Tanaabot Voice](./skills/voice/SKILL.md) for repository prose: courteous, precise and concise,
+Use [Tanaabot Voice](./.agents/skills/voice/SKILL.md) for repository prose: courteous, precise and concise,
 with normal sentence capitalization. Read the skill before writing; a requested voice takes precedence.
 
 ## Cloud environment onboarding
 
 When the operator creates a Cloud environment from this repository, prepare the Tanaabot runtime:
-its Linux tools, global guidance and shell configuration. Deliver Tanaabot and Canon separately
-through the workspace marketplace. A development-only environment
+its Linux tools, global guidance and shell configuration. Tanaabot skills live in this repository;
+Canon is installed separately in the operator's ChatGPT account. A development-only environment
 is a separate, explicitly requested use case. Dependency installation and lint alone do not complete
 Tanaabot onboarding.
 
@@ -34,16 +34,15 @@ Tanaabot onboarding.
    intended setup operations when the operator requests this environment; do not substitute a
    development-tool bootstrap or stop after `bun install` and lint.
 
-3. Follow [Workspace plugins](./TANABOOT.md#workspace-plugins) to import the marketplace and install
-   Tanaabot and Canon for the intended account. Inspect Cloud/web compatibility before relying on
-   either plugin. Container-local plugin registration is not part of setup or acceptance.
+3. Follow [Skills](./TANABOOT.md#skills) for repository discovery and separate Canon delivery.
+   Container-local plugin registration is not part of setup or acceptance.
 4. Configure the environment's Start skill to invoke `$tanaabot-startup-check`, delivered by the
-   Tanaabot plugin. During setup, [its source](./skills/startup-check/SKILL.md) can be read for
+   repository's `.agents/skills/`. During setup, [its source](./.agents/skills/startup-check/SKILL.md) can be read for
    verification; that manual read is not evidence of fresh-task discovery.
 5. Present installation and read-only check results for operator review before publication. Report
    failed or unavailable checks; never recommend publishing after a failed install. After publication,
    start a fresh task and verify the native skill catalog before manual fallback reads. Record machine
-   and delivered plugin revisions separately. Guidance readability does not prove automatic loading;
+   readiness, Tanaabot skill discovery and Canon availability separately. Guidance readability does not prove automatic loading;
    persistent instruction delivery is a post-pilot follow-up in
    [#16](https://github.com/tanaabased/tanaabot/issues/16).
 
@@ -55,13 +54,15 @@ work around setup failures; report them for a coding task.
 
 - Keep `tanaboot.sh` as the setup entrypoint, with host and agent modes. Bootstrap missing Homebrew
   with its official installer in the user's home, then delegate provisioning to Bootbox without
-  sudo. Workspace plugin delivery remains separate from machine setup.
+  sudo. Account plugin delivery remains separate from machine setup.
 - Follow Agent System's manifest and setup YAML formats. Its runtime is not required here.
 - Keep installed global guidance in `dotfiles/ai/.codex/AGENTS.md`, separate from contributor guidance.
-- Use [Tanaabot Skill Author](./skills/skill-author/SKILL.md) when changing skills. Keep shared
+- Use [Tanaabot Skill Author](./.agents/skills/skill-author/SKILL.md) when changing skills. Keep shared
   implementations with Canon and Agent System. Local skills use owner `tanaab`, namespace `tanaabot`
-  and the `codex-plugin` container layout under `skills/`. Repository-only skills live under
-  `.agents/skills/` with the `standalone` layout and `tanaabot-`-prefixed folder names.
+  and unprefixed folders under `.agents/skills/`; machine names retain `tanaabot-`. The optional
+  plugin generates `skills/` from those files during `bun run build`; never edit that output.
+  Use `--container codex-plugin` for Canon's unprefixed-folder
+  validation contract; Cloud discovery does not require installing the Tanaabot plugin.
 - Keep package and Codex plugin versions aligned. Maintain explicit npm `files` and Codex Tools
   `managedPaths`; ship regular assets rather than symlinks.
 - Keep changes small. Add folders and helpers when they have a concrete owner and use.
@@ -71,8 +72,9 @@ work around setup failures; report them for a coding task.
 These commands are for developing and changing this repository. They are not the Cloud environment's
 Install script or Start skill and do not replace the runtime onboarding above.
 
-Use the declared Bun version and `bun install --frozen-lockfile --ignore-scripts`. Run `bun run lint`
-and `git diff --check`. Check changed local links, manifest paths and packed resources.
+Use the declared Bun version and `bun install --frozen-lockfile --ignore-scripts`. Run `bun run lint`,
+`bun run test` and `git diff --check`. Run `bun run build` before plugin validation or packing with
+`--ignore-scripts`. Check changed local links, manifest paths and packed resources.
 
 Follow `examples/AGENTS.md` for repository Leia scenarios. Run scenarios in CI or a
 disposable Cloud test environment; developer-machine execution requires explicit authorization.

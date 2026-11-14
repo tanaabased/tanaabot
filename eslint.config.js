@@ -6,7 +6,7 @@ import globals from 'globals';
 import prettierConfig from 'eslint-config-prettier';
 
 const restrictedBuiltinImports = builtinModules
-  .filter((name) => !name.startsWith('_') && !name.startsWith('node:'))
+  .filter((name) => !name.startsWith('_') && !name.includes(':'))
   .map((name) => ({
     name,
     message: `Use node:${name} instead of bare builtin imports.`,
@@ -14,6 +14,7 @@ const restrictedBuiltinImports = builtinModules
 
 export default defineConfig([
   globalIgnores([
+    'skills/**',
     '**/node_modules/**',
     '**/dist/**',
     '**/coverage/**',

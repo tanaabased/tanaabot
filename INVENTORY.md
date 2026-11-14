@@ -4,15 +4,14 @@ Tanaabot's Codex Cloud sources and their current status. See [Tanaboot](./TANABO
 
 ## Skills
 
-| Skill                                                   | Use                                           | Dependencies                                        |
-| ------------------------------------------------------- | --------------------------------------------- | --------------------------------------------------- |
-| [Tanaabot Voice](./skills/voice/SKILL.md)               | Replies and documentation in tanaabot's voice | None                                                |
-| [Tanaabot Skill Author](./skills/skill-author/SKILL.md) | Create, maintain and validate tanaabot skills | Host-available `tanaab:tanaab-skill-author` and Bun |
+| Skill                                                             | Use                                                 | Dependencies                               |
+| ----------------------------------------------------------------- | --------------------------------------------------- | ------------------------------------------ |
+| [Tanaabot Voice](./.agents/skills/voice/SKILL.md)                 | Replies and documentation in tanaabot's voice       | None                                       |
+| [Tanaabot Skill Author](./.agents/skills/skill-author/SKILL.md)   | Create, maintain and validate tanaabot skills       | Discoverable `tanaab-skill-author` and Bun |
+| [Tanaabot Startup Check](./.agents/skills/startup-check/SKILL.md) | Verify a prepared Cloud environment without repairs | Prepared Tanaabot source and task catalog  |
 
-| [Tanaabot Startup Check](./skills/startup-check/SKILL.md) | Verify a prepared Cloud environment without repairs | Prepared Tanaabot source and task catalog |
-
-Skill Author customizes Canon's methods. Install Canon through the
-[workspace marketplace](./TANABOOT.md#workspace-plugins). Missing required tools or references leave
+Skill Author customizes Canon's methods. Install Canon separately in your ChatGPT account as described
+under [Skills](./TANABOOT.md#skills). Missing required tools or references leave
 the dependent task incomplete.
 
 ## Dotpackages
@@ -30,12 +29,12 @@ Git, GitHub and SSH configuration remain inactive stubs. Fresh-task Cloud discov
 
 ## Dependencies
 
-| Source                                                   | Purpose                                      | Status                                          |
-| -------------------------------------------------------- | -------------------------------------------- | ----------------------------------------------- |
-| [Brewfile](./Brewfile)                                   | Linux Cloud CLI tools and runtimes           | Installation covered on disposable CI runners   |
-| [Bootbox](https://github.com/tanaabased/bootbox)         | Host provisioning and dotpackage application | Current hosted script downloaded at setup       |
-| [Codex Tools](https://github.com/tanaabased/codex-tools) | Contributor plugin cache tooling             | Development dependency; not used by Cloud setup |
-| [Canon](https://github.com/tanaabased/canon)             | Shared skill-authoring methods               | Workspace marketplace selects main              |
+| Source                                                   | Purpose                                      | Status                                                      |
+| -------------------------------------------------------- | -------------------------------------------- | ----------------------------------------------------------- |
+| [Brewfile](./Brewfile)                                   | Linux Cloud CLI tools and runtimes           | Installation covered on disposable CI runners               |
+| [Bootbox](https://github.com/tanaabased/bootbox)         | Host provisioning and dotpackage application | Current hosted script downloaded at setup                   |
+| [Codex Tools](https://github.com/tanaabased/codex-tools) | Contributor plugin cache tooling             | Development dependency; not used by Cloud setup             |
+| [Canon](https://github.com/tanaabased/canon)             | Shared skill-authoring methods               | Published npm release delivered through the ChatGPT account |
 
 ## Plugins
 
@@ -43,7 +42,8 @@ Git, GitHub and SSH configuration remain inactive stubs. Fresh-task Cloud discov
 | ------- | ---------------------------------------------- | -------------------------------------------- |
 | Codex   | [Plugin manifest](./.codex-plugin/plugin.json) | Voice, skill-author and startup-check skills |
 
-The Codex plugin ships in `@tanaab/tanaabot`; installed-host behavior remains unverified.
+The optional Codex plugin ships the same `.agents/skills/` sources in `@tanaab/tanaabot`.
+Cloud startup checks repository skill discovery without requiring this plugin's installation.
 
 ## Configuration files
 

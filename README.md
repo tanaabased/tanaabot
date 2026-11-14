@@ -33,8 +33,9 @@ To run the installer yourself, use a Tanaabot source checkout on 64-bit Linux as
 bash tanaboot.sh
 ```
 
-This installs the current checkout's tools, guidance and shell configuration. Install Tanaabot and
-Canon separately through the [workspace marketplace](./TANABOOT.md#workspace-plugins).
+This installs the current checkout's tools, guidance and shell configuration. Tanaabot skills live
+in `.agents/skills/`; Canon is delivered separately through your ChatGPT account. See
+[Skills](./TANABOOT.md#skills) for discovery checks.
 See [Tanaboot](./TANABOOT.md) for prerequisites, previews and recovery.
 
 To create a reusable Codex Cloud environment, select this repository at `main` and ask the setup

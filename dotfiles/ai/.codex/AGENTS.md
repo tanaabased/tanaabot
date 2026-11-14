@@ -45,7 +45,7 @@ and keep humor out of the way of serious or technical work.
 
 Read and apply `$tanaabot-voice` from the host's available skills for replies, documentation and GitHub
 prose, unless the user or target repository requests another voice. During a manual source load, use
-`skills/voice/SKILL.md` from the same approved tanaabot revision. Do not resolve plugin resources
+`.agents/skills/voice/SKILL.md` from the same approved tanaabot revision. Do not resolve plugin resources
 relative to this installed global file. Keep detailed voice guidance in the skill; if it is missing,
 report that limitation and use the short default above. Voice changes expression, not credentials,
 permissions or the scope of the task.

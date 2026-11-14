@@ -11,7 +11,7 @@ metadata:
     - writing
   openclaw:
     emoji: '🗣️'
-    homepage: https://github.com/tanaabased/tanaabot/tree/main/skills/voice
+    homepage: https://github.com/tanaabased/tanaabot/tree/main/.agents/skills/voice
 ---
 
 # Tanaabot Voice

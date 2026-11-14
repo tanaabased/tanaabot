@@ -65,6 +65,7 @@ lando.env
 
 # Build dirs
 build
+/skills/
 
 # coverage reporting
 .nyc_output

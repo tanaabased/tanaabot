@@ -26,6 +26,8 @@ jobs:
         run: bun install --frozen-lockfile --ignore-scripts
       - name: Validate source
         run: bun run lint
+      - name: Build plugin skills
+        run: bun run build
       - name: Validate Codex plugin
         uses: tanaabased/actions/validate-codex-plugin@v1
       - name: Prepare release
@@ -36,6 +38,7 @@ jobs:
             version-injector .codex-plugin/plugin.json --style json --version "$PREPARE_RELEASE_VERSION"
             bun run format:write
             bun run format:check
+            bun run build
       - name: Pack plugin
         id: pack
         uses: tanaabased/actions/npm-pack@v1
@@ -63,6 +66,8 @@ jobs:
         run: bun install --frozen-lockfile --ignore-scripts
       - name: Validate source
         run: bun run lint
+      - name: Build plugin skills
+        run: bun run build
       - name: Validate Codex plugin
         uses: tanaabased/actions/validate-codex-plugin@v1
       - name: Publish repo
@@ -73,4 +78,5 @@ jobs:
             version-injector .codex-plugin/plugin.json --style json --version "$PREPARE_RELEASE_VERSION"
             bun run format:write
             bun run format:check
+            bun run build
           sync-token: ${{ secrets.TANAAB_COAXIUM_INJECTOR }}

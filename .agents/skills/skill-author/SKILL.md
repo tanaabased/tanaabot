@@ -11,7 +11,7 @@ metadata:
     - skills
   openclaw:
     emoji: '🛠️'
-    homepage: https://github.com/tanaabased/tanaabot/tree/main/skills/skill-author
+    homepage: https://github.com/tanaabased/tanaabot/tree/main/.agents/skills/skill-author
     requires:
       bins:
         - bun
@@ -28,7 +28,8 @@ standard, templates, scaffolder and validator; this skill owns the profile's cus
 
 Read and apply each applicable document before dependent work. Reuse complete reads already in context.
 
-- **Always:** Locate `tanaab:tanaab-skill-author` in the host's available skill catalog, read its full
+- **Always:** Locate `tanaab-skill-author` in the host's available skill catalog, allowing host-qualified
+  names such as `tanaab:tanaab-skill-author`, read its full
   `SKILL.md` and follow its applicable Required Reading. Resolve its policies, templates and scripts
   from that discovered installation. The [upstream source](https://github.com/tanaabased/canon/tree/main/skills/skill-author)
   identifies the dependency; a link or remembered path does not replace the installed instructions.
@@ -40,7 +41,7 @@ before changing skills. Do not recreate its tools or silently substitute another
 
 ## When to Use
 
-Create, standardize, validate or optimize tanaabot skills and this plugin's skill collection.
+Create, standardize, validate or optimize tanaabot's repository skill collection.
 
 ## When Not to Use
 
@@ -68,14 +69,14 @@ remain read-only. A structural check does not prove that a future agent will fol
 
 1. Load the discovered Canon Skill Author and its applicable policies. Use its create, standardize,
    validate or optimize workflow; keep the shared method with its owner.
-2. Pass `--owner tanaab --namespace tanaabot` to Canon's scaffolder and validator. For plugin skills
-   under `skills/`, pass `--container codex-plugin` and use unprefixed skill folders. For repository-only
-   skills under `.agents/skills/`, pass `--container standalone` and retain the `tanaabot-` folder
-   prefix. Keep `tanaabot-` machine names and prompts in both layouts. For scaffolding, also pass
+2. Keep canonical skills under `.agents/skills/` in unprefixed folders. Pass
+   `--owner tanaab --namespace tanaabot --container codex-plugin` to Canon's scaffolder and validator
+   for its unprefixed-folder contract; the optional plugin generates `skills/` from this tree. Keep `tanaabot-`
+   machine names and prompts. Repository discovery does not require plugin installation. For scaffolding, also pass
    `--brand-color '#00ebfd'` and an explicit source homepage matching the skill's repository path.
    Choose the type, category, display name, emoji and description for the actual skill. Use normal
    sentence capitalization in prose.
-3. Use regular-file copies of the plugin root's `assets/composer-icon.svg` and
+3. Use regular-file copies of the repository root's `assets/composer-icon.svg` and
    `assets/icon-large.png` in each skill's `assets/` directory. Set `icon_small` to
    `./assets/composer-icon.svg` and `icon_large` to `./assets/icon-large.png`. Keep the circle PNG
    for the profile avatar. Review packed resources when changing assets or package selection.
@@ -83,7 +84,7 @@ remain read-only. A structural check does not prove that a future agent will fol
    and container. Review warnings and manual checks, then run the target repository's applicable
    checks. Respect the operator's commit, publication and installation boundaries.
 
-## Optimization
+## Review Criteria
 
 - **Inspect:** Read this customization and the affected skills' identities, voice references,
   display metadata and bundled assets alongside the installed Canon owner.
@@ -106,6 +107,7 @@ remain read-only. A structural check does not prove that a future agent will fol
 Run the shared validator for each changed skill with the explicit tanaab owner, tanaabot namespace
 and its selected container. Review scope, reading triggers, names, prompts, homepages and icon resolution.
 For plugin skills, confirm the extracted package retains the resources without checkout dependencies
-or symlinks. Keep repository-only skills outside the npm payload and plugin-managed paths.
+or symlinks. Run `bun run build` before packing with `--ignore-scripts`. Keep `.agents/skills/` and
+generated `skills/` in the npm payload and plugin-managed paths; never edit the generated copy.
 Report missing Canon tools and unrun native or instruction-following trials plainly; do not treat
 package validation as installation or behavioral proof.

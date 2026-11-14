@@ -56,6 +56,7 @@ jobs:
             version-injector .codex-plugin/plugin.json --style json --version "$PREPARE_RELEASE_VERSION"
             bun run format:write
             bun run format:check
+            bun run build
       - name: Pack candidate
         id: pack
         uses: tanaabased/actions/npm-pack@v1
