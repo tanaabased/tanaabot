@@ -47,21 +47,12 @@ setup result, publish the environment and start a fresh task to verify it.
 Paste this into the designated tanaabot dot for an initial seed or a later manual update:
 
 ```text
-Use the existing Tanaabot Cloud environment. Refresh canonical tanaabased/tanaabot
-from GitHub main into a clean source checkout without discarding existing edits.
-Report the resolved commit, read skills/automation-sync/SKILL.md and its required
-references from that checkout, and synchronize all declared automations.
+Read and follow skills/automation-sync/SKILL.md from the latest main
+revision of https://github.com/tanaabased/tanaabot.
 
-Keep the existing approved account scope. Use the reusable per-automation Cloud
-chats in REPORTS, with titles matching their authored display names. Return one compact
-summary card per automation, each in a separate message to this main chat. Use “Go to chat →”
-for verified worker links, including native Codex deep links, and keep detailed results in
-those worker chats. Use the
-native scheduling controls; if unavailable in Cloud, return the prepared task
-objects here for application through this dot's supported controls. Do not claim
-the handoff saved schedules. The definitions are disabled: save them paused. If creation
-always starts active, create each once, immediately pause its returned native ID, and
-verify the final paused state. Do not leave tasks active or manually run a pilot.
+Synchronize all declared automations in this Tanaabot context using
+the existing published Cloud environment. Apply their declared state,
+including create-then-pause where necessary. Do not run the automations.
 ```
 
 The skill installs the checkout's locked dependencies and prepares Agent System's public manifest
