@@ -75,15 +75,18 @@ The loader discovers Homebrew on PATH, in `~/.linuxbrew` or at the standard Linu
 It does not configure other command launchers; verify the actual Cloud shell before adding wiring.
 
 A successful check establishes machine readiness and readable installed guidance. It does not
-establish account plugin delivery, task skill discovery or automatically supplied instructions.
+establish local skill loading, account plugin delivery or automatically supplied instructions.
 When passed through the Cloud wrapper, `--check` and `--dry-run` apply after workspace checkout;
 run Tanaboot directly for an offline check or preview without changing the workspace.
 
 ## Skills
 
-Tanaabot's skills live in [`.agents/skills/`](./.agents/skills/) in the selected repository revision.
-No Tanaabot plugin installation is required for the repository-discovery trial. After publishing the
-environment, verify that a fresh task lists those skills before manually reading them.
+Tanaabot's canonical skills live in [`skills/`](./skills/) in the selected repository revision.
+Configure the environment's Start skill with the direct-path text in
+[Cloud environment onboarding](./AGENTS.md#cloud-environment-onboarding), using the verified prepared
+checkout path. Startup reads the local skill metadata into the chat context; subsequent requests
+select relevant skills and read their full instructions and required references before use.
+This explicit loading does not register skills in the native catalog or require a Tanaabot plugin.
 
 Install Canon separately in your personal ChatGPT account through Plugin Creator using a published
 `@tanaab/canon` release. Its installation and updates are independent of Tanaboot and environment
@@ -121,7 +124,15 @@ Allow GitHub source/raw/release downloads and the package hosts needed by Bootbo
 in the environment's network policy. Access failures must be resolved in the selected environment;
 Tanaboot does not select credentials or bypass its proxy.
 
-Setup agents follow [Cloud environment onboarding](./AGENTS.md#cloud-environment-onboarding) for
-installation, startup verification and the evidence to report. After reviewing and publishing the
-environment, start a fresh task to verify the saved setup. This remains acceptance work for
-[#5](https://github.com/tanaabased/tanaabot/issues/5).
+After the repository change is available at the selected revision:
+
+1. Prepare a fresh environment without the previous diagnostic copies, following
+   [Cloud environment onboarding](./AGENTS.md#cloud-environment-onboarding).
+2. Save and verify the direct-path Start skill in the environment, then publish and start a fresh chat.
+3. Verify that startup runs without a manual bootstrap prompt. Report local Tanaabot loading
+   separately from Canon catalog availability.
+4. Make a relevant subsequent request without naming a Tanaabot skill; verify the agent selects
+   and reads the appropriate local skill and its required references.
+
+Package checks and readable files alone do not establish startup or later skill selection.
+This fresh-pilot verification remains acceptance work for [#5](https://github.com/tanaabased/tanaabot/issues/5).

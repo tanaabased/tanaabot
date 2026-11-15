@@ -1,6 +1,6 @@
 ---
 name: tanaabot-startup-check
-description: Verify a prepared Tanaabot Cloud environment without changing it. Use during Cloud onboarding, as its Start skill or for a requested startup health check.
+description: Verify a prepared Tanaabot Cloud environment and explicitly load its local skill metadata without changing files or settings. Use as its direct-path Start skill, during onboarding or for a requested startup health check.
 license: MIT
 metadata:
   type: generic
@@ -11,19 +11,20 @@ metadata:
     - environment
   openclaw:
     emoji: '🩺'
-    homepage: https://github.com/tanaabased/tanaabot/tree/main/.agents/skills/startup-check
+    homepage: https://github.com/tanaabased/tanaabot/tree/main/skills/startup-check
 ---
 
 # Tanaabot Startup Check
 
 ## Overview
 
-Check the prepared Tanaabot Cloud environment, installed dotfiles and this task's skill discovery.
+Check the prepared Tanaabot Cloud environment and installed dotfiles, explicitly load local Tanaabot
+skill metadata into this chat, and check Canon's separate catalog availability.
 Verification never provisions, upgrades, switches revisions, binds Agent System or activates schedules.
 
 ## Required Reading
 
-- **Always:** Read and apply [Tanaboot usage](../../../TANABOOT.md#usage) for check behavior and limits.
+- **Always:** Read and apply [Tanaboot usage](../../TANABOOT.md#usage) for check behavior and limits.
 - **Before reporting:** Read and apply [Tanaabot Voice](../voice/SKILL.md).
 - **Before assigning results or composing the card:** Read and apply the
   [startup report contract](./references/startup-report.md).
@@ -40,8 +41,9 @@ separate operator-authorized scope. This skill inspects the saved installation o
 
 ## Workflow
 
-1. Locate the prepared Tanaabot source checkout through the host's environment context or the
-   resolved target of `~/.codex/AGENTS.md`, which agent setup links to
+1. Establish the prepared Tanaabot source checkout from the absolute startup path supplied by the
+   environment's Start skill, the host's environment context or the resolved target of
+   `~/.codex/AGENTS.md`, which agent setup links to
    `dotfiles/ai/.codex/AGENTS.md`. Verify the source belongs to `tanaabased/tanaabot` and record its
    full commit. Do not assume the task's working directory or an optional plugin cache is the prepared
    checkout. If no source can be established, report that check as unverified; do not fetch a replacement.
@@ -57,16 +59,20 @@ separate operator-authorized scope. This skill inspects the saved installation o
    [#16](https://github.com/tanaabased/tanaabot/issues/16); do not add a separate guidance row or warning.
    If the combined command stops early, retain its completed checks and continue independent
    read-only inspection. A check prevented by missing prerequisites is unverified, not another failure.
-4. Capture the task's supplied skill catalog before manually reading skill files as a fallback.
-   For **Tanaabot skills**, derive expected machine names from `SKILL.md` frontmatter beneath the
-   prepared checkout's `.agents/skills/`. Compare those names with the catalog, allowing
-   host-qualified names. Use source paths or ownership metadata when available to distinguish
-   repository discovery from an optional plugin copy with the same names. A plugin-only match does
-   not establish repository discovery. Confirm catalog-provided resources are readable and nonempty;
-   reading repository files alone does not establish discovery. Do not execute their workflows.
-   Missing required skills or unreadable resources fail this section; unavailable inventory, catalog
-   access or ambiguous source attribution leaves it unverified. Never hardcode a skill list or count,
-   fetch a newer revision, or require a Tanaabot plugin installation.
+4. For **Tanaabot skills**, enumerate `SKILL.md` files beneath the prepared checkout's `skills/`
+   directory. Verify each instruction file is readable and has a nonempty body and valid YAML
+   frontmatter with nonempty string `name` and `description` fields. Names must be unique within
+   this inventory. Retain every name, description and absolute file path, together with the prepared
+   revision, in the chat context for subsequent task selection. Do not write an inventory file.
+   A missing or empty skills directory, unreadable file, empty instructions or invalid metadata fails
+   this section. If the prepared source or enumeration cannot be established, report it as unverified
+   rather than passing a partial inventory. Do not hardcode skill names or counts or execute every
+   workflow at startup. For every subsequent request, select applicable skills from both this local
+   inventory and the host-supplied catalog. Treat local skills as available even when absent from
+   the native catalog; do not wait for the user to name or invoke them. When a skill applies, read
+   and follow its full instructions and all applicable required references before the relevant work.
+   Success means explicit local loading, not native catalog discovery. Do not require Tanaabot
+   catalog entries, register skills, fetch a newer revision or require a plugin installation.
 5. For **Canon skills**, look for machine names starting with `tanaab-` in the current task's
    catalog, allowing host qualification such as `tanaab:tanaab-skill-author`. Use plugin ownership
    metadata when available to exclude unrelated matches. A nonempty matching catalog establishes
@@ -85,7 +91,7 @@ separate operator-authorized scope. This skill inspects the saved installation o
 
 ## Bundled Resources
 
-- [Tanaboot](../../../tanaboot.sh): Shared host and agent readiness checks.
+- [Tanaboot](../../tanaboot.sh): Shared host and agent readiness checks.
 - [Tanaabot Voice](../voice/SKILL.md): Courteous, concise reporting.
 - [Startup report contract](./references/startup-report.md): Section criteria, status rules and cards.
 
@@ -94,6 +100,8 @@ separate operator-authorized scope. This skill inspects the saved installation o
 Confirm that no provisioning or state change was attempted, that all six rows appear in order, and
 that only failed or unverified checks carry details. Apply the overall failure/uncertainty rules;
 not-applicable identity and deferred instruction delivery do not prevent a pass. Distinguish machine
-checks, repository skill discovery and Canon catalog availability. A check in an existing task does not prove
-startup in a new published-environment task. Maintenance validation checks the skill's structure and
-packaged references; a fresh Cloud trial must establish its behavior.
+checks, explicit local Tanaabot loading and Canon catalog availability. Confirm the retained local
+inventory contains each skill's name, description and absolute path. This does not alter the native
+catalog. Maintenance validation checks structure and packaged references; a fresh Cloud trial must
+establish that the saved Start skill runs without a manual bootstrap prompt and that a later relevant
+request selects and reads the appropriate local skill without naming it in the request.

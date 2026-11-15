@@ -1,0 +1,9 @@
+interface:
+  display_name: 'Tanaabot Startup Check'
+  short_description: 'Check Cloud readiness and load local Tanaabot skill metadata'
+  icon_small: './assets/composer-icon.svg'
+  icon_large: './assets/icon-large.png'
+  brand_color: '#00ebfd'
+  default_prompt: 'Use $tanaabot-startup-check to verify this prepared Cloud environment, explicitly load local Tanaabot skill metadata, and check Canon catalog availability. Report one six-row status card with details only for failed or unverified checks. Do not change files or settings or register skills.'
+policy:
+  allow_implicit_invocation: true

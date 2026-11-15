@@ -2,7 +2,7 @@
 
 Prepare host tools, apply the packaged agent mode, and rerun it to check convergence. The scenario
 owns guidance and shell initialization on a disposable Linux runner. It does
-not configure accounts, retrieve secrets or establish fresh-task Codex Cloud discovery.
+not configure accounts, retrieve secrets or establish fresh-task Codex Cloud startup.
 
 ## Setup
 

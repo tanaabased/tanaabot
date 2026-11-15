@@ -11,7 +11,7 @@ metadata:
     - skills
   openclaw:
     emoji: '🛠️'
-    homepage: https://github.com/tanaabased/tanaabot/tree/main/.agents/skills/skill-author
+    homepage: https://github.com/tanaabased/tanaabot/tree/main/skills/skill-author
     requires:
       bins:
         - bun
@@ -69,10 +69,10 @@ remain read-only. A structural check does not prove that a future agent will fol
 
 1. Load the discovered Canon Skill Author and its applicable policies. Use its create, standardize,
    validate or optimize workflow; keep the shared method with its owner.
-2. Keep canonical skills under `.agents/skills/` in unprefixed folders. Pass
+2. Keep canonical skills under `skills/` in unprefixed folders. Pass
    `--owner tanaab --namespace tanaabot --container codex-plugin` to Canon's scaffolder and validator
-   for its unprefixed-folder contract; the optional plugin generates `skills/` from this tree. Keep `tanaabot-`
-   machine names and prompts. Repository discovery does not require plugin installation. For scaffolding, also pass
+   for its unprefixed-folder contract. Maintain and package this single tree directly. Keep `tanaabot-`
+   machine names and prompts. Explicit Cloud loading does not require plugin installation. For scaffolding, also pass
    `--brand-color '#00ebfd'` and an explicit source homepage matching the skill's repository path.
    Choose the type, category, display name, emoji and description for the actual skill. Use normal
    sentence capitalization in prose.
@@ -84,7 +84,7 @@ remain read-only. A structural check does not prove that a future agent will fol
    and container. Review warnings and manual checks, then run the target repository's applicable
    checks. Respect the operator's commit, publication and installation boundaries.
 
-## Review Criteria
+## Optimization
 
 - **Inspect:** Read this customization and the affected skills' identities, voice references,
   display metadata and bundled assets alongside the installed Canon owner.
@@ -107,7 +107,7 @@ remain read-only. A structural check does not prove that a future agent will fol
 Run the shared validator for each changed skill with the explicit tanaab owner, tanaabot namespace
 and its selected container. Review scope, reading triggers, names, prompts, homepages and icon resolution.
 For plugin skills, confirm the extracted package retains the resources without checkout dependencies
-or symlinks. Run `bun run build` before packing with `--ignore-scripts`. Keep `.agents/skills/` and
-generated `skills/` in the npm payload and plugin-managed paths; never edit the generated copy.
+or symlinks. Keep the canonical `skills/` tree in the npm payload and plugin-managed paths;
+no relocation build or second copy is needed.
 Report missing Canon tools and unrun native or instruction-following trials plainly; do not treat
 package validation as installation or behavioral proof.

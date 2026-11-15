@@ -22,7 +22,7 @@ SHA instead. Do not silently substitute local files for unavailable remote sourc
 
 1. Resolve the selected repository reference once to a full commit SHA. Use committed files from
    that revision for the entire load; do not mix mutable branch reads or uncommitted changes.
-2. Read `dotfiles/ai/.codex/AGENTS.md` and `.agents/skills/voice/SKILL.md`, including the voice samples when
+2. Read `dotfiles/ai/.codex/AGENTS.md` and `skills/voice/SKILL.md`, including the voice samples when
    the skill calls for them. Read `.agent-system/agent.yaml` for the declared profile identity.
    Its name and avatar describe intended state; loading them does not apply appearance changes.
 3. Report the repository, full SHA and files actually loaded. Identify missing required sources or

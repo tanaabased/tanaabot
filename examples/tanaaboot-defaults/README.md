@@ -3,7 +3,7 @@
 Run the packaged entrypoint once with no mode selection, then inspect the resulting Linux tools,
 guidance and shell configuration.
 CI supplies the prepared package on a disposable runner; this proves
-runner installation, while fresh-task Codex Cloud discovery remains a separate acceptance check.
+runner installation, while fresh-task Codex Cloud startup remains a separate acceptance check.
 
 ## Setup
 

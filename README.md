@@ -34,8 +34,8 @@ bash tanaboot.sh
 ```
 
 This installs the current checkout's tools, guidance and shell configuration. Tanaabot skills live
-in `.agents/skills/`; Canon is delivered separately through your ChatGPT account. See
-[Skills](./TANABOOT.md#skills) for discovery checks.
+in `skills/` and are loaded explicitly by the environment's Start skill. Canon is delivered separately
+through your ChatGPT account. See [Skills](./TANABOOT.md#skills) for startup configuration.
 See [Tanaboot](./TANABOOT.md) for prerequisites, previews and recovery.
 
 To create a reusable Codex Cloud environment, select this repository at `main` and ask the setup

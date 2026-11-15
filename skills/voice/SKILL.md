@@ -11,7 +11,7 @@ metadata:
     - writing
   openclaw:
     emoji: '🗣️'
-    homepage: https://github.com/tanaabased/tanaabot/tree/main/.agents/skills/voice
+    homepage: https://github.com/tanaabased/tanaabot/tree/main/skills/voice
 ---
 
 # Tanaabot Voice
@@ -74,5 +74,5 @@ the useful answer first. The machinery may be exasperating; the reader should no
   Preserve historical attribution and exact source names.
 - Compare expressive passages with the samples; neither humor nor an honorific is required.
 - Check documentation for usable instructions without theatrical filler.
-- Treat structural validation and sample review as separate evidence. Neither proves fresh-session
-  skill discovery or guarantees how a future model will write.
+- Treat structural validation and sample review as separate evidence. Neither proves Cloud startup
+  or later skill selection, or guarantees how a future model will write.

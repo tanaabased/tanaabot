@@ -4,11 +4,11 @@ Tanaabot's Codex Cloud sources and their current status. See [Tanaboot](./TANABO
 
 ## Skills
 
-| Skill                                                             | Use                                                 | Dependencies                               |
-| ----------------------------------------------------------------- | --------------------------------------------------- | ------------------------------------------ |
-| [Tanaabot Voice](./.agents/skills/voice/SKILL.md)                 | Replies and documentation in tanaabot's voice       | None                                       |
-| [Tanaabot Skill Author](./.agents/skills/skill-author/SKILL.md)   | Create, maintain and validate tanaabot skills       | Discoverable `tanaab-skill-author` and Bun |
-| [Tanaabot Startup Check](./.agents/skills/startup-check/SKILL.md) | Verify a prepared Cloud environment without repairs | Prepared Tanaabot source and task catalog  |
+| Skill                                                     | Use                                                 | Dependencies                               |
+| --------------------------------------------------------- | --------------------------------------------------- | ------------------------------------------ |
+| [Tanaabot Voice](./skills/voice/SKILL.md)                 | Replies and documentation in tanaabot's voice       | None                                       |
+| [Tanaabot Skill Author](./skills/skill-author/SKILL.md)   | Create, maintain and validate tanaabot skills       | Discoverable `tanaab-skill-author` and Bun |
+| [Tanaabot Startup Check](./skills/startup-check/SKILL.md) | Verify a prepared Cloud environment without repairs | Prepared Tanaabot source and task catalog  |
 
 Skill Author customizes Canon's methods. Install Canon separately in your ChatGPT account as described
 under [Skills](./TANABOOT.md#skills). Missing required tools or references leave
@@ -17,7 +17,7 @@ the dependent task incomplete.
 ## Dotpackages
 
 Packages use a home-relative layout. `ai` contains guidance and `shell` initializes Homebrew and Node for Bash.
-Git, GitHub and SSH configuration remain inactive stubs. Fresh-task Cloud discovery remains unverified.
+Git, GitHub and SSH configuration remain inactive stubs. Fresh-task Cloud startup remains unverified.
 
 | Package | Source                                                           | Status                                                                      |
 | ------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------- |
@@ -42,8 +42,8 @@ Git, GitHub and SSH configuration remain inactive stubs. Fresh-task Cloud discov
 | ------- | ---------------------------------------------- | -------------------------------------------- |
 | Codex   | [Plugin manifest](./.codex-plugin/plugin.json) | Voice, skill-author and startup-check skills |
 
-The optional Codex plugin ships the same `.agents/skills/` sources in `@tanaab/tanaabot`.
-Cloud startup checks repository skill discovery without requiring this plugin's installation.
+The optional Codex plugin ships the same `skills/` sources in `@tanaab/tanaabot`.
+Cloud startup explicitly loads the local skills without requiring this plugin's installation.
 
 ## Configuration files
 

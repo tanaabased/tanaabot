@@ -14,7 +14,6 @@ const restrictedBuiltinImports = builtinModules
 
 export default defineConfig([
   globalIgnores([
-    'skills/**',
     '**/node_modules/**',
     '**/dist/**',
     '**/coverage/**',
