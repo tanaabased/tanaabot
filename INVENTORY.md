@@ -4,12 +4,13 @@ Tanaabot's Codex Cloud sources and their current status. See [Tanaboot](./TANABO
 
 ## Skills
 
-| Skill                                                           | Use                                                           | Dependencies                               |
-| --------------------------------------------------------------- | ------------------------------------------------------------- | ------------------------------------------ |
-| [Tanaabot Voice](./skills/voice/SKILL.md)                       | Replies and documentation in tanaabot's voice                 | None                                       |
-| [Tanaabot Skill Author](./skills/skill-author/SKILL.md)         | Create, maintain and validate tanaabot skills                 | Discoverable `tanaab-skill-author` and Bun |
-| [Tanaabot Startup Check](./skills/startup-check/SKILL.md)       | Verify a prepared Cloud environment without repairs           | Prepared Tanaabot source and task catalog  |
-| [Spaceport Fortune Cookie](./skills/spaceport-fortune/SKILL.md) | Exercise local skill selection and required-reference loading | Bundled fortune reference                  |
+| Skill                                                           | Use                                                                  | Dependencies                                          |
+| --------------------------------------------------------------- | -------------------------------------------------------------------- | ----------------------------------------------------- |
+| [Tanaabot Voice](./skills/voice/SKILL.md)                       | Replies and documentation in tanaabot's voice                        | None                                                  |
+| [Tanaabot Skill Author](./skills/skill-author/SKILL.md)         | Create, maintain and validate tanaabot skills                        | Discoverable `tanaab-skill-author` and Bun            |
+| [Tanaabot Startup Check](./skills/startup-check/SKILL.md)       | Verify a prepared Cloud environment without repairs                  | Prepared Tanaabot source and task catalog             |
+| [Spaceport Fortune Cookie](./skills/spaceport-fortune/SKILL.md) | Exercise local skill selection and required-reference loading        | Bundled fortune reference                             |
+| [Automation Sync](./skills/automation-sync/SKILL.md)            | Prepare and synchronize hosted schedules from repository definitions | Prepared checkout, Bun and native scheduling controls |
 
 Skill Author customizes Canon's methods. Install Canon separately in your ChatGPT account as described
 under [Skills](./TANABOOT.md#skills). Missing required tools or references leave
@@ -48,19 +49,21 @@ Cloud startup explicitly loads the local skills without requiring this plugin's 
 
 ## Configuration files
 
-| Source                                          | Owns                                                 |
-| ----------------------------------------------- | ---------------------------------------------------- |
-| [Agent manifest](./.agent-system/agent.yaml)    | Name, ID, avatar and setup-file references           |
-| [Host setup](./.agent-system/setup-host.yaml)   | Host mode check/apply declaration                    |
-| [Agent setup](./.agent-system/setup-agent.yaml) | Agent mode check/apply declaration                   |
-| [Plugin manifest](./.codex-plugin/plugin.json)  | Plugin identity, skills and branding                 |
-| [Package metadata](./package.json)              | Tool versions, scripts and explicit package contents |
+| Source                                                     | Owns                                                        |
+| ---------------------------------------------------------- | ----------------------------------------------------------- |
+| [Agent manifest](./.agent-system/agent.yaml)               | Name, ID, avatar, debug and setup/automation references     |
+| [Automation definitions](./.agent-system/automations.yaml) | Synchronizer and smoke-test schedules and prompt references |
+| [Host setup](./.agent-system/setup-host.yaml)              | Host mode check/apply declaration                           |
+| [Agent setup](./.agent-system/setup-agent.yaml)            | Agent mode check/apply declaration                          |
+| [Plugin manifest](./.codex-plugin/plugin.json)             | Plugin identity, skills and branding                        |
+| [Package metadata](./package.json)                         | Tool versions, scripts and explicit package contents        |
 
 ## Automations
 
-| Automation    | Status                                               |
-| ------------- | ---------------------------------------------------- |
-| None declared | No job prompts or schedules are bundled or activated |
+| Automation   | Status                                                           |
+| ------------ | ---------------------------------------------------------------- |
+| `sync`       | Bundled and disabled; native scheduling pilot pending            |
+| `smoke-test` | Bundled and disabled; execution and visible-output pilot pending |
 
 ## Artwork
 

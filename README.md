@@ -23,7 +23,7 @@ remains pending in [#5](https://github.com/tanaabased/tanaabot/issues/5).
 - [Dotpackages](./INVENTORY.md#dotpackages): Global guidance and configuration stubs.
 - [Skills](./INVENTORY.md#skills): Tanaabot Voice, Skill Author and Startup Check.
 - [Configuration files](./INVENTORY.md#configuration-files): Setup declarations and Codex plugin sources.
-- [Automations](./INVENTORY.md#automations): Current inventory; none declared yet.
+- [Automations](./INVENTORY.md#automations): Synchronizer and smoke-test definitions, initially paused.
 
 ## Install
 
@@ -41,6 +41,30 @@ See [Tanaboot](./TANABOOT.md) for prerequisites, previews and recovery.
 To create a reusable Codex Cloud environment, select this repository at `main` and ask the setup
 agent to follow [Cloud environment onboarding](./AGENTS.md#cloud-environment-onboarding). Review the
 setup result, publish the environment and start a fresh task to verify it.
+
+## Synchronize scheduled tasks
+
+Paste this into the designated tanaabot dot for an initial seed or a later manual update:
+
+```text
+Use the existing Tanaabot Cloud environment. Refresh canonical tanaabased/tanaabot
+from GitHub main into a clean source checkout without discarding existing edits.
+Report the resolved commit, read skills/automation-sync/SKILL.md and its required
+references from that checkout, and synchronize all declared automations.
+
+Keep the existing approved account scope and return results to this dot. Use the
+native scheduling controls; if unavailable in Cloud, return the prepared task
+objects here for application through this dot's supported controls. Do not claim
+the handoff saved schedules. The definitions are disabled: seed paused tasks and
+do not activate them or run a pilot without separate authorization.
+```
+
+The skill installs the checkout's locked dependencies and prepares Agent System's public manifest
+loader from its temporary GitHub `main` dependency. It combines the
+[definitions](./.agent-system/automations.yaml), task prompts and shared guidance, then updates
+changed native tasks and leaves unchanged ones alone. Shared-guidance changes update affected tasks.
+Native Cloud scheduling access, smoke output and unattended synchronization still require the
+separately authorized live pilot tracked in [#8](https://github.com/tanaabased/tanaabot/issues/8).
 
 ## Contributing
 
