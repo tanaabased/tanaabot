@@ -27,7 +27,9 @@ automation names and actual outcomes: created, updated, unchanged or failed. Sta
 schedules are active or paused when the native results establish it. Follow the shared success
 footer and diagnostic rules. The assembler's prepared-action card is a preview, not this outcome.
 
-For the owning dot, summarize counts and whether attention is needed in one short status card.
+For the owning dot, use a short summary card headed `## 🔄 AUTOMATION SYNC`, with counts and
+whether attention is needed in its body and one status line at the bottom as directed by the
+presentation partial. Do not put a status icon or the schedule's 🤖 prefix in the summary heading.
 Include the native-provided run/chat link when available. For example, “One schedule updated;
 one unchanged. Both remain paused.” Preserve missing-tool handoffs as pending; never call them
 completed synchronization. Use the host's saved delivery mechanism without a duplicate direct send.

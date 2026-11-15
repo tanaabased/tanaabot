@@ -10,7 +10,7 @@ what changed, if anything. No separate large success card is needed. A no-op may
 “✅ Synchronization complete: both schedules were already current.” Respect native notification
 settings; an empty successful run does not justify an extra direct message.
 
-Show a separate quoted **## ⚠️** card for incomplete, uncertain or actionable limitations and a
+For detailed results, show a separate quoted **## ⚠️** card for incomplete, uncertain or actionable limitations and a
 quoted **## ❌** card for an actual failed operation. Give a concise title, the consequence and
 the useful next action. Preserve useful partial results. A prepared action or expected wait is
 not automatically a warning. Do not append an unqualified success footer to a partial failure.
@@ -21,7 +21,23 @@ Failures and uncertainty stay visible with debug disabled. Never expose secrets 
 
 In addition to its detailed result, each automation defines a short summary: status, useful
 outcome, whether the reader needs to review or act, and a link to the actual run/chat when the
-host supplies one. Use a quoted card headed with ✅, ⚠️ or ❌ and the automation's display name.
+host supplies one. Use a quoted card whose heading contains the automation's purpose emoji and
+authored display name, without the schedule's generated 🤖 prefix. Each automation prompt selects
+its purpose emoji, such as 📅 for calendar review, 🔄 for synchronization or 🧪 for a smoke test.
+Keep status out of this heading.
+
+Put the useful outcome, review/action request and verified run/chat link in the body. End the
+quoted card with exactly one short status line, after the link:
+
+- **Success:** `✅ Automation successful.`
+- **Warning:** `⚠️` followed by a one-line explanation of incomplete or uncertain work.
+- **Error:** `❌` followed by a one-line explanation of the failed operation.
+
+Keep that line inside the same quote block. A successful review can find nothing; use the success
+line and say there is nothing to review in the body. Do not add a second success footer outside
+the summary or a separate status-heading card for the same summary outcome. Detailed results
+and optional debug cards retain their own guidance above.
+
 Use this in the saved dot destination when the native host supports separate summary delivery.
 Keep the detailed result in the execution chat. If there is only one output surface, include the
 summary once before the detailed result; do not duplicate the full result in the summary.
@@ -95,12 +111,40 @@ Optional diagnostic:
 
 Summary for the dot, with its verified run link added when available:
 
-> ## ✅ 🤖 CALENDAR REVIEW
+> ## 📅 CALENDAR REVIEW
 >
 > Three candidate events are ready for your review. No calendar changes were made.
+>
+> ✅ Automation successful.
 
 Empty-run summary:
 
-> ## ✅ 🤖 CALENDAR REVIEW
+> ## 📅 CALENDAR REVIEW
 >
 > No candidate events need your attention. No calendar changes were made.
+>
+> ✅ Automation successful.
+
+Synchronization summary:
+
+> ## 🔄 AUTOMATION SYNC
+>
+> One schedule updated; one unchanged. Both remain paused.
+>
+> ✅ Automation successful.
+
+Incomplete-review summary:
+
+> ## 📅 CALENDAR REVIEW
+>
+> Two candidate events were found. Restore the calendar connection before deciding which to add.
+>
+> ⚠️ Calendar conflicts could not be checked.
+
+Failed-run summary:
+
+> ## 🧪 SMOKE TEST
+>
+> The selected Cloud worker could not be started. Review the environment's availability.
+>
+> ❌ The smoke test did not run.
