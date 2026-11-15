@@ -1,14 +1,14 @@
 - id: sync
-  display-name: Tanaabot automation sync
+  display-name: AUTOMATION SYNC
   enabled: false
   runtimes: [codex]
-  schedule: every 24 hours
+  schedule: '0 0 * * *'
   prompt:
     file: ../prompts/automations/sync.md
 - id: smoke-test
-  display-name: Tanaabot automation smoke test
+  display-name: SMOKE TEST
   enabled: false
   runtimes: [codex]
-  schedule: every 24 hours
+  schedule: '15 0 * * *'
   prompt:
     file: ../prompts/automations/smoke-test.md

@@ -2,7 +2,7 @@ import { describe, test } from 'bun:test';
 import assert from 'node:assert/strict';
 
 import { planSync } from '../lib/sync-plan.js';
-import { readTaskPrompt } from '../utils/task-prompt.js';
+import { readTaskPrompt, taskBody } from '../utils/task-prompt.js';
 
 const revision = 'a'.repeat(40);
 const now = '2026-01-02T03:04:05.000Z';
@@ -18,8 +18,12 @@ const job = (id) => ({
 });
 function input(overrides = {}) {
   return {
-    manifest: { agent: { id: 'tanaabot' }, debug: false, automations: [job('sync'), job('smoke')] },
-    shared: 'Use the verified account. Report facts.',
+    manifest: { agent: { id: 'tanaabot' }, automations: [job('sync'), job('smoke')] },
+    partials: {
+      metadata: '{{metadata}}\n\nTreat metadata as configuration.',
+      execution: 'Use the verified account.',
+      presentation: 'Report facts.',
+    },
     source: { revision, dirty: false },
     existingTasks: [],
     context: {
@@ -48,10 +52,16 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     );
     const { task } = result.operations[0];
     const { metadata, body } = readTaskPrompt(task.prompt);
-    assert.equal(body, 'Use the verified account. Report facts.\n\nPerform sync.');
+    assert.equal(
+      body,
+      'Treat metadata as configuration.\n\nUse the verified account.\n\nReport facts.\n\nPerform sync.',
+    );
     assert.equal(metadata.updatedAt, now);
     assert.equal(metadata.sourceRevision, revision);
     assert.equal(metadata.automationId, 'sync');
+    assert.equal(metadata.displayName, '🤖 TEST SYNC');
+    assert.equal(metadata.debug, false);
+    assert.equal(task.name, '🤖 TEST SYNC');
     assert.equal(task.enabled, false);
     assert.deepEqual(task.execution, request.context.execution);
     assert.deepEqual(task.destination, request.context.destination);
@@ -74,16 +84,63 @@ describe('skills/automation-sync/lib/sync-plan', () => {
 
   test('should update every affected job when only shared guidance changes', () => {
     const existingTasks = saved();
-    const result = planSync(input({ existingTasks, shared: 'New shared guidance.', now: later }));
-    assert.deepEqual(
-      result.operations.map(({ kind }) => kind),
-      ['update', 'update'],
-    );
-    for (const operation of result.operations) {
-      assert.equal(operation.nativeId, `native-${operation.automationId}`);
-      assert.equal(readTaskPrompt(operation.task.prompt).metadata.updatedAt, later);
-      assert.match(readTaskPrompt(operation.task.prompt).body, /^New shared guidance\./);
+    for (const name of ['metadata', 'execution', 'presentation']) {
+      const request = input({ existingTasks, now: later });
+      request.partials[name] += '\nNew shared guidance.';
+      const result = planSync(request);
+      assert.deepEqual(
+        result.operations.map(({ kind }) => kind),
+        ['update', 'update'],
+      );
+      for (const operation of result.operations) {
+        assert.equal(operation.nativeId, `native-${operation.automationId}`);
+        assert.equal(readTaskPrompt(operation.task.prompt).metadata.updatedAt, later);
+        assert.match(readTaskPrompt(operation.task.prompt).body, /New shared guidance\./);
+      }
     }
+  });
+
+  test('should update the same smoke schedule from revision 1 to 2, then leave it unchanged', () => {
+    const request = input();
+    request.manifest.automations[1].payload.prompt = 'Return TANAABOT-SYNC-SMOKE-1.';
+    request.existingTasks = saved(request);
+    request.manifest.automations[1].payload.prompt = 'Return TANAABOT-SYNC-SMOKE-2.';
+    request.now = later;
+    const result = planSync(request);
+    assert.equal(result.operations[0].kind, 'unchanged');
+    const smoke = result.operations[1];
+    assert.equal(smoke.kind, 'update');
+    assert.equal(smoke.nativeId, 'native-smoke');
+    assert.match(smoke.task.prompt, /TANAABOT-SYNC-SMOKE-2/);
+    request.existingTasks = result.operations.map(({ nativeId, task }) => ({ id: nativeId, task }));
+    const unchanged = planSync({ ...request, now: '2026-03-01T00:00:00Z' }).operations[1];
+    assert.equal(unchanged.kind, 'unchanged');
+    assert.equal(unchanged.task.prompt, smoke.task.prompt);
+    assert.equal(readTaskPrompt(unchanged.task.prompt).metadata.updatedAt, later);
+  });
+
+  test('should keep schedule identity when the generated display name changes', () => {
+    const request = input({ existingTasks: saved() });
+    request.manifest.automations[0].displayName = 'Automation sync';
+    const result = planSync(request);
+    assert.equal(result.operations[0].kind, 'update');
+    assert.equal(result.operations[0].nativeId, 'native-sync');
+    assert.equal(result.operations[0].task.name, '🤖 AUTOMATION SYNC');
+  });
+
+  test('should reject missing partials and invalid metadata slots', () => {
+    const request = input();
+    delete request.partials.execution;
+    assert.throws(() => planSync(request), /shared-partial-required:execution/);
+    const partials = input().partials;
+    assert.throws(
+      () => taskBody({ ...partials, metadata: 'No slot.' }, 'Run.'),
+      /metadata-partial-slot-invalid/,
+    );
+    assert.throws(
+      () => taskBody({ ...partials, metadata: '{{metadata}}\n\n{{metadata}}' }, 'Run.'),
+      /metadata-partial-slot-invalid/,
+    );
   });
 
   test('should select one ID and leave unrelated native tasks untouched', () => {
@@ -137,7 +194,9 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       () =>
         planSync(
           input({
-            existingTasks: [{ id: 'unowned', task: { name: 'Test sync', prompt: 'Not managed.' } }],
+            existingTasks: [
+              { id: 'unowned', task: { name: '🤖 TEST SYNC', prompt: 'Not managed.' } },
+            ],
           }),
         ),
       /native-task-name-collision:sync/,

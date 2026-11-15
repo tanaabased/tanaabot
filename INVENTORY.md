@@ -51,7 +51,7 @@ Cloud startup explicitly loads the local skills without requiring this plugin's 
 
 | Source                                                     | Owns                                                        |
 | ---------------------------------------------------------- | ----------------------------------------------------------- |
-| [Agent manifest](./.agent-system/agent.yaml)               | Name, ID, avatar, debug and setup/automation references     |
+| [Agent manifest](./.agent-system/agent.yaml)               | Name, ID, avatar and setup/automation references            |
 | [Automation definitions](./.agent-system/automations.yaml) | Synchronizer and smoke-test schedules and prompt references |
 | [Host setup](./.agent-system/setup-host.yaml)              | Host mode check/apply declaration                           |
 | [Agent setup](./.agent-system/setup-agent.yaml)            | Agent mode check/apply declaration                          |

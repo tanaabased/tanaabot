@@ -14,9 +14,13 @@ export default async function definitions(workspaceDir) {
     error.diagnostics = loaded.diagnostics;
     throw error;
   }
-  const guidance = await realpath(resolve(root, 'prompts/automations/shared.md'));
-  const path = relative(root, guidance);
-  if (path === '..' || path.startsWith(`..${sep}`))
-    throw new Error('shared-guidance-outside-workspace');
-  return { manifest: loaded.manifest, shared: await readFile(guidance, 'utf8') };
+  const partials = {};
+  for (const name of ['metadata', 'execution', 'presentation']) {
+    const file = await realpath(resolve(root, `prompts/automations/partials/${name}.md`));
+    const path = relative(root, file);
+    if (path === '..' || path.startsWith(`..${sep}`))
+      throw new Error('shared-guidance-outside-workspace');
+    partials[name] = await readFile(file, 'utf8');
+  }
+  return { manifest: loaded.manifest, partials };
 }

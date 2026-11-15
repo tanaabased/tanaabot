@@ -61,8 +61,12 @@ do not activate them or run a pilot without separate authorization.
 
 The skill installs the checkout's locked dependencies and prepares Agent System's public manifest
 loader from its temporary GitHub `main` dependency. It combines the
-[definitions](./.agent-system/automations.yaml), task prompts and shared guidance, then updates
+[definitions](./.agent-system/automations.yaml), task prompts and shared metadata, execution and
+[presentation partials](./prompts/automations/partials/presentation.md), then updates
 changed native tasks and leaves unchanged ones alone. Shared-guidance changes update affected tasks.
+Names are generated as 🤖 plus the uppercase display name. The daily schedules use the native
+scheduler's local timezone: midnight for sync and 00:15 for smoke, with no timezone override.
+Keep smoke paused outside an authorized test window.
 Native Cloud scheduling access, smoke output and unattended synchronization still require the
 separately authorized live pilot tracked in [#8](https://github.com/tanaabased/tanaabot/issues/8).
 

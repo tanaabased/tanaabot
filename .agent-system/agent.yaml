@@ -1,6 +1,4 @@
 schema-version: 1
-debug: false
-
 agent:
   id: tanaabot
   name: tanaabot

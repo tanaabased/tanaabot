@@ -27,10 +27,12 @@ updates; the script itself makes no service writes.
 ## Required Reading
 
 - **Always:** Read [native task inputs and application](./references/native-tasks.md),
-  [shared scheduled guidance](../../prompts/automations/shared.md) and the selected revision's
+  the shared [metadata](../../prompts/automations/partials/metadata.md),
+  [execution](../../prompts/automations/partials/execution.md) and
+  [presentation](../../prompts/automations/partials/presentation.md) partials, and the selected revision's
   [account guidance](../../dotfiles/ai/.codex/AGENTS.md#accounts-and-authority).
 - **Before writing the result:** Read [Tanaabot Voice](../voice/SKILL.md) and its required samples,
-  unless another voice was requested. Apply the shared scheduled card instructions above.
+  unless another voice was requested. Apply the presentation partial's result and summary rules.
 
 ## When to Use
 
@@ -61,7 +63,8 @@ updates; the script itself makes no service writes.
 
 The assembler returns exact task objects and `create`, `update` or `unchanged` actions. Shared
 guidance participates in comparison; unchanged timestamps and native IDs are retained. A prepared
-action, launched worker or report does not establish that schedules were saved.
+action, launched worker or report does not establish that schedules were saved. It generates every
+native name as 🤖 followed by the uppercase display name. Omitted debug defaults to false.
 
 ## Failure Handling
 
@@ -83,7 +86,7 @@ automatically or switch credentials to recover a failure.
 3. List the dot's existing schedules, including paused tasks, following pagination. Read missing
    fields for matching tasks only. An incomplete listing cannot prove a job is absent.
 4. Run `bun skills/automation-sync/scripts/sync-task.js` with JSON on stdin using the reference's
-   input shape. It reads the manifest, external definitions, prompts and shared guidance, and
+   input shape. It reads the manifest, external definitions, prompts and all three shared partials, and
    resolves Git revision/dirty state itself. Dirty source is preview-only; use a clean checkout
    before applying. Review the returned source and actions.
 5. Skip unchanged actions. Apply creates/updates through supported native controls with the exact
@@ -99,6 +102,12 @@ The definitions start with `enabled: false`; seeding creates paused schedules. E
 an operator-authorized source change and synchronization. Never hand-edit prepared task objects
 to override desired state. Manual updates repeat this same workflow.
 
+The synchronizer is scheduled at midnight and the smoke test at 00:15 in the native scheduler's
+local timezone, with no timezone override. Check its displayed next run when seeding; do not infer
+the scheduler's timezone from the Cloud worker. The seed runs synchronization immediately rather
+than waiting for midnight. Keep the smoke schedule paused outside an authorized validation window;
+the later time does not guarantee synchronization completed.
+
 ## Optimization
 
 - **Inspect:** Compare declared IDs, assembled guidance and native tasks without writes.
@@ -111,6 +120,7 @@ to override desired state. Manual updates repeat this same workflow.
 ## Bundled Resources
 
 - [Native task inputs](./references/native-tasks.md): Native mapping and stdin shape.
+- [Smoke pilot](./references/smoke-pilot.md): Revision update, no-op, partial drift and delivery checks.
 - `scripts/prepare-dependency.js`: Git dependency manifest build.
 - `scripts/sync-task.js`: Read-only assembly and comparison.
 - `lib/`, `utils/`, `test/`: Loader integration, comparison and owned tests.
@@ -119,5 +129,6 @@ to override desired state. Manual updates repeat this same workflow.
 
 Run the owned tests and Canon's validator. In the authorized dot pilot, check initial creation,
 saved environment/destination, one harmless update, an unchanged rerun without duplicates, smoke
-output and visible delivery. Test unattended sync separately from Run now. Source and structural
+output and visible delivery, following [the smoke pilot](./references/smoke-pilot.md).
+Test unattended sync separately from Run now. Source and structural
 checks do not establish native scheduling or automatic delivery.

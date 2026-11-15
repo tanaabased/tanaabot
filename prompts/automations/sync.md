@@ -19,3 +19,15 @@ If this Cloud worker lacks native scheduling tools, return the prepared actions 
 dot for application through its supported controls. Report that handoff as pending until the native
 operation succeeds. If unattended application is unsupported, report the limitation and the skill's
 manual update procedure. Do not silently claim synchronization or enqueue a substitute schedule.
+
+## Result and dot summary
+
+After native application, show an automation synchronization result card with a small table of
+automation names and actual outcomes: created, updated, unchanged or failed. State whether the
+schedules are active or paused when the native results establish it. Follow the shared success
+footer and diagnostic rules. The assembler's prepared-action card is a preview, not this outcome.
+
+For the owning dot, summarize counts and whether attention is needed in one short status card.
+Include the native-provided run/chat link when available. For example, “One schedule updated;
+one unchanged. Both remain paused.” Preserve missing-tool handoffs as pending; never call them
+completed synchronization. Use the host's saved delivery mechanism without a duplicate direct send.

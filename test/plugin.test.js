@@ -8,6 +8,9 @@ import { fileURLToPath } from 'node:url';
 
 import { loadManifest } from '@tanaab/openclaw-agent-system/manifest';
 
+import loadDefinitions from '../skills/automation-sync/lib/definitions.js';
+import { planSync } from '../skills/automation-sync/lib/sync-plan.js';
+
 const root = fileURLToPath(new URL('../', import.meta.url));
 
 test('packed plugin retains canonical skills, assets and usable links', async () => {
@@ -45,6 +48,18 @@ test('packed plugin retains canonical skills, assets and usable links', async ()
         { id: 'smoke-test', enabled: false },
       ],
     );
+    const assembled = planSync({
+      ...(await loadDefinitions(payload)),
+      source: { revision: 'a'.repeat(40), dirty: false },
+      existingTasks: [],
+      context: { execution: { kind: 'inherited' }, destination: { kind: 'dot', id: 'test-dot' } },
+      now: '2026-01-01T00:00:00Z',
+    });
+    assert.deepEqual(
+      assembled.operations.map(({ task }) => task.name),
+      ['🤖 AUTOMATION SYNC', '🤖 SMOKE TEST'],
+    );
+    assert.ok(assembled.operations.every(({ task }) => task.schedule.timezone === null));
     assert.equal(skills, join(payload, 'skills'));
     assert.equal(existsSync(join(payload, '.agents/plugins/marketplace.json')), false);
     assert.equal(existsSync(join(payload, '.agents/skills')), false);

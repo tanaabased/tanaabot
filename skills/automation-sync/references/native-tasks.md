@@ -23,7 +23,7 @@ Normalize native reads into `existingTasks` records containing `id` (native sche
 
 | Field             | Value                                                                   |
 | ----------------- | ----------------------------------------------------------------------- |
-| `name`            | Saved native display name                                               |
+| `name`            | Saved native display name, generated as 🤖 plus the uppercase label     |
 | `enabled`         | Actual active/paused state as a boolean                                 |
 | `schedule`        | Shared normalized schedule representing native cadence/timezone exactly |
 | `execution`       | Actual saved Cloud environment or inherited execution, as above         |
@@ -49,6 +49,20 @@ content and native settings all participate in comparison. Source revision and g
 Map these values to the native tool's current supported schema; these field names do not claim
 to be a host API. Preserve the exact compiled prompt and settings. Do not use a contributor's
 local Codex automation tool as a substitute for the dot's controls.
+
+For cron schedules with `timezone: null`, preserve the native scheduler's local timezone. Do not
+insert the Cloud worker's timezone or a UTC override. Inspect the saved next-run value when seeding
+to confirm the intended local midnight. A later smoke schedule is not a completion dependency.
+
+The metadata partial has exactly one `{{metadata}}` slot at its start. The assembler supplies the
+generated block there, immediately followed by its interpretation guidance, then execution guidance,
+presentation guidance and the automation prompt. This fixed composition has no recursive includes
+or arbitrary template expressions. Partial changes update every affected native task.
+
+Prompt metadata can describe execution and result delivery, but the applying context must also save
+those settings through native controls. A prompt cannot bind a chat, select a sidebar group or
+enable separate summary delivery. Use native-provided run/chat URLs only when available. Reusable
+chats, automatic grouping and customized native task previews remain outside this pilot's mapping.
 
 If Cloud lacks scheduling tools, return the objects to the owning dot. It reads current tasks,
 recomputes if they changed and applies through the same controls. Report that handoff as pending.

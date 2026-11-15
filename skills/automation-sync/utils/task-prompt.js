@@ -15,6 +15,25 @@ export function fingerprint(value) {
   return createHash('sha256').update(canonical(value)).digest('hex');
 }
 
+export function taskBody(partials, prompt) {
+  for (const name of ['metadata', 'execution', 'presentation']) {
+    if (typeof partials?.[name] !== 'string' || !partials[name].trim())
+      throw new Error(`shared-partial-required:${name}`);
+  }
+  const slot = '{{metadata}}\n\n';
+  if (
+    !partials.metadata.startsWith(slot) ||
+    partials.metadata.slice(slot.length).includes('{{metadata}}')
+  )
+    throw new Error('metadata-partial-slot-invalid');
+  return [
+    partials.metadata.slice(slot.length).trim(),
+    partials.execution.trim(),
+    partials.presentation.trim(),
+    prompt.trim(),
+  ].join('\n\n');
+}
+
 export function taskPrompt(metadata, body) {
   return `${opening}\n${JSON.stringify(metadata, null, 2)}\n${closing}\n\n${body}`;
 }

@@ -1,4 +1,10 @@
-import { canonical, fingerprint, readTaskPrompt, taskPrompt } from '../utils/task-prompt.js';
+import {
+  canonical,
+  fingerprint,
+  readTaskPrompt,
+  taskBody,
+  taskPrompt,
+} from '../utils/task-prompt.js';
 
 const repository = 'tanaabased/tanaabot';
 
@@ -49,12 +55,11 @@ function semanticTask(task) {
 }
 
 /** Prepare effects only; native tools own publication, approval and saved-state reads. */
-export function planSync({ manifest, shared, source, existingTasks, context, id = 'all', now }) {
+export function planSync({ manifest, partials, source, existingTasks, context, id = 'all', now }) {
   if (manifest.agent?.id !== 'tanaabot') throw new Error('tanaabot-manifest-required');
   if (!/^[a-f0-9]{40}$/.test(source?.revision ?? '') || typeof source.dirty !== 'boolean') {
     throw new Error('source-revision-required');
   }
-  if (!shared?.trim()) throw new Error('shared-guidance-required');
   const updatedAt = new Date(now).toISOString();
   const target = executionContext(context);
   const records = existingRecords(existingTasks);
@@ -71,9 +76,9 @@ export function planSync({ manifest, shared, source, existingTasks, context, id 
       }
       if (job.thread || job.overrides.codex?.target)
         throw new Error(`native-thread-target-unsupported:${job.id}`);
-      const body = `${shared.trim()}\n\n${job.payload.prompt.trim()}`;
+      const body = taskBody(partials, job.payload.prompt);
       const task = {
-        name: job.displayName ?? `${manifest.agent.id}: ${job.id}`,
+        name: `🤖 ${(job.displayName ?? job.id.replaceAll('-', ' ')).trim().toUpperCase()}`,
         enabled: job.enabled,
         schedule: job.schedule,
         ...target,
@@ -112,6 +117,7 @@ export function planSync({ manifest, shared, source, existingTasks, context, id 
       const metadata = {
         schema: 'tanaabot.automation/v1',
         ...identity,
+        displayName: task.name,
         contentHash,
         sourceRevision: source.revision,
         sourceDirty: source.dirty,
