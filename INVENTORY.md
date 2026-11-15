@@ -4,11 +4,12 @@ Tanaabot's Codex Cloud sources and their current status. See [Tanaboot](./TANABO
 
 ## Skills
 
-| Skill                                                     | Use                                                 | Dependencies                               |
-| --------------------------------------------------------- | --------------------------------------------------- | ------------------------------------------ |
-| [Tanaabot Voice](./skills/voice/SKILL.md)                 | Replies and documentation in tanaabot's voice       | None                                       |
-| [Tanaabot Skill Author](./skills/skill-author/SKILL.md)   | Create, maintain and validate tanaabot skills       | Discoverable `tanaab-skill-author` and Bun |
-| [Tanaabot Startup Check](./skills/startup-check/SKILL.md) | Verify a prepared Cloud environment without repairs | Prepared Tanaabot source and task catalog  |
+| Skill                                                           | Use                                                           | Dependencies                               |
+| --------------------------------------------------------------- | ------------------------------------------------------------- | ------------------------------------------ |
+| [Tanaabot Voice](./skills/voice/SKILL.md)                       | Replies and documentation in tanaabot's voice                 | None                                       |
+| [Tanaabot Skill Author](./skills/skill-author/SKILL.md)         | Create, maintain and validate tanaabot skills                 | Discoverable `tanaab-skill-author` and Bun |
+| [Tanaabot Startup Check](./skills/startup-check/SKILL.md)       | Verify a prepared Cloud environment without repairs           | Prepared Tanaabot source and task catalog  |
+| [Spaceport Fortune Cookie](./skills/spaceport-fortune/SKILL.md) | Exercise local skill selection and required-reference loading | Bundled fortune reference                  |
 
 Skill Author customizes Canon's methods. Install Canon separately in your ChatGPT account as described
 under [Skills](./TANABOOT.md#skills). Missing required tools or references leave
@@ -38,9 +39,9 @@ Git, GitHub and SSH configuration remain inactive stubs. Fresh-task Cloud startu
 
 ## Plugins
 
-| Surface | Source                                         | Status                                       |
-| ------- | ---------------------------------------------- | -------------------------------------------- |
-| Codex   | [Plugin manifest](./.codex-plugin/plugin.json) | Voice, skill-author and startup-check skills |
+| Surface | Source                                         | Status                  |
+| ------- | ---------------------------------------------- | ----------------------- |
+| Codex   | [Plugin manifest](./.codex-plugin/plugin.json) | All skills listed above |
 
 The optional Codex plugin ships the same `skills/` sources in `@tanaab/tanaabot`.
 Cloud startup explicitly loads the local skills without requiring this plugin's installation.
