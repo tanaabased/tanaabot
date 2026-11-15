@@ -43,9 +43,11 @@ changes to an existing worker without replacing its ID. Verify its Cloud configu
 association or the original launch receipt, not a name or repository claim. A missing existing worker
 or an environment mismatch stops the affected action; do not create a replacement automatically.
 
-Keep the native-provided chat URL. A worker without a verified URL cannot satisfy linked-summary
-delivery and stops schedule assembly. Do not construct URLs from IDs. Native worker IDs and URLs
-live in the saved schedule prompt and current native responses, not a separate database.
+Keep the native-provided chat link: `codex://threads/<worker-id>` or an HTTPS chat URL. A Codex
+deep link must identify the verified worker. Do not construct URLs from IDs. Omit `url` when no
+link was supplied; a missing presentation link does not prevent routing by verified worker ID.
+Native worker IDs and optional links live in the saved schedule prompt and current native
+responses, not a separate database.
 
 ## Assemble schedules
 
@@ -65,7 +67,7 @@ Repeat with `mode: "sync"` (also the default), adding `existingTasks` and `conte
         "environmentId": "verified-published-config-id",
         "name": "AUTOMATION SYNC",
         "group": "REPORTS",
-        "url": "https://native-provided-chat-url.example/"
+        "url": "codex://threads/verified-worker-id"
       }
     ]
   },
@@ -102,6 +104,14 @@ Never use the contributor's local scheduler as a substitute or write scheduler f
 local-time cron when `timezone` is null; do not insert UTC or the Cloud worker's timezone. Inspect
 the displayed next run during seeding to confirm local midnight. The later smoke schedule is not
 a completion dependency. Source `enabled: false` means paused, regardless of other defaults.
+
+For a new disabled definition, prefer native paused creation. If creation always starts active,
+create once and immediately pause the returned native ID before applying the next task. This
+create-then-pause sequence is part of authorized seeding; it does not authorize a manual run.
+Verify the final paused state. If the pause fails, report that the schedule remains active when
+known, or that its state is unverified, and retain its ID for recovery. Do not recreate it or
+claim paused success. If creation is uncertain, recover the existing ID before pausing; never
+repeat an uncertain create. Existing tasks are updated directly to the declared enabled state.
 
 All consumed partials participate in comparison, including coordinator dispatch. A changed partial
 updates every affected task. Generated timestamps and source revision alone do not force updates;

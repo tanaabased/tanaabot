@@ -101,6 +101,48 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     assert.equal(readTaskPrompt(result.operations[0].task.prompt).metadata.updatedAt, now);
   });
 
+  test('should preserve a native deep link through assembly and an unchanged rerun', () => {
+    const request = input();
+    request.context.workers[0].url = 'codex://threads/worker-sync';
+    const initial = saved(request);
+    const worker = workerRequest(initial[0].task);
+    assert.equal(worker.thread.url, 'codex://threads/worker-sync');
+    assert.equal(worker.thread.id, 'worker-sync');
+    const result = planSync({ ...request, existingTasks: initial, now: later });
+    assert.equal(result.operations[0].kind, 'unchanged');
+    assert.equal(result.operations[0].nativeId, 'native-sync');
+    assert.equal(result.operations[0].task.prompt, initial[0].task.prompt);
+  });
+
+  test('should allow an unavailable presentation link without losing worker routing', () => {
+    const request = input();
+    delete request.context.workers[0].url;
+    const worker = workerRequest(planSync(request).operations[0].task);
+    assert.equal(worker.thread.id, 'worker-sync');
+    assert.equal(worker.execution.environmentId, 'test-environment');
+    assert.equal(Object.hasOwn(worker.thread, 'url'), false);
+    request.context.workers[0].environmentId = 'wrong-environment';
+    assert.throws(() => planSync(request), /reusable-worker-target-mismatch/);
+  });
+
+  test('should reject malformed links, unsupported schemes and mismatched native chat IDs', () => {
+    for (const url of [
+      '',
+      'not-a-url',
+      'javascript:alert(1)',
+      'file:///tmp/chat',
+      'https://example.test/chat\n',
+      'https://user:password@example.test/chat',
+      'codex://threads/another-worker',
+      'codex://settings/worker-sync',
+      'codex://threads/worker-sync?redirect=elsewhere',
+    ]) {
+      const request = input();
+      request.context.workers[0].url = url;
+      assert.throws(() => planSync(request), /native-worker-url-invalid/);
+    }
+  });
+
   test('should update every affected job when only shared guidance changes', () => {
     const existingTasks = saved();
     for (const name of ['metadata', 'execution', 'presentation', 'dispatch']) {

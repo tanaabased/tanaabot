@@ -103,7 +103,9 @@ automatically or switch credentials to recover a failure.
    returned source and actions. The compiled scheduled prompt coordinates the worker; its embedded
    worker request contains the automation instructions and metadata.
 6. Skip unchanged actions. Apply creates/updates through the owning dot's supported native controls with the exact
-   compiled content and native ID. Translate normalized schedules only when the native API can
+   compiled content and native ID. For disabled definitions, follow the native-task reference's
+   paused-create or immediate create-then-pause procedure and verify the final state.
+   Translate normalized schedules only when the native API can
    represent them exactly. Resolve listing/earlier-effect uncertainty before creating. If another
    writer changed an update's current values, recompute from the latest native record.
 7. Trust a successful native result that includes saved settings. Read back only omitted values,
@@ -111,7 +113,8 @@ automatically or switch credentials to recover a failure.
    Report completed actions and actionable limits in the shared card style. Keep private native
    bindings out of public repository files.
 
-The definitions start with `enabled: false`; seeding creates paused schedules. Enabling requires
+The definitions start with `enabled: false`; seeding must leave schedules paused, using immediate
+create-then-pause when native creation cannot start paused. Ongoing activation requires
 an operator-authorized source change and synchronization. Never hand-edit prepared task objects
 to override desired state. Manual updates repeat this same workflow.
 

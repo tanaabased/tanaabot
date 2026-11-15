@@ -53,12 +53,15 @@ Report the resolved commit, read skills/automation-sync/SKILL.md and its require
 references from that checkout, and synchronize all declared automations.
 
 Keep the existing approved account scope. Use the reusable per-automation Cloud
-chats in REPORTS, with titles matching their authored display names. Return linked
-summary cards to this main chat and keep detailed results in those worker chats. Use the
+chats in REPORTS, with titles matching their authored display names. Return one compact
+summary card per automation, each in a separate message to this main chat. Use “Go to chat →”
+for verified worker links, including native Codex deep links, and keep detailed results in
+those worker chats. Use the
 native scheduling controls; if unavailable in Cloud, return the prepared task
 objects here for application through this dot's supported controls. Do not claim
-the handoff saved schedules. The definitions are disabled: seed paused tasks and
-do not activate them or run a pilot without separate authorization.
+the handoff saved schedules. The definitions are disabled: save them paused. If creation
+always starts active, create each once, immediately pause its returned native ID, and
+verify the final paused state. Do not leave tasks active or manually run a pilot.
 ```
 
 The skill installs the checkout's locked dependencies and prepares Agent System's public manifest

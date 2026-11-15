@@ -9,6 +9,33 @@ import automationTargets from './automation-targets.js';
 
 const repository = 'tanaabased/tanaabot';
 
+function workerLink(worker) {
+  if (worker.url == null) return {};
+  let url;
+  try {
+    url = new URL(worker.url);
+  } catch {
+    throw new Error(`native-worker-url-invalid:${worker.automationId}`);
+  }
+  const supported =
+    url.protocol === 'https:' ||
+    (url.protocol === 'codex:' &&
+      url.hostname === 'threads' &&
+      url.pathname === `/${worker.id}` &&
+      !url.port &&
+      !url.search &&
+      !url.hash);
+  if (
+    typeof worker.url !== 'string' ||
+    /\s/u.test(worker.url) ||
+    url.username ||
+    url.password ||
+    !supported
+  )
+    throw new Error(`native-worker-url-invalid:${worker.automationId}`);
+  return { url: worker.url };
+}
+
 function bindWorker(target, workers) {
   if (!Array.isArray(workers)) throw new Error('native-workers-required');
   const matches = workers.filter((worker) => worker.automationId === target.automationId);
@@ -22,11 +49,9 @@ function bindWorker(target, workers) {
     throw new Error(`reusable-worker-target-mismatch:${target.automationId}`);
   if (worker.name !== target.thread.name || worker.group !== target.thread.group)
     throw new Error(`reusable-worker-settings-drift:${target.automationId}`);
-  if (typeof worker.url !== 'string' || !/^https:\/\/\S+$/u.test(worker.url))
-    throw new Error(`native-worker-url-required:${target.automationId}`);
   return {
     ...target,
-    thread: { ...target.thread, id: worker.id, url: worker.url },
+    thread: { ...target.thread, id: worker.id, ...workerLink(worker) },
   };
 }
 

@@ -4,10 +4,14 @@ Run only in the operator-approved validation window. Keep both source definition
 default; activation, result delivery and any temporary settings need that window's explicit scope.
 Do not run this during routine contributor validation or invent a separate state store.
 
-1. Seed paused tasks through the sync skill. Use the native saved results to confirm distinct task
+1. Seed tasks through the sync skill, using create-then-pause if required by native controls.
+   Use the native saved results to confirm paused state, distinct task
    IDs, 🤖 names, local-time schedules and main-chat destination. Confirm the embedded worker
    bindings select the published Tanaabot configuration, reusable chats with unadorned display
    names, native chat URLs and `REPORTS` sidebar placement.
+   Confirm each automation's compact summary arrives as a separate main-chat message and its
+   “Go to chat →” link opens the intended worker. Check native deep-link rendering in the actual
+   client; a prepared Markdown card does not prove message separation or link behavior.
 2. Run the smoke task manually if authorized. Inspect its revision-1 marker in the actual output.
    Record the native-provided run/chat link, where the chat appears, where the result/summary
    arrives and which environment actually executed it. Report unavailable fields as unknown.

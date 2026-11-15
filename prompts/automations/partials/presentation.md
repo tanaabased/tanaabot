@@ -26,25 +26,31 @@ authored display name, without the schedule's generated 🤖 prefix. Each automa
 its purpose emoji, such as 📅 for calendar review, 🔄 for synchronization or 🧪 for a smoke test.
 Keep status out of this heading.
 
-Put the useful outcome, review/action request and verified run/chat link in the body. End the
-quoted card with exactly one short status line, after the link:
+Keep each summary to consecutive quoted lines: H2 heading, one short outcome sentence,
+optional chat link, then one contextual status line. Do not insert blank quoted lines. Use
+Markdown hard line breaks after the outcome and link so they remain on separate lines without
+paragraph spacing. The client still controls heading margins and native rendering.
 
-- **Success:** `✅ Automation successful.`
-- **Warning:** `⚠️` followed by a one-line explanation of incomplete or uncertain work.
-- **Error:** `❌` followed by a one-line explanation of the failed operation.
+Label a verified worker link “Go to chat →”, whether it uses `codex://threads/...` or HTTPS.
+Copy the native-provided link exactly; do not construct it or describe a chat link as a specific
+run permalink. If no verified link is available, omit that line. Native task pills, their
+checkmarks and their placement belong to the host; do not imitate them or claim they prove
+schedule state.
 
-Keep that line inside the same quote block. A successful review can find nothing; use the success
-line and say there is nothing to review in the body. Do not add a second success footer outside
-the summary or a separate status-heading card for the same summary outcome. Detailed results
-and optional debug cards retain their own guidance above.
+End the card with exactly one contextual status line:
 
-Use this in the saved dot destination when the native host supports separate summary delivery.
-Keep the detailed result in the execution chat. If there is only one output surface, include the
-summary once before the detailed result; do not duplicate the full result in the summary.
+- **Success:** `✅` plus what actually completed, such as “Schedule saved and paused”,
+  “Synchronization complete” or “Smoke test passed”. Do not use “Ready for testing” or
+  “Ready to run” as a universal footer; paused seeding does not establish successful execution.
+- **Warning:** `⚠️` plus the incomplete or uncertain outcome.
+- **Error:** `❌` plus the failed operation and its immediate consequence.
 
-An ordinary Markdown link may be labeled “Review results” or “Open run”; the host controls native
-task previews and clickable card chrome. Do not claim the whole quote block is clickable. With
-no verified URL, omit the link and state that it was unavailable. Do not invent one.
+Deliver one automation's card per main-chat message, including during seeding. Keep detailed
+results in its worker chat. Use the host's supported separate-message delivery; do not combine
+cards into one response or append a large recap. If that delivery is unavailable, report the
+limitation once without bundling the cards or claiming separate delivery. Do not use a task
+continuation prompt merely to imitate an assistant result message, and do not duplicate a summary
+already delivered by the scheduler. Detailed results and debug cards retain their own formatting.
 
 ## Illustrative output examples
 
@@ -109,42 +115,45 @@ Optional diagnostic:
 > **Reason for update:** Shared presentation guidance changed  
 > **Configuration updated:** Use the actual metadata.updatedAt value.
 
-Summary for the dot, with its verified run link added when available:
+Compact main-chat examples follow. Each card is a separate message; replace the illustrative
+native link with the actual supplied worker link.
 
-> ## 📅 CALENDAR REVIEW
->
-> Three candidate events are ready for your review. No calendar changes were made.
->
-> ✅ Automation successful.
+Successful seed:
+
+<!-- prettier-ignore -->
+> ## 🔄 AUTOMATION SYNC
+> The schedule is saved and paused.\
+> [Go to chat →](codex://threads/example-worker)\
+> ✅ Seeding complete.
 
 Empty-run summary:
 
+<!-- prettier-ignore -->
 > ## 📅 CALENDAR REVIEW
->
-> No candidate events need your attention. No calendar changes were made.
->
-> ✅ Automation successful.
+> No candidate events need your attention.\
+> [Go to chat →](codex://threads/example-worker)\
+> ✅ Review complete; no changes made.
 
 Synchronization summary:
 
+<!-- prettier-ignore -->
 > ## 🔄 AUTOMATION SYNC
->
-> One schedule updated; one unchanged. Both remain paused.
->
-> ✅ Automation successful.
+> One schedule updated; one unchanged. Both remain paused.\
+> [Go to chat →](codex://threads/example-worker)\
+> ✅ Synchronization complete.
 
 Incomplete-review summary:
 
+<!-- prettier-ignore -->
 > ## 📅 CALENDAR REVIEW
->
-> Two candidate events were found. Restore the calendar connection before deciding which to add.
->
-> ⚠️ Calendar conflicts could not be checked.
+> Two candidates were found; restore the calendar connection to check conflicts.\
+> [Go to chat →](codex://threads/example-worker)\
+> ⚠️ Conflict checks remain incomplete.
 
-Failed-run summary:
+Failed pause:
 
+<!-- prettier-ignore -->
 > ## 🧪 SMOKE TEST
->
-> The selected Cloud worker could not be started. Review the environment's availability.
->
-> ❌ The smoke test did not run.
+> The schedule was created, but the scheduler rejected pausing it.\
+> [Go to chat →](codex://threads/example-worker)\
+> ❌ Pause failed; the schedule remains active.

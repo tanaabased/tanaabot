@@ -110,6 +110,6 @@ test('should require a verified reusable worker before preparing any schedule', 
   worker.group = 'WRONG';
   assert.throws(() => planSync(request), /reusable-worker-settings-drift/);
   worker.group = 'REPORTS';
-  delete worker.url;
-  assert.throws(() => planSync(request), /native-worker-url-required/);
+  delete worker.id;
+  assert.throws(() => planSync(request), /reusable-worker-missing-or-ambiguous/);
 });
