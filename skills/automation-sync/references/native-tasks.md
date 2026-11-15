@@ -119,6 +119,14 @@ unchanged schedules retain their exact prompts, timestamps and native IDs. Succe
 responses establish saved settings when returned; read back only missing values, uncertain effects
 and explicit pilot checks. Never repeat a denied or uncertain create.
 
+An authored task prompt may start with one optional diagnostic line matching
+`TANAABOT-SYNC-CANARY: UPPERCASE-TOKEN`. The assembler copies it to the literal first line of the
+saved coordinator prompt, immediately before the ownership metadata. Tokens contain uppercase
+letters/digits separated by single hyphens. Metadata-first prompts remain supported. The line
+participates in content comparison through the authored prompt; it does not replace ownership
+matching, change the stable automation ID or reset timestamps on unchanged reruns. Do not prepend
+arbitrary text or edit the live prompt to add it.
+
 If the Cloud worker cannot save schedules, it returns prepared actions to the coordinator for
 application through this same workflow. Report the handoff as pending until application succeeds.
 Unsupported unattended application requires the README's manual seed; never claim it was saved.

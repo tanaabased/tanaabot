@@ -1,6 +1,7 @@
 import {
   canonical,
   fingerprint,
+  promptCanary,
   readTaskPrompt,
   taskBody,
   taskPrompt,
@@ -78,7 +79,7 @@ function validateTask(task) {
   }
 }
 
-function compileTask(task, metadata, worker, body, dispatch) {
+function compileTask(task, metadata, worker, body, dispatch, canary) {
   const request = {
     ...worker,
     prompt: taskPrompt({ ...metadata, role: 'worker' }, body),
@@ -90,6 +91,7 @@ function compileTask(task, metadata, worker, body, dispatch) {
     prompt: taskPrompt(
       { ...metadata, role: 'coordinator' },
       `${dispatch.trim()}\n\n## Worker request\n\n\`\`\`json\n${payload}\n\`\`\``,
+      canary,
     ),
   };
 }
@@ -115,6 +117,7 @@ export function planSync({ manifest, partials, source, existingTasks, context, i
         context.workers,
       );
       const body = taskBody(partials, job.payload.prompt);
+      const canary = promptCanary(job.payload.prompt);
       const task = {
         name: `🤖 ${(job.displayName ?? job.id.replaceAll('-', ' ')).trim().toUpperCase()}`,
         enabled: job.enabled,
@@ -175,6 +178,7 @@ export function planSync({ manifest, partials, source, existingTasks, context, i
           worker,
           body,
           partials.dispatch,
+          canary,
         );
         if (canonical(current.task) === canonical(unchanged))
           return {
@@ -188,7 +192,7 @@ export function planSync({ manifest, partials, source, existingTasks, context, i
         automationId: job.id,
         kind: current ? 'update' : 'create',
         ...(current ? { nativeId: current.id, expectedCurrent: current.task } : {}),
-        task: compileTask(task, metadata, worker, body, partials.dispatch),
+        task: compileTask(task, metadata, worker, body, partials.dispatch, canary),
       };
     });
   return { schema: 'tanaabot.automation-plan/v1', source, operations };
