@@ -1,5 +1,4 @@
 schema-version: 1
-
 agent:
   id: tanaabot
   name: tanaabot
@@ -16,3 +15,6 @@ setup-host:
   file: ./setup-host.yaml
 setup-agent:
   file: ./setup-agent.yaml
+
+automations:
+  file: ./automations.yaml

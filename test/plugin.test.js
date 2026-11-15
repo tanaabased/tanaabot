@@ -6,9 +6,14 @@ import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { loadManifest } from '@tanaab/openclaw-agent-system/manifest';
+
+import loadDefinitions from '../skills/automation-sync/lib/definitions.js';
+import { planSync } from '../skills/automation-sync/lib/sync-plan.js';
+
 const root = fileURLToPath(new URL('../', import.meta.url));
 
-test('packed plugin retains canonical skills, assets and usable links', () => {
+test('packed plugin retains canonical skills, assets and usable links', async () => {
   const temporary = mkdtempSync(join(tmpdir(), 'tanaabot-plugin-'));
   const run = (command, args) =>
     execFileSync(command, args, {
@@ -19,9 +24,14 @@ test('packed plugin retains canonical skills, assets and usable links', () => {
   const source = join(root, 'skills');
 
   try {
-    const [packed] = JSON.parse(
+    const packedArtifacts = JSON.parse(
       run('npm', ['pack', '--ignore-scripts', '--json', '--pack-destination', temporary]),
     );
+    const packageName = JSON.parse(readFileSync(join(root, 'package.json'))).name;
+    const packed = Array.isArray(packedArtifacts)
+      ? packedArtifacts[0]
+      : packedArtifacts[packageName];
+    assert.ok(packed?.filename, 'npm pack must return the candidate artifact');
     run('tar', ['-xzf', join(temporary, packed.filename), '-C', temporary]);
     const payload = join(temporary, 'package');
     const manifest = JSON.parse(readFileSync(join(payload, '.codex-plugin/plugin.json')));
@@ -29,6 +39,38 @@ test('packed plugin retains canonical skills, assets and usable links', () => {
     const skills = resolve(payload, manifest.skills);
 
     assert.equal(manifest.version, metadata.version);
+    const definitions = await loadManifest({ workspaceDir: payload });
+    assert.equal(definitions.status, 'loaded');
+    assert.deepEqual(
+      definitions.manifest.automations.map(({ id, enabled }) => ({ id, enabled })),
+      [
+        { id: 'sync', enabled: false },
+        { id: 'smoke-test', enabled: false },
+      ],
+    );
+    const assembled = planSync({
+      ...(await loadDefinitions(payload)),
+      source: { revision: 'a'.repeat(40), dirty: false },
+      existingTasks: [],
+      context: {
+        environments: [{ id: 'fixture-cloud', name: 'tanaabot' }],
+        workers: definitions.manifest.automations.map((job) => ({
+          automationId: job.id,
+          id: `fixture-worker-${job.id}`,
+          environmentId: 'fixture-cloud',
+          name: job.displayName,
+          group: 'REPORTS',
+          url: `https://example.test/chats/${job.id}`,
+        })),
+        destination: { kind: 'dot', id: 'test-dot' },
+      },
+      now: '2026-01-01T00:00:00Z',
+    });
+    assert.deepEqual(
+      assembled.operations.map(({ task }) => task.name),
+      ['🤖 AUTOMATION SYNC', '🤖 SMOKE TEST'],
+    );
+    assert.ok(assembled.operations.every(({ task }) => task.schedule.timezone === null));
     assert.equal(skills, join(payload, 'skills'));
     assert.equal(existsSync(join(payload, '.agents/plugins/marketplace.json')), false);
     assert.equal(existsSync(join(payload, '.agents/skills')), false);
