@@ -52,7 +52,9 @@ from GitHub main into a clean source checkout without discarding existing edits.
 Report the resolved commit, read skills/automation-sync/SKILL.md and its required
 references from that checkout, and synchronize all declared automations.
 
-Keep the existing approved account scope and return results to this dot. Use the
+Keep the existing approved account scope. Use the reusable per-automation Cloud
+chats in REPORTS, with titles matching their authored display names. Return linked
+summary cards to this main chat and keep detailed results in those worker chats. Use the
 native scheduling controls; if unavailable in Cloud, return the prepared task
 objects here for application through this dot's supported controls. Do not claim
 the handoff saved schedules. The definitions are disabled: seed paused tasks and
@@ -67,6 +69,8 @@ changed native tasks and leaves unchanged ones alone. Shared-guidance changes up
 Names are generated as 🤖 plus the uppercase display name. The daily schedules use the native
 scheduler's local timezone: midnight for sync and 00:15 for smoke, with no timezone override.
 Keep smoke paused outside an authorized test window.
+Tanaabot defaults to its published Cloud environment and reusable chats under `REPORTS`;
+per-automation environment, thread and group overrides use the shared Agent System schema.
 Native Cloud scheduling access, smoke output and unattended synchronization still require the
 separately authorized live pilot tracked in [#8](https://github.com/tanaabased/tanaabot/issues/8).
 

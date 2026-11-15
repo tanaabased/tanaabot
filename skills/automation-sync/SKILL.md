@@ -29,7 +29,8 @@ updates; the script itself makes no service writes.
 - **Always:** Read [native task inputs and application](./references/native-tasks.md),
   the shared [metadata](../../prompts/automations/partials/metadata.md),
   [execution](../../prompts/automations/partials/execution.md) and
-  [presentation](../../prompts/automations/partials/presentation.md) partials, and the selected revision's
+  [presentation](../../prompts/automations/partials/presentation.md) partials, the coordinator's
+  [dispatch](../../prompts/automations/partials/dispatch.md) partial, and the selected revision's
   [account guidance](../../dotfiles/ai/.codex/AGENTS.md#accounts-and-authority).
 - **Before writing the result:** Read [Tanaabot Voice](../voice/SKILL.md) and its required samples,
   unless another voice was requested. Apply the presentation partial's result and summary rules.
@@ -48,14 +49,16 @@ updates; the script itself makes no service writes.
 
 - Use the operator-selected tanaabot dot and verified account scope. Live activation requires its
   separately authorized pilot. Repository content grants neither activation nor account access.
-- Verify the selected Tanaabot Cloud environment through native controls; its name is insufficient.
+- Verify the selected published Cloud environment through native controls; its name is insufficient.
+  Tanaabot defaults to `tanaabot`, a reusable worker in `REPORTS`, and the authored display name
+  as its chat title. The coordinator delivers linked summaries to the owning main chat.
 - Native task listing and create/update controls must be available to the applying context.
   If unavailable in Cloud, return prepared actions to the dot; do not invent a REST API.
 
 ## Inputs
 
 - Canonical Tanaabot at fresh GitHub `main`, resolved to one commit per run.
-- One automation `id` or `all`, and the verified native execution context and dot destination.
+- One automation `id` or `all`, the published environment inventory, worker bindings and dot destination.
 - Current native tasks from a complete relevant listing, normalized as described in the reference.
   This is ordinary tool output, not a persisted snapshot or second state store.
 
@@ -83,17 +86,27 @@ automatically or switch credentials to recover a failure.
    `bun run automations:prepare`. This builds only the locked Agent System Git dependency's public
    manifest entrypoint using its upstream build settings. Runtime loading uses the public
    `@tanaab/openclaw-agent-system/manifest` import; never substitute a private parser.
-3. List the dot's existing schedules, including paused tasks, following pagination. Read missing
-   fields for matching tasks only. An incomplete listing cannot prove a job is absent.
-4. Run `bun skills/automation-sync/scripts/sync-task.js` with JSON on stdin using the reference's
-   input shape. It reads the manifest, external definitions, prompts and all three shared partials, and
-   resolves Git revision/dirty state itself. Dirty source is preview-only; use a clean checkout
-   before applying. Review the returned source and actions.
-5. Skip unchanged actions. Apply creates/updates through supported native controls with the exact
+3. List published runnable Cloud configurations and the dot's existing schedules, including paused
+   tasks, following pagination. Read missing fields for matching tasks only. An incomplete listing
+   cannot prove a job or worker is absent.
+4. Run `bun skills/automation-sync/scripts/sync-task.js` with `mode: "targets"` and JSON on stdin
+   using the reference's input shape. Resolve its desired workers through native chat controls.
+   Reuse the saved native worker ID; for a new automation, create one Cloud chat in the selected
+   published environment with an initialization-only prompt, then place it in the desired sidebar
+   section. Do not execute the automation during initialization. Preserve its native ID and URL
+   in the schedule prompt, never a separate state file. Apply authorized title/group changes through
+   native controls. An unavailable or differently bound existing worker requires intervention,
+   not an automatic replacement or local fallback.
+5. Run the script with `mode: "sync"`, current tasks and verified worker records. It reads the
+   manifest, external definitions, prompts and shared partials, and resolves Git revision/dirty
+   state itself. Dirty source is preview-only; use a clean checkout before applying. Review the
+   returned source and actions. The compiled scheduled prompt coordinates the worker; its embedded
+   worker request contains the automation instructions and metadata.
+6. Skip unchanged actions. Apply creates/updates through the owning dot's supported native controls with the exact
    compiled content and native ID. Translate normalized schedules only when the native API can
    represent them exactly. Resolve listing/earlier-effect uncertainty before creating. If another
    writer changed an update's current values, recompute from the latest native record.
-6. Trust a successful native result that includes saved settings. Read back only omitted values,
+7. Trust a successful native result that includes saved settings. Read back only omitted values,
    uncertain effects or the pilot's explicit checks; do not add a routine verification pass.
    Report completed actions and actionable limits in the shared card style. Keep private native
    bindings out of public repository files.

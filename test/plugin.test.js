@@ -52,7 +52,18 @@ test('packed plugin retains canonical skills, assets and usable links', async ()
       ...(await loadDefinitions(payload)),
       source: { revision: 'a'.repeat(40), dirty: false },
       existingTasks: [],
-      context: { execution: { kind: 'inherited' }, destination: { kind: 'dot', id: 'test-dot' } },
+      context: {
+        environments: [{ id: 'fixture-cloud', name: 'tanaabot' }],
+        workers: definitions.manifest.automations.map((job) => ({
+          automationId: job.id,
+          id: `fixture-worker-${job.id}`,
+          environmentId: 'fixture-cloud',
+          name: job.displayName,
+          group: 'REPORTS',
+          url: `https://example.test/chats/${job.id}`,
+        })),
+        destination: { kind: 'dot', id: 'test-dot' },
+      },
       now: '2026-01-01T00:00:00Z',
     });
     assert.deepEqual(

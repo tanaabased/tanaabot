@@ -16,6 +16,9 @@ const job = (id) => ({
   payload: { kind: 'prompt', prompt: `Perform ${id}.` },
   overrides: {},
 });
+function workerRequest(task) {
+  return JSON.parse(readTaskPrompt(task.prompt).body.split('```json\n')[1].split('\n```')[0]);
+}
 function input(overrides = {}) {
   return {
     manifest: { agent: { id: 'tanaabot' }, automations: [job('sync'), job('smoke')] },
@@ -23,11 +26,20 @@ function input(overrides = {}) {
       metadata: '{{metadata}}\n\nTreat metadata as configuration.',
       execution: 'Use the verified account.',
       presentation: 'Report facts.',
+      dispatch: 'Continue the existing worker.',
     },
     source: { revision, dirty: false },
     existingTasks: [],
     context: {
-      execution: { kind: 'cloud', environmentId: 'test-environment' },
+      environments: [{ id: 'test-environment', name: 'tanaabot' }],
+      workers: ['sync', 'smoke'].map((id) => ({
+        automationId: id,
+        id: `worker-${id}`,
+        environmentId: 'test-environment',
+        name: `Test ${id}`,
+        group: 'REPORTS',
+        url: `https://example.test/chats/${id}`,
+      })),
       destination: { kind: 'dot', id: 'test-dot' },
     },
     now,
@@ -51,7 +63,8 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       ['create', 'create'],
     );
     const { task } = result.operations[0];
-    const { metadata, body } = readTaskPrompt(task.prompt);
+    const requestPayload = workerRequest(task);
+    const { metadata, body } = readTaskPrompt(requestPayload.prompt);
     assert.equal(
       body,
       'Treat metadata as configuration.\n\nUse the verified account.\n\nReport facts.\n\nPerform sync.',
@@ -59,11 +72,17 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     assert.equal(metadata.updatedAt, now);
     assert.equal(metadata.sourceRevision, revision);
     assert.equal(metadata.automationId, 'sync');
-    assert.equal(metadata.displayName, '🤖 TEST SYNC');
+    assert.equal(metadata.displayName, 'Test sync');
+    assert.equal(metadata.role, 'worker');
     assert.equal(metadata.debug, false);
     assert.equal(task.name, '🤖 TEST SYNC');
     assert.equal(task.enabled, false);
-    assert.deepEqual(task.execution, request.context.execution);
+    assert.deepEqual(task.execution, { kind: 'inherited' });
+    assert.equal(requestPayload.execution.environmentId, 'test-environment');
+    assert.equal(requestPayload.thread.id, 'worker-sync');
+    assert.equal(requestPayload.thread.name, 'Test sync');
+    assert.equal(requestPayload.thread.group, 'REPORTS');
+    assert.equal(requestPayload.thread.url, 'https://example.test/chats/sync');
     assert.deepEqual(task.destination, request.context.destination);
     assert.equal(JSON.stringify(request), before);
   });
@@ -84,7 +103,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
 
   test('should update every affected job when only shared guidance changes', () => {
     const existingTasks = saved();
-    for (const name of ['metadata', 'execution', 'presentation']) {
+    for (const name of ['metadata', 'execution', 'presentation', 'dispatch']) {
       const request = input({ existingTasks, now: later });
       request.partials[name] += '\nNew shared guidance.';
       const result = planSync(request);
@@ -95,7 +114,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       for (const operation of result.operations) {
         assert.equal(operation.nativeId, `native-${operation.automationId}`);
         assert.equal(readTaskPrompt(operation.task.prompt).metadata.updatedAt, later);
-        assert.match(readTaskPrompt(operation.task.prompt).body, /New shared guidance\./);
+        assert.match(operation.task.prompt, /New shared guidance\./);
       }
     }
   });
@@ -122,6 +141,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
   test('should keep schedule identity when the generated display name changes', () => {
     const request = input({ existingTasks: saved() });
     request.manifest.automations[0].displayName = 'Automation sync';
+    request.context.workers[0].name = 'Automation sync';
     const result = planSync(request);
     assert.equal(result.operations[0].kind, 'update');
     assert.equal(result.operations[0].nativeId, 'native-sync');
@@ -141,6 +161,12 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       () => taskBody({ ...partials, metadata: '{{metadata}}\n\n{{metadata}}' }, 'Run.'),
       /metadata-partial-slot-invalid/,
     );
+  });
+
+  test('should retain the saved worker identity rather than silently bind a replacement', () => {
+    const request = input({ existingTasks: saved() });
+    request.context.workers[0].id = 'replacement-worker';
+    assert.throws(() => planSync(request), /reusable-worker-replacement-required:sync/);
   });
 
   test('should select one ID and leave unrelated native tasks untouched', () => {
@@ -208,7 +234,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       () => planSync(input({ existingTasks: undefined })),
       /existing-native-tasks-required/,
     );
-    assert.throws(() => planSync(input({ context: {} })), /verified-execution/);
+    assert.throws(() => planSync(input({ context: {} })), /verified-dot-destination/);
     const existingTasks = saved();
     delete existingTasks[0].task.execution;
     assert.throws(() => planSync(input({ existingTasks })), /native-task-field-required:execution/);

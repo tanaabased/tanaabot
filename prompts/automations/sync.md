@@ -10,8 +10,9 @@ The skill supplies the dependency preparation, task assembly, native schedule co
 verification. It uses the Agent System Git dependency locked by this Tanaabot revision; do not
 replace it with a registry release or a private parser. Do not run machine provisioning or Install.
 
-Keep the verified environment and result destination from this task's native context. Do not
-change them merely because repository metadata changed. A stored enabled:false definition remains
+Resolve desired worker settings through the current skill and match them against verified native
+environments and saved worker bindings. Never substitute local execution or replace a worker after
+an environment mismatch. A stored enabled:false definition remains
 paused. Enabling a definition requires an operator-authorized source change and synchronization;
 never edit a prepared task object to override its desired state.
 

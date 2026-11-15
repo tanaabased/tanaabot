@@ -5,14 +5,18 @@ default; activation, result delivery and any temporary settings need that window
 Do not run this during routine contributor validation or invent a separate state store.
 
 1. Seed paused tasks through the sync skill. Use the native saved results to confirm distinct task
-   IDs, 🤖 names, local-time schedules, selected execution environment and dot destination.
+   IDs, 🤖 names, local-time schedules and main-chat destination. Confirm the embedded worker
+   bindings select the published Tanaabot configuration, reusable chats with unadorned display
+   names, native chat URLs and `REPORTS` sidebar placement.
 2. Run the smoke task manually if authorized. Inspect its revision-1 marker in the actual output.
    Record the native-provided run/chat link, where the chat appears, where the result/summary
    arrives and which environment actually executed it. Report unavailable fields as unknown.
 3. Change only the smoke prompt's marker from `TANAABOT-SYNC-SMOKE-1` to
    `TANAABOT-SYNC-SMOKE-2` in the source revision selected for this test. Synchronize again.
    Confirm the same native ID was updated, other settings were preserved and updatedAt changed.
-   Run it manually and inspect revision 2. This is a prompt revision, not a persisted run counter.
+   Run it manually and inspect revision 2 in the same worker chat. Confirm its linked compact
+   summary arrives in the main tanaabot chat and detailed results remain in the worker.
+   This is a prompt revision, not a persisted run counter.
 4. Change only one shared partial and synchronize all. Confirm both affected tasks update by their
    existing IDs. Rerun unchanged: no updates or duplicates, and timestamps remain unchanged.
    Local tests exercise all three partials; the live pilot needs only one representative change.
@@ -26,4 +30,4 @@ Do not run this during routine contributor validation or invent a separate state
 For the chat-location investigation, distinguish the execution chat, schedule run history, a result
 delivered to the dot and desktop sidebar placement. Check native chat links and summary routing
 without claiming that a prompt controls native preview chrome or that a sidebar group is a
-scheduler feature. Do not change reusable-chat or grouping behavior until that scope is selected.
+scheduler feature. Sidebar placement, worker execution and main-chat delivery are separate checks.

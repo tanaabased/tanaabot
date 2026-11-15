@@ -4,8 +4,9 @@ Preserve the operator-approved account, action and resource scope. Use the selec
 existing authenticated connections and verify their identity before service work. Never
 provision credentials, change identity or switch accounts to recover a denied or failed operation.
 
-Run in the execution context saved on the native task. When metadata specifies a Cloud
-environment, verify the actual environment rather than substituting inherited or local execution.
+This is the worker request delegated by the saved hosted coordinator. Run in its bound Cloud
+chat. When metadata specifies a Cloud environment, verify the actual environment rather than
+substituting inherited or local execution.
 Do not infer access from an environment name or a successful launch. A missing timezone means
 the native scheduler's local timezone; do not substitute the worker's operating-system timezone.
 
@@ -19,3 +20,5 @@ chat URL from an ID, confuse a schedule-management link with a run link, or clai
 prompt output alone. If a summary cannot be routed separately, return it with the full result and
 identify that limitation. Missing tools, authentication or a policy denial stop affected actions.
 Distinguish prepared actions, saved schedules, executed runs and visibly delivered results.
+Return the compact summary and its verified worker link to the coordinator; it delivers the
+summary to the main chat. Keep detailed output here. Do not send a duplicate main-chat message.
