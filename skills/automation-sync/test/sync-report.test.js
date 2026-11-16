@@ -3,13 +3,14 @@ import assert from 'node:assert/strict';
 
 import syncReport from '../utils/sync-report.js';
 
-test('should distinguish prepared actions from saved schedules and keep debug in a separate card', () => {
+test('should keep preparation silent by default and label optional debug as unsaved', () => {
   const plan = {
     source: { revision: 'a'.repeat(40), dirty: false },
     operations: [{ automationId: 'sync', kind: 'update' }],
   };
-  const preview = syncReport(plan);
+  assert.equal(syncReport(plan), '');
+  const preview = syncReport(plan, true);
   assert.match(preview, /Prepared actions for native controls; no schedules have been saved\./);
-  assert.doesNotMatch(preview, /✅|⚠️|🔬/u);
-  assert.match(syncReport(plan, true), /\n\n> ## 🔬 Debug\n/);
+  assert.doesNotMatch(preview, /✅|⚠️/u);
+  assert.match(preview, /^> ## 🔬 Debug · Synchronization preparation\n/);
 });

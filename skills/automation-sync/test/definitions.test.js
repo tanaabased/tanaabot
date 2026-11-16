@@ -26,8 +26,13 @@ test('should load external definitions through the real public Agent System expo
       execution: 'Fixture execution guidance.',
       presentation: 'Fixture presentation guidance.',
       dispatch: 'Fixture coordinator guidance.',
+      request: '> ## {{emoji}} {{title}} · REQUEST\n>\n> {{request}}',
     }))
       await writeFile(join(root, `prompts/automations/partials/${name}.md`), content);
+    await writeFile(
+      join(root, 'prompts/automations/requests.json'),
+      JSON.stringify({ smoke: { emoji: '🧪', request: 'Run the fixture smoke.' } }),
+    );
     const loaded = await definitions(root);
     assert.equal(loaded.manifest.automations[0].payload.prompt, 'Fixture smoke marker.');
     const result = planSync({

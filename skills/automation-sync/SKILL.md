@@ -90,7 +90,13 @@ automatically or switch credentials to recover a failure.
 3. List published runnable Cloud configurations and the dot's existing schedules, including paused
    tasks, following pagination. Read missing fields for matching tasks only. An incomplete listing
    cannot prove a job or worker is absent.
-4. Run `bun skills/automation-sync/scripts/sync-task.js` with `mode: "targets"` and JSON on stdin
+4. For a delegated sync from a saved dispatcher whose incoming metadata lacks `dispatchVersion: 2`,
+   perform only the synchronizer upgrade: use `id: "sync"` for both targets and sync below.
+   Inspect the incoming occurrence, not newly assembled metadata, when choosing this path.
+   Explicit operator-requested sync-only runs use the same selection. Leave smoke and canary
+   actions for a separate invocation of the updated saved task. Do not run that task automatically.
+   Otherwise retain the operator's selected ID or the normal `all` selection.
+   Run `bun skills/automation-sync/scripts/sync-task.js` with `mode: "targets"` and JSON on stdin
    using the reference's input shape. Resolve its desired workers through native chat controls.
    Reuse the saved native worker ID; for a new automation, create one Cloud chat in the selected
    published environment with an initialization-only prompt, then place it in the desired sidebar
@@ -103,7 +109,9 @@ automatically or switch credentials to recover a failure.
    state itself. Dirty source is preview-only; use a clean checkout before applying. Review the
    returned source and actions. The compiled scheduled prompt coordinates the worker; its embedded
    worker request contains the automation instructions and metadata.
-6. Skip unchanged actions. Apply creates/updates through the owning dot's supported native controls with the exact
+6. Skip unchanged actions. Apply actions in returned order; verify a changed synchronizer before
+   proceeding to other selected jobs, and show its configuration card first. Stop dependent
+   application if that self-update fails. Apply creates/updates through the owning dot's supported native controls with the exact
    compiled content and native ID. For disabled definitions, follow the native-task reference's
    paused-create or immediate create-then-pause procedure and verify the final state.
    Translate normalized schedules only when the native API can
@@ -114,7 +122,8 @@ automatically or switch credentials to recover a failure.
    Deliver the verified creation/update receipt to its existing worker using the receipt-only
    procedure, then report each automation in its own main-chat summary message. Unchanged actions
    produce no update receipt. Distinguish saved state, receipt delivery and actual execution.
-   Report completed actions and actionable limits in the shared card style. Keep private native
+   Keep preparation output in tool results or a private handoff artifact; it is not a normal
+   result card. Report completed actions and actionable limits in the shared card style. Keep private native
    bindings out of public repository files.
 
 Apply each definition's declared state. The synchronizer and original smoke test remain disabled;

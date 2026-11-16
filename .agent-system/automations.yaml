@@ -18,6 +18,6 @@
   display-name: SMOKE TEST CANARY
   enabled: true
   runtimes: [codex]
-  schedule: '*/5 * * * *'
+  schedule: '*/10 * * * *'
   prompt:
     file: ../prompts/automations/smoke-test-canary.md

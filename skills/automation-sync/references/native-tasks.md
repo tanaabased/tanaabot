@@ -41,7 +41,10 @@ ID and an initialization-only prompt. Wait for that initialization to finish. Us
 controls to find or create the desired section and place the chat there. Apply authorized title/group
 changes to an existing worker without replacing its ID. Verify its Cloud configuration from native
 association or the original launch receipt, not a name or repository claim. A missing existing worker
-or an environment mismatch stops the affected action; do not create a replacement automatically.
+or a known native configuration mismatch stops the affected action; do not create a replacement automatically.
+Use the saved binding and successful native launch. `environmentId` below is the published
+configuration ID from those controls, never a machine ID reported inside the container.
+Do not require the worker to independently reproduce the configuration ID.
 
 Keep the native-provided chat link: `codex://threads/<worker-id>` or an HTTPS chat URL. A Codex
 deep link must identify the verified worker. Do not construct URLs from IDs. Omit `url` when no
@@ -88,7 +91,12 @@ Normalize saved native schedules into `existingTasks` records with `id` and `tas
 | `prompt`          | Exact compiled coordinator prompt, including its worker request       |
 
 The worker uses the published Cloud environment and receives its own metadata, all shared worker
-guidance and the authored automation prompt. The coordinator continues that worker, waits for its
+guidance and the authored automation prompt. Its opening is rendered from the shared
+`prompts/automations/partials/request.md` template, the automation display name, and its emoji
+and short request in `prompts/automations/requests.json`. Each selected automation needs an entry.
+Saved schedule ownership remains metadata-first, with only the supported optional canary preceding it.
+The client owns preview length and collapse behavior; the template does not create an accordion.
+The coordinator continues that worker, waits for its
 result and returns the compact linked summary through normal main-chat delivery. Scheduling a
 coordinator does not itself bind a Cloud environment. Prompt guidance directs the supported native
 delegation established by the pilot; it does not create missing tools or native settings.
@@ -100,6 +108,10 @@ the action. `operations` returns `create`, `update` or `unchanged`, with the exi
 `expectedCurrent` for updates. If another writer changed that record, recompute before application.
 
 Apply exact compiled prompts and settings through the owning dot's native schedule controls.
+Apply returned operations in order: the synchronizer comes first when selected. For a sync-only
+bootstrap use `id: "sync"` in both targets and sync requests, resolving only its worker. Verify
+its saved prompt before a distinct Run now; an update cannot replace the already-running dispatcher.
+Newly compiled metadata carries `dispatchVersion: 2` to distinguish that next invocation.
 Never use the contributor's local scheduler as a substitute or write scheduler files. Preserve
 local-time cron when `timezone` is null; do not insert UTC or the Cloud worker's timezone. Inspect
 the displayed next run during seeding to confirm local midnight. The later smoke schedule is not

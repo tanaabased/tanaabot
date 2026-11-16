@@ -42,7 +42,7 @@ try {
           now: new Date().toISOString(),
         });
   process.stdout.write(
-    `${JSON.stringify({ ...result, ...(result.operations ? { presentation: syncReport(result, loaded.manifest.debug) } : {}) }, null, 2)}\n`,
+    `${JSON.stringify({ ...result, ...(result.operations && loaded.manifest.debug ? { presentation: syncReport(result, true) } : {}) }, null, 2)}\n`,
   );
 } catch (error) {
   process.stderr.write(

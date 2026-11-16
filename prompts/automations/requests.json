@@ -1,0 +1,14 @@
+{
+  "sync": {
+    "emoji": "🔄",
+    "request": "Synchronize the repository automations from the latest main revision."
+  },
+  "smoke-test": {
+    "emoji": "🧪",
+    "request": "Run the smoke check and report the observed task metadata."
+  },
+  "smoke-test-canary": {
+    "emoji": "🧪",
+    "request": "Run the scheduled canary and report its marker and execution evidence."
+  }
+}
