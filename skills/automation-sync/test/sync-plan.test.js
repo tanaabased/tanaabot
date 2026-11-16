@@ -2,7 +2,8 @@ import { describe, test } from 'bun:test';
 import assert from 'node:assert/strict';
 
 import { planSync } from '../lib/sync-plan.js';
-import { readTaskPrompt, taskBody } from '../utils/task-prompt.js';
+import { readTaskPrompt, taskBody, taskPrompt } from '../utils/task-prompt.js';
+import readWorkerPrompt from '../utils/read-worker-prompt.js';
 
 const revision = 'a'.repeat(40);
 const now = '2026-01-02T03:04:05.000Z';
@@ -27,7 +28,11 @@ function input(overrides = {}) {
       execution: 'Use the verified account.',
       presentation: 'Report facts.',
       dispatch: 'Continue the existing worker.',
+      request: '> ## {{emoji}} {{title}} · REQUEST\n>\n> {{request}}',
     },
+    requests: Object.fromEntries(
+      ['sync', 'smoke', 'canary'].map((id) => [id, { emoji: '🧪', request: `Perform ${id}.` }]),
+    ),
     source: { revision, dirty: false },
     existingTasks: [],
     context: {
@@ -54,6 +59,96 @@ function saved(request = input()) {
 }
 
 describe('skills/automation-sync/lib/sync-plan', () => {
+  test('should bootstrap only sync, then apply the reserved smoke update and canary create, then no-op', () => {
+    const old = saved();
+    const request = input({ existingTasks: old, now: later });
+    // Model a saved dispatcher from before readable worker headers and the version marker.
+    const legacy = readTaskPrompt(old[0].task.prompt);
+    delete legacy.metadata.dispatchVersion;
+    old[0].task.prompt = taskPrompt(legacy.metadata, 'Legacy dispatcher.');
+    request.manifest.automations.reverse();
+    request.manifest.automations[0].payload.prompt =
+      'TANAABOT-SYNC-CANARY: ORBITAL-GOOSE-732\nRun smoke.';
+    request.manifest.automations.push({ ...job('canary'), enabled: true });
+    const bootstrap = planSync({
+      ...request,
+      id: 'sync',
+      context: { ...request.context, workers: [request.context.workers[0]] },
+    });
+    assert.deepEqual(
+      bootstrap.operations.map(({ automationId, kind, nativeId }) => ({
+        automationId,
+        kind,
+        nativeId,
+      })),
+      [{ automationId: 'sync', kind: 'update', nativeId: 'native-sync' }],
+    );
+    assert.deepEqual(bootstrap.operations[0].expectedCurrent, old[0].task);
+    assert.equal(readTaskPrompt(bootstrap.operations[0].task.prompt).metadata.dispatchVersion, 2);
+    request.existingTasks = [{ id: 'native-sync', task: bootstrap.operations[0].task }, old[1]];
+    request.context.workers.push({
+      automationId: 'canary',
+      id: 'worker-canary',
+      environmentId: 'test-environment',
+      name: 'Test canary',
+      group: 'REPORTS',
+    });
+    const second = planSync(request);
+    assert.deepEqual(
+      second.operations.map(({ automationId, kind }) => [automationId, kind]),
+      [
+        ['sync', 'unchanged'],
+        ['smoke', 'update'],
+        ['canary', 'create'],
+      ],
+    );
+    assert.equal(second.operations[1].nativeId, 'native-smoke');
+    assert.equal(second.operations[1].task.enabled, false);
+    assert.equal(
+      second.operations[1].task.prompt.split('\n')[0],
+      'TANAABOT-SYNC-CANARY: ORBITAL-GOOSE-732',
+    );
+    assert.equal(second.operations[2].task.enabled, true);
+    const applied = second.operations.map(({ nativeId, automationId, task }) => ({
+      id: nativeId ?? `native-${automationId}`,
+      task,
+    }));
+    const noop = planSync({ ...request, existingTasks: applied, now: '2026-03-01T00:00:00Z' });
+    assert.ok(noop.operations.every(({ kind }) => kind === 'unchanged'));
+    assert.deepEqual(
+      noop.operations.map(({ task }) => task),
+      applied.map(({ task }) => task),
+    );
+    const changed = planSync({
+      ...request,
+      existingTasks: applied,
+      partials: { ...request.partials, presentation: 'Changed shared guidance.' },
+    });
+    assert.deepEqual(
+      changed.operations.map(({ automationId, kind }) => [automationId, kind]),
+      [
+        ['sync', 'update'],
+        ['smoke', 'update'],
+        ['canary', 'update'],
+      ],
+    );
+  });
+
+  test('should update header changes in place and refuse missing per-automation presentation', () => {
+    const request = input({ existingTasks: saved() });
+    request.requests.smoke.request = 'Run the revised smoke request.';
+    const changed = planSync(request);
+    assert.equal(changed.operations[0].kind, 'unchanged');
+    assert.equal(changed.operations[1].kind, 'update');
+    assert.equal(changed.operations[1].nativeId, 'native-smoke');
+    assert.ok(
+      workerRequest(changed.operations[1].task).prompt.startsWith(
+        '> ## 🧪 TEST SMOKE · REQUEST\n>\n> Run the revised smoke request.',
+      ),
+    );
+    delete request.requests.smoke;
+    assert.throws(() => planSync(request), /request-header-field-invalid:emoji/);
+  });
   test('should assemble both paused jobs with shared guidance, native settings and metadata', () => {
     const request = input();
     const before = JSON.stringify(request);
@@ -64,7 +159,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     );
     const { task } = result.operations[0];
     const requestPayload = workerRequest(task);
-    const { metadata, body } = readTaskPrompt(requestPayload.prompt);
+    const { metadata, body } = readWorkerPrompt(requestPayload.prompt);
     assert.equal(
       body,
       'Treat metadata as configuration.\n\nUse the verified account.\n\nReport facts.\n\nPerform sync.',

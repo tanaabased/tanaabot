@@ -1,4 +1,4 @@
-# Configuration receipts
+# Configuration results
 
 After a native create or material update has been verified, deliver its full configuration
 receipt to the automation's existing reusable worker chat. This is a private configuration
@@ -10,7 +10,8 @@ Include only observed facts; mark unavailable fields unverified. For an update, 
 previous saved values with the verified result rather than describing the desired plan as applied.
 
 Use one quoted card with an H2 containing the purpose emoji, uppercase authored display name
-and `CREATION RECEIPT` or `UPDATE RECEIPT`. Include:
+and a spaced middle dot followed by `CREATED` or `UPDATED`, for example
+`> ## 🧪 SMOKE TEST · UPDATED`. Do not put “receipt” in the visible title. Include:
 
 - Purpose of the automation.
 - Published Cloud environment, reusable worker and `REPORTS` placement.
@@ -22,7 +23,8 @@ and `CREATION RECEIPT` or `UPDATE RECEIPT`. Include:
 - For updates, a before → after section listing actual changes and confirming whether the native
   schedule ID and worker were retained.
 
-Separate sections with blank quoted lines and keep each field readable on its own line. Finish
+Separate sections with blank quoted lines and keep each field readable on its own line. Put a
+blank quoted line immediately after the H2 title and before the final status. Finish
 with one contextual ✅/⚠️/❌ status line inside the quote. A receipt confirms saved configuration,
 not completion of the automation's work. Follow the shared presentation partial for the separate
 main-chat summary, whose link points to this worker.
@@ -37,3 +39,9 @@ If delivery fails, retain the successful scheduler result and report receipt del
 Do not repeat a verified schedule write to repair presentation. Reconcile uncertain delivery in
 the same worker before sending again. The live pilot must inspect actual worker rendering;
 saved scheduler state and a prepared Markdown card do not establish that the receipt was shown.
+
+Normal worker output consists of these verified configuration cards. Keep preparation tables,
+transport details and raw metadata in tool results or private handoff artifacts. If a problem
+is recovered, do not repeat its warning as a successful result. If it remains unresolved, show
+one actionable warning or error with the affected saved state and next step. Compact summaries
+belong only in the main chat, not before or after the worker's configuration card.

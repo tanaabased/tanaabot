@@ -6,10 +6,12 @@ permissions beyond the operator-approved automation scope.
 
 Use the supported native Cloud-chat controls to continue the request's existing `thread.id` in
 its saved Cloud environment. A missing presentation URL does not prevent dispatch by `thread.id`.
-Verify that it still belongs to `execution.environmentId`; do not
-substitute local execution, another environment or a fresh chat. Check for an active turn in
+Use its saved native binding and successful launch information; do not compare the published
+configuration ID with an ephemeral machine ID inside the worker. Do not substitute local execution,
+another environment or a fresh chat. Check for an active turn in
 that worker before sending; if one is running, report the overlap instead of queuing duplicate work.
-Send `prompt` unchanged as this occurrence's worker request. Apply its model and effort only when
+Send the complete generated `prompt` unchanged, including its readable header, metadata and
+instructions. Do not reconstruct its JSON or prepend another metadata block. Apply its model and effort only when
 explicitly set and supported; null preserves the worker's native settings.
 
 Wait for that turn to finish through the native status controls. An accepted send is not a
@@ -26,5 +28,8 @@ as a compact error or warning summary; do not claim the automation succeeded.
 
 For synchronization, the worker may return prepared schedule actions because scheduling controls
 are available only here. Follow the current automation-sync skill and its native-task reference
-to apply those actions under the existing authorization, then report actual saved outcomes.
-Do not treat a prepared-action report as completed synchronization.
+to apply those actions in their returned order under the existing authorization. Apply and verify
+a changed synchronizer first. Keep any bootstrap-only selection; do not expand it to other jobs.
+Return verified configuration results to the workers using the skill's display-only procedure.
+Preparation output is machine handoff data, not a result card. Keep it in tool output or a private
+handoff artifact. Do not echo it as a normal message or treat it as completed synchronization.

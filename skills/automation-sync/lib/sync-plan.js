@@ -7,6 +7,8 @@ import {
   taskPrompt,
 } from '../utils/task-prompt.js';
 import automationTargets from './automation-targets.js';
+import readWorkerPrompt from '../utils/read-worker-prompt.js';
+import requestHeader from '../utils/request-header.js';
 
 const repository = 'tanaabased/tanaabot';
 
@@ -79,11 +81,12 @@ function validateTask(task) {
   }
 }
 
-function compileTask(task, metadata, worker, body, dispatch, canary) {
+function compileTask(task, metadata, worker, body, dispatch, canary, header) {
   const request = {
     ...worker,
-    prompt: taskPrompt({ ...metadata, role: 'worker' }, body),
+    prompt: `${header}\n\n${taskPrompt({ ...metadata, role: 'worker' }, body)}`,
   };
+  readWorkerPrompt(request.prompt);
   // Escape nested markers so the outer task keeps one unambiguous ownership header.
   const payload = JSON.stringify(request, null, 2).replaceAll('<', '\\u003c');
   return {
@@ -97,7 +100,16 @@ function compileTask(task, metadata, worker, body, dispatch, canary) {
 }
 
 /** Prepare effects only; native tools own publication, approval and saved-state reads. */
-export function planSync({ manifest, partials, source, existingTasks, context, id = 'all', now }) {
+export function planSync({
+  manifest,
+  partials,
+  requests,
+  source,
+  existingTasks,
+  context,
+  id = 'all',
+  now,
+}) {
   if (manifest.agent?.id !== 'tanaabot') throw new Error('tanaabot-manifest-required');
   if (!/^[a-f0-9]{40}$/.test(source?.revision ?? '') || typeof source.dirty !== 'boolean') {
     throw new Error('source-revision-required');
@@ -111,12 +123,18 @@ export function planSync({ manifest, partials, source, existingTasks, context, i
   const selected = id === 'all' ? jobs : jobs.filter((job) => job.id === id);
   const operations = selected
     .filter((job) => job.runtimes.includes('codex'))
+    .toSorted((a, b) => Number(b.id === 'sync') - Number(a.id === 'sync'))
     .map((job) => {
       const worker = bindWorker(
         targets.find((target) => target.automationId === job.id),
         context.workers,
       );
       const body = taskBody(partials, job.payload.prompt);
+      const header = requestHeader(
+        partials.request,
+        job.displayName ?? job.id.replaceAll('-', ' '),
+        requests?.[job.id],
+      );
       const canary = promptCanary(job.payload.prompt);
       const task = {
         name: `🤖 ${(job.displayName ?? job.id.replaceAll('-', ' ')).trim().toUpperCase()}`,
@@ -129,9 +147,11 @@ export function planSync({ manifest, partials, source, existingTasks, context, i
       };
       const identity = { repository, agentId: manifest.agent.id, automationId: job.id };
       const semantic = {
+        dispatchVersion: 2,
         ...task,
         worker,
         body,
+        header,
         dispatch: partials.dispatch.trim(),
         debug: manifest.debug === true,
       };
@@ -154,6 +174,7 @@ export function planSync({ manifest, partials, source, existingTasks, context, i
       }
       const metadata = {
         schema: 'tanaabot.automation/v1',
+        dispatchVersion: 2,
         ...identity,
         displayName: job.displayName ?? job.id.replaceAll('-', ' '),
         contentHash,
@@ -179,6 +200,7 @@ export function planSync({ manifest, partials, source, existingTasks, context, i
           body,
           partials.dispatch,
           canary,
+          header,
         );
         if (canonical(current.task) === canonical(unchanged))
           return {
@@ -192,7 +214,7 @@ export function planSync({ manifest, partials, source, existingTasks, context, i
         automationId: job.id,
         kind: current ? 'update' : 'create',
         ...(current ? { nativeId: current.id, expectedCurrent: current.task } : {}),
-        task: compileTask(task, metadata, worker, body, partials.dispatch, canary),
+        task: compileTask(task, metadata, worker, body, partials.dispatch, canary, header),
       };
     });
   return { schema: 'tanaabot.automation-plan/v1', source, operations };

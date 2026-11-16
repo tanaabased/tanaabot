@@ -72,13 +72,13 @@ test('packed plugin retains canonical skills, assets and usable links', async ()
       ['🤖 AUTOMATION SYNC', '🤖 SMOKE TEST', '🤖 SMOKE TEST CANARY'],
     );
     const smoke = assembled.operations.find(({ automationId }) => automationId === 'smoke-test');
-    assert.equal(smoke.task.prompt.split('\n')[0], 'TANAABOT-SYNC-CANARY: ORBITAL-GOOSE-731');
+    assert.equal(smoke.task.prompt.split('\n')[0], 'TANAABOT-SYNC-CANARY: ORBITAL-GOOSE-732');
     const canary = assembled.operations.find(
       ({ automationId }) => automationId === 'smoke-test-canary',
     );
     assert.equal(canary.task.schedule.kind, 'cron');
     assert.deepEqual(canary.task.schedule.fields, {
-      minutes: Array.from({ length: 12 }, (_, index) => index * 5),
+      minutes: [0, 10, 20, 30, 40, 50],
       hours: Array.from({ length: 24 }, (_, index) => index),
       days: Array.from({ length: 31 }, (_, index) => index + 1),
       months: Array.from({ length: 12 }, (_, index) => index + 1),

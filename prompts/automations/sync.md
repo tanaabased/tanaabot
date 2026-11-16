@@ -5,6 +5,9 @@ Refresh canonical `tanaabased/tanaabot` from GitHub `main`, resolve one commit f
 prepare a clean source snapshot without discarding existing task edits. Read that revision's
 `skills/automation-sync/SKILL.md` and follow it for all declared automations. Resolve its required
 references from the same snapshot. Do not reuse only the instructions from an earlier run.
+If this invocation's incoming metadata predates `dispatchVersion: 2`, follow the skill's sync-only
+bootstrap selection. Do not consume the smoke update or canary creation in that pass. A distinct
+Run now from the updated saved schedule tests the new dispatcher.
 
 The skill supplies the dependency preparation, task assembly, native schedule comparison and
 verification. It uses the Agent System Git dependency locked by this Tanaabot revision; do not
@@ -23,14 +26,14 @@ manual update procedure. Do not silently claim synchronization or enqueue a subs
 
 ## Result and dot summary
 
-After native application, show an automation synchronization result card with a small table of
-automation names and actual outcomes: created, updated, unchanged or failed. State whether the
-schedules are active or paused when the native results establish it. Follow the shared success
-footer and diagnostic rules. The assembler's prepared-action card is a preview, not this outcome.
+After verified native application, put the configuration cards in the affected workers using the
+skill's display-only procedure. Titles use the authored name and `· CREATED` or `· UPDATED`.
+Do not print an additional synchronization preparation card or aggregate results table. When
+application belongs to the coordinator, return the exact prepared actions through tool output
+or a private handoff artifact and leave configuration results pending until it verifies the writes.
 
-For the owning dot, use a short summary card titled `**🔄 AUTOMATION SYNC**`, with counts and
-whether attention is needed in its body and one status line at the bottom as directed by the
-presentation partial. Do not put a status icon or the schedule's 🤖 prefix in the summary heading.
-Include the native-provided run/chat link when available. For example, “One schedule updated;
-one unchanged. Both remain paused.” Preserve missing-tool handoffs as pending; never call them
-completed synchronization. Use the host's saved delivery mechanism without a duplicate direct send.
+For the owning dot, deliver one compact summary per affected automation with its verified worker
+link and final contextual status. Do not add a second aggregate synchronization card. An unchanged
+run may return one brief sync outcome without new configuration cards. Preserve missing-tool
+handoffs as pending; never call them completed synchronization. Use the host's saved delivery
+mechanism without a duplicate direct send.

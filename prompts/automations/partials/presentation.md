@@ -17,6 +17,8 @@ the useful next action. Preserve useful partial results. A prepared action or ex
 not automatically a warning. Do not append an unqualified success footer to a partial failure.
 Show a quoted **## 🔬 Debug** card only when metadata.debug is true and diagnostic facts help.
 Failures and uncertainty stay visible with debug disabled. Never expose secrets or private bindings.
+Do not repeat recovered warnings in normal output. Keep preparation and transport details in
+tool results or private handoff artifacts; unresolved problems get one actionable diagnostic.
 
 ## Summary for the owning dot
 
@@ -84,18 +86,19 @@ Social review result:
 
 ✅ Review complete: one suggested reply; nothing posted.
 
-Synchronization result:
+Verified synchronization configuration result:
 
-> ## 🔄 Automation synchronization
+> ## 🔄 AUTOMATION SYNC · UPDATED
 >
-> | Automation         | Result                               |
-> | ------------------ | ------------------------------------ |
-> | 🤖 AUTOMATION SYNC | Unchanged                            |
-> | 🤖 SMOKE TEST      | Updated shared presentation guidance |
+> **Change**
 >
-> Both schedules remain paused.
-
-✅ Synchronization complete: one schedule updated; one unchanged.
+> Updated the saved dispatcher. The same schedule and worker were retained.
+>
+> **State**
+>
+> The schedule remains paused. No automation run occurred.
+>
+> ✅ Update verified.
 
 Partial result:
 
