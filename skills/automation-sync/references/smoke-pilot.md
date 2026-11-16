@@ -1,8 +1,8 @@
 # Clean-start smoke pilot
 
 The repository declares only enabled `sync` and enabled `smoke-test-canary-3`. Sync runs at
-midnight Eastern. Canary #3 is a true one-shot with an expired placeholder timestamp until
-this pilot is ready. Source settings do not establish saved native state.
+midnight Eastern. Canary #3 is a true one-shot at the published `schedule.at` timestamp.
+Source settings do not establish saved native state.
 
 ## Cleanup and seed
 
@@ -20,10 +20,9 @@ this pilot is ready. Source settings do not establish saved native state.
 
 ## Publish the pilot time and run
 
-Once cleanup and seeding are ready, agree with the operator on a timezone-aware absolute
-`schedule.at` about 30 minutes ahead and promptly publish it to `main`. Do not choose the live
-firing time during earlier repository preparation. If the lead time has evaporated, agree on
-and publish a replacement before proceeding. Never replace it with a rolling relative delay.
+Use the operator-approved absolute `schedule.at` published on `main`. Confirm it is still ahead
+before Run now. If the lead time has evaporated, agree with the operator on a replacement about
+30 minutes ahead and publish it before proceeding. Never replace it with a rolling relative delay.
 
 1. The operator uses **Run now** once on the saved sync task. It fetches fresh `main`, updates
    itself first if needed, then creates the `SMOKE TEST CANARY #3` worker and one-shot schedule.

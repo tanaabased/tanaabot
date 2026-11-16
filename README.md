@@ -54,15 +54,15 @@ Follow skills/automation-sync/references/smoke-pilot.md through
 “Cleanup and seed” using the existing published Tanaabot Cloud environment.
 Verify the operator's cleanup, leave UPDATE CLOUD CANON untouched, and seed
 only the enabled AUTOMATION SYNC schedule. Do not run the saved task or the
-canary. Report the saved state and stop before choosing the pilot timestamp.
+canary. Report the saved state and stop; the operator will use Run now.
 ```
 
 The [pilot procedure](./skills/automation-sync/references/smoke-pilot.md) owns the remaining
-steps: publish Canary #3's one-time firing timestamp when ready, then use **Run now** on sync.
+steps: confirm Canary #3's published firing time is still ahead, then use **Run now** on sync.
 Each sync loads fresh `main` and updates itself before the other selected automations.
 The [definitions](./.agent-system/automations.yaml) contain only enabled `sync` (midnight Eastern)
-and enabled `smoke-test-canary-3`. The canary's expired placeholder is skipped until its pilot
-time is published; elapsed one-shots are never automatically rearmed.
+and enabled `smoke-test-canary-3`. Run sync before the canary's published firing time; elapsed
+one-shots are skipped and never automatically rearmed.
 
 The skill prepares locked dependencies and assembles task prompts with shared guidance, then
 updates changed native tasks and leaves unchanged ones alone. Workers live in `REPORTS`.

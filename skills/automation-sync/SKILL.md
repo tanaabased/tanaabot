@@ -137,7 +137,7 @@ automatically or switch credentials to recover a failure.
 
 Apply each definition's declared state. The only repository definitions are enabled `sync` and
 enabled `smoke-test-canary-3`. Sync runs at midnight in `America/New_York`; Canary #3 is a
-one-shot. Its expired placeholder timestamp is skipped until the operator publishes a pilot time.
+one-shot. Its published timestamp is skipped once elapsed; never automatically rearm it.
 For disabled definitions, leave schedules paused, using
 immediate create-then-pause when native creation cannot start paused. Ongoing activation requires
 an operator-authorized source change and synchronization. Never hand-edit prepared task objects

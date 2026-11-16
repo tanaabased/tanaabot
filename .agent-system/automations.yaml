@@ -14,7 +14,6 @@
   enabled: true
   runtimes: [codex]
   schedule:
-    # Inert until cleanup and seeding are ready; publish the operator's pilot time then.
-    at: '2000-01-01T00:00:00Z'
+    at: '2026-11-16T11:43:29-05:00'
   prompt:
     file: ../prompts/automations/smoke-test-canary-3.md

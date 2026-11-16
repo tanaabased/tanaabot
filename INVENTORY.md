@@ -60,10 +60,10 @@ Cloud startup explicitly loads the local skills without requiring this plugin's 
 
 ## Automations
 
-| Automation            | Declared state                                                          |
-| --------------------- | ----------------------------------------------------------------------- |
-| `sync`                | Enabled; daily at midnight Eastern                                      |
-| `smoke-test-canary-3` | Enabled one-shot; expired placeholder until the pilot time is published |
+| Automation            | Declared state                                    |
+| --------------------- | ------------------------------------------------- |
+| `sync`                | Enabled; daily at midnight Eastern                |
+| `smoke-test-canary-3` | Enabled one-shot at the published pilot timestamp |
 
 ## Artwork
 
