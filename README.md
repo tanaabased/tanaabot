@@ -23,7 +23,7 @@ remains pending in [#5](https://github.com/tanaabased/tanaabot/issues/5).
 - [Dotpackages](./INVENTORY.md#dotpackages): Global guidance and configuration stubs.
 - [Skills](./INVENTORY.md#skills): Tanaabot Voice, Skill Author and Startup Check.
 - [Configuration files](./INVENTORY.md#configuration-files): Setup declarations and Codex plugin sources.
-- [Automations](./INVENTORY.md#automations): Synchronizer, smoke test and pilot canaries.
+- [Automations](./INVENTORY.md#automations): Scheduled automation inventory.
 
 ## Install
 
@@ -44,32 +44,26 @@ setup result, publish the environment and start a fresh task to verify it.
 
 ## Synchronize scheduled tasks
 
-Paste this into the designated tanaabot dot to start the clean-slate pilot:
+Paste this into the designated tanaabot dot to seed or update the synchronizer:
 
 ```text
 Read and follow skills/automation-sync/SKILL.md and its required references
 from the latest main revision of https://github.com/tanaabased/tanaabot.
 
-Follow skills/automation-sync/references/smoke-pilot.md through
-“Cleanup and seed” using the existing published Tanaabot Cloud environment.
-Verify the operator's cleanup, leave UPDATE CLOUD CANON untouched, and seed
-only the enabled AUTOMATION SYNC schedule. Do not run the saved task or the
-canary. Report the saved state and stop; the operator will use Run now.
+Synchronize the declared automations using the existing published Tanaabot
+Cloud environment. Keep AUTOMATION SYNC enabled. Leave UPDATE CLOUD CANON
+and completed native canary tasks alone. Do not run or delete tasks.
 ```
 
-The [pilot procedure](./skills/automation-sync/references/smoke-pilot.md) owns the remaining
-steps: confirm Canary #3's published firing time is still ahead, then use **Run now** on sync.
-Each sync loads fresh `main` and updates itself before the other selected automations.
-The [definitions](./.agent-system/automations.yaml) contain only enabled `sync` (midnight Eastern)
-and enabled `smoke-test-canary-3`. Run sync before the canary's published firing time; elapsed
-one-shots are skipped and never automatically rearmed.
+The [definitions](./.agent-system/automations.yaml) contain only enabled `sync`, running at
+midnight Eastern. Each sync loads fresh `main`, updates itself first and leaves unchanged tasks
+alone. Workers live in `REPORTS`; their configuration and run-results cards are separate from
+the compact linked main-chat summaries. Debug is opt-in through `debug: true` in
+[agent.yaml](./.agent-system/agent.yaml), followed by synchronization.
 
-The skill prepares locked dependencies and assembles task prompts with shared guidance, then
-updates changed native tasks and leaves unchanged ones alone. Workers live in `REPORTS`.
-Configuration cards and the aggregate sync run-results card appear in the worker chats;
-the main chat receives individual compact linked summaries. Saved configuration, scheduled
-execution and unattended synchronization remain separate evidence in the
-[pilot](https://github.com/tanaabased/tanaabot/issues/8).
+Canary #3's scheduled run passed, as reported by the operator. Its repository definition has
+been removed; native task and chat cleanup remain with the operator. See the
+[pilot record](./skills/automation-sync/references/smoke-pilot.md) for evidence limits.
 
 ## Contributing
 

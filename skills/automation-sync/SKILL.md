@@ -94,7 +94,7 @@ automatically or switch credentials to recover a failure.
 4. For a delegated sync from a saved dispatcher whose incoming metadata lacks `dispatchVersion: 2`,
    perform only the synchronizer upgrade: use `id: "sync"` for both targets and sync below.
    Inspect the incoming occurrence, not newly assembled metadata, when choosing this path.
-   Explicit operator-requested sync-only runs use the same selection. Leave canary
+   Explicit operator-requested sync-only runs use the same selection. Leave other automation
    actions for a separate invocation of the updated saved task. Do not run that task automatically.
    Otherwise retain the operator's selected ID or the normal `all` selection.
    Run `bun skills/automation-sync/scripts/sync-task.js` with `mode: "targets"` and JSON on stdin
@@ -135,20 +135,14 @@ automatically or switch credentials to recover a failure.
    result card. Report completed actions and actionable limits in the shared card style. Keep private native
    bindings out of public repository files.
 
-Apply each definition's declared state. The only repository definitions are enabled `sync` and
-enabled `smoke-test-canary-3`. Sync runs at midnight in `America/New_York`; Canary #3 is a
-one-shot. Its published timestamp is skipped once elapsed; never automatically rearm it.
-For disabled definitions, leave schedules paused, using
-immediate create-then-pause when native creation cannot start paused. Ongoing activation requires
-an operator-authorized source change and synchronization. Never hand-edit prepared task objects
-to override desired state. Manual updates repeat this same workflow.
+Apply each definition's declared state. The repository currently declares only enabled `sync`,
+running at midnight in `America/New_York`. Completed canaries are no longer declared. Leave
+unselected native tasks untouched; removing a source definition does not authorize deleting,
+rearming or modifying its native task or worker.
 
-Before applying the enabled pilot canary, follow the [smoke pilot](./references/smoke-pilot.md)
-to confirm the authorized window, displayed next occurrence and cleanup plan. Source declarations
-alone do not authorize live activation or an unattended invocation.
-
-For the clean-start pilot, seed only `sync`, leave it enabled and wait for the operator's manual
-Run now. Follow the pilot reference for cleanup, timestamp publication and execution evidence.
+For disabled definitions, use immediate create-then-pause when native creation cannot start
+paused. Activation requires operator authorization; never hand-edit prepared task objects to
+override desired state. Manual updates repeat this same workflow.
 
 ## Optimization
 
@@ -162,7 +156,7 @@ Run now. Follow the pilot reference for cleanup, timestamp publication and execu
 ## Bundled Resources
 
 - [Native task inputs](./references/native-tasks.md): Native mapping and stdin shape.
-- [Smoke pilot](./references/smoke-pilot.md): Revision update, no-op, partial drift and delivery checks.
+- [Smoke pilot record](./references/smoke-pilot.md): Reported scheduled-run result and remaining evidence limits.
 - [Configuration receipts](./references/configuration-receipts.md): Verified worker-local creation/update records.
 - `scripts/prepare-dependency.js`: Git dependency manifest build.
 - `scripts/sync-task.js`: Read-only assembly and comparison.
@@ -172,6 +166,6 @@ Run now. Follow the pilot reference for cleanup, timestamp publication and execu
 
 Run the owned tests and Canon's validator. In the authorized dot pilot, check initial creation,
 saved environment/destination, one harmless update, an unchanged rerun without duplicates, smoke
-output and visible delivery, following [the smoke pilot](./references/smoke-pilot.md).
+output and visible delivery. A new live canary requires explicit operator authorization.
 Test unattended sync separately from Run now. Source and structural
 checks do not establish native scheduling or automatic delivery.

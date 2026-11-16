@@ -2,9 +2,5 @@
   "sync": {
     "emoji": "🔄",
     "request": "Synchronize the repository automations from the latest main revision."
-  },
-  "smoke-test-canary-3": {
-    "emoji": "🧪",
-    "request": "Run canary #3 and report its distinct marker and execution evidence."
   }
 }

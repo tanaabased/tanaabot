@@ -6,7 +6,7 @@ prepare a clean source snapshot without discarding existing task edits. Read tha
 `skills/automation-sync/SKILL.md` and follow it for all declared automations. Resolve its required
 references from the same snapshot. Do not reuse only the instructions from an earlier run.
 If this invocation's incoming metadata predates `dispatchVersion: 2`, follow the skill's sync-only
-bootstrap selection. Do not create the canary in that pass. A distinct
+bootstrap selection. Leave other automations untouched in that pass. A distinct
 Run now from the updated saved schedule tests the new dispatcher.
 
 The skill supplies the dependency preparation, task assembly, native schedule comparison and
