@@ -33,6 +33,10 @@ diagnostic. Agent System's own omitted defaults remain unchanged.
 
 The returned targets describe desired environment and chat settings. Find an existing binding in
 the matching schedule's metadata (`worker.id`), or use an explicitly authored native thread ID.
+Inspect the exact worker in native active or archived history, following pagination as needed.
+An ID lookup or successful send does not establish active status. Supply `status: "active"` only
+for a confirmed active worker. Missing, inaccessible, ambiguous or offline results are unknown,
+not archive evidence. Unknown and archived workers cannot be assembled as ready bindings.
 For initial seeding, inspect existing native chats before creating one; names alone do not establish
 automation ownership. If a prior create was uncertain, reconcile it before another create.
 
@@ -47,11 +51,44 @@ Use the saved binding and successful native launch. `environmentId` below is the
 configuration ID from those controls, never a machine ID reported inside the container.
 Do not require the worker to independently reproduce the configuration ID.
 
-Keep the native-provided chat link: `codex://threads/<worker-id>` or an HTTPS chat URL. A Codex
-deep link must identify the verified worker. Do not construct URLs from IDs. Omit `url` when no
-link was supplied; a missing presentation link does not prevent routing by verified worker ID.
+Keep a native-provided private chat link when available. Otherwise omit input `url`; the assembler
+generates `codex://threads/<worker-id>` from the verified active worker ID. Do not have the model
+invent links. After saving, confirm the schedule's worker ID matches before presenting its link.
+Only link the final active worker. Backend lookup or send eligibility does not prove client navigation.
+Test tap-through on iOS and desktop during the pilot; if a client cannot open the link, try its native
+task card. If neither works, state that navigation is unavailable rather than silently dropping it.
 Native worker IDs and optional links live in the saved schedule prompt and current native
 responses, not a separate database.
+
+### Replace a confirmed archived worker
+
+During synchronization only, treat a managed worker confirmed archived by native history as retired.
+Leave its archived chat and history intact. Reconcile any prior replacement attempt through its native
+creation result and chat history before creating another worker; include the automation ID and retired
+worker ID in a replacement's initialization prompt so that recovery can identify it without guessing
+from its title. Reuse a verified active replacement if creation succeeded but schedule saving did not.
+
+Run creation and rebinding serially through the owning coordinator. Check for an in-flight sync or
+unresolved creation before creating; do not start a competing replacement. If exclusive application
+cannot be established with the available native controls, leave replacement pending for a serialized
+operator run. The assembler does not provide a lock or guarantee exactly-once native creation.
+
+Create one replacement using the same published Cloud configuration and desired sidebar placement.
+Verify initialization, active status and placement, then supply its ordinary worker fields plus
+`replaces: { "id": "retired-worker-id", "status": "archived", "environmentId": "verified-config-id" }`.
+These are current native observations, not an authorization flag or a persisted replacement ledger.
+The retired ID must match the schedule's saved binding. Explicit authored thread targets remain
+binding; change that source through operator authorization before replacing an explicitly pinned chat.
+
+Rebind the same native schedule ID using the returned `expectedCurrent` and exact compiled task.
+Preserve cadence and enabled state; the assembler rejects a replacement that also changes either.
+Resolve such source/state differences separately before replacement. Before saving, reconcile the
+current native record and use conditional update controls where supported. If another run already
+rebound it, reuse that verified binding and recompute; never overwrite it with a competing replacement.
+For uncertain saves, read the same schedule before retrying. After a successful rebind, ordinary
+sync uses the new saved worker ID and needs no `replaces` evidence. Initialization emits `CHAT CREATED`
+in the new worker; deliver the schedule's separate `UPDATED` card there after verified saving.
+No schedule is deleted.
 
 ### Initialization card
 
@@ -92,6 +129,7 @@ Repeat with `mode: "sync"` (also the default), adding `existingTasks` and `conte
       {
         "automationId": "sync",
         "id": "verified-worker-id",
+        "status": "active",
         "environmentId": "verified-published-config-id",
         "name": "AUTOMATION SYNC",
         "group": "REPORTS",

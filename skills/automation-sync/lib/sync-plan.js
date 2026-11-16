@@ -12,10 +12,10 @@ import requestHeader from '../utils/request-header.js';
 const repository = 'tanaabased/tanaabot';
 
 function workerLink(worker) {
-  if (worker.url == null) return {};
+  const link = worker.url ?? `codex://threads/${worker.id}`;
   let url;
   try {
-    url = new URL(worker.url);
+    url = new URL(link);
   } catch {
     throw new Error(`native-worker-url-invalid:${worker.automationId}`);
   }
@@ -27,15 +27,9 @@ function workerLink(worker) {
       !url.port &&
       !url.search &&
       !url.hash);
-  if (
-    typeof worker.url !== 'string' ||
-    /\s/u.test(worker.url) ||
-    url.username ||
-    url.password ||
-    !supported
-  )
+  if (typeof link !== 'string' || /\s/u.test(link) || url.username || url.password || !supported)
     throw new Error(`native-worker-url-invalid:${worker.automationId}`);
-  return { url: worker.url };
+  return { url: link };
 }
 
 function bindWorker(target, workers) {
@@ -44,6 +38,10 @@ function bindWorker(target, workers) {
   if (matches.length !== 1 || !matches[0].id?.trim())
     throw new Error(`reusable-worker-missing-or-ambiguous:${target.automationId}`);
   const worker = matches[0];
+  if (!/^[a-zA-Z0-9][a-zA-Z0-9_-]*$/u.test(worker.id))
+    throw new Error(`native-worker-id-invalid:${target.automationId}`);
+  if (worker.status !== 'active')
+    throw new Error(`reusable-worker-not-active:${target.automationId}`);
   if (
     worker.environmentId !== target.execution.environmentId ||
     (target.thread.id && worker.id !== target.thread.id)
@@ -164,8 +162,23 @@ export function planSync({
       if (current) {
         validateTask(current.task);
         const previous = current.parsed.metadata;
-        if (previous.worker?.id && previous.worker.id !== worker.thread.id)
-          throw new Error(`reusable-worker-replacement-required:${job.id}`);
+        if (previous.worker?.id && previous.worker.id !== worker.thread.id) {
+          const retired = context.workers.find(
+            (record) => record.automationId === job.id,
+          )?.replaces;
+          if (
+            retired?.id !== previous.worker.id ||
+            retired.status !== 'archived' ||
+            retired.environmentId !== previous.execution?.environmentId ||
+            retired.environmentId !== worker.execution.environmentId
+          )
+            throw new Error(`reusable-worker-replacement-required:${job.id}`);
+          if (
+            task.enabled !== current.task.enabled ||
+            canonical(task.schedule) !== canonical(current.task.schedule)
+          )
+            throw new Error(`worker-rebind-settings-changed:${job.id}`);
+        }
       }
       if (!current && records.some((record) => record.task.name === task.name)) {
         throw new Error(`native-task-name-collision:${job.id}`);

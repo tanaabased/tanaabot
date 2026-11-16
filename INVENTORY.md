@@ -60,11 +60,12 @@ Cloud startup explicitly loads the local skills without requiring this plugin's 
 
 ## Automations
 
-| Automation          | Status                                                                     |
-| ------------------- | -------------------------------------------------------------------------- |
-| `sync`              | Bundled and disabled; native scheduling pilot pending                      |
-| `smoke-test`        | Bundled and disabled; first-line canary update prepared                    |
-| `smoke-test-canary` | Enabled ten-minute pilot definition; live activation and execution pending |
+| Automation            | Status                                                                 |
+| --------------------- | ---------------------------------------------------------------------- |
+| `sync`                | Bundled and disabled; native scheduling pilot pending                  |
+| `smoke-test`          | Bundled and disabled; first-line canary update prepared                |
+| `smoke-test-canary`   | Disabled original ten-minute canary                                    |
+| `smoke-test-canary-2` | Enabled ten-minute definition for the next authorized end-to-end pilot |
 
 ## Artwork
 

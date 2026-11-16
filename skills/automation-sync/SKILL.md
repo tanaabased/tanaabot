@@ -98,12 +98,14 @@ automatically or switch credentials to recover a failure.
    Otherwise retain the operator's selected ID or the normal `all` selection.
    Run `bun skills/automation-sync/scripts/sync-task.js` with `mode: "targets"` and JSON on stdin
    using the reference's input shape. Resolve its desired workers through native chat controls.
-   Reuse the saved native worker ID; for a new automation, create one Cloud chat in the selected
+   Verify native active/archive status. Reuse the saved active worker; for a confirmed archived
+   managed worker, follow the reference's [replacement procedure](./references/native-tasks.md#replace-a-confirmed-archived-worker).
+   Unknown or inaccessible workers do not qualify. For a new automation, create one Cloud chat in the selected
    published environment with the [initialization card instructions](./references/native-tasks.md#initialization-card),
    then place it in the desired sidebar
    section. Do not execute the automation during initialization. Preserve its native ID and URL
    in the schedule prompt, never a separate state file. Apply authorized title/group changes through
-   native controls. An unavailable or differently bound existing worker requires intervention,
+   native controls. An unknown or differently bound existing worker requires intervention,
    not an automatic replacement or local fallback.
 5. Run the script with `mode: "sync"`, current tasks and verified worker records. It reads the
    manifest, external definitions, prompts and shared partials, and resolves Git revision/dirty
@@ -128,7 +130,8 @@ automatically or switch credentials to recover a failure.
    bindings out of public repository files.
 
 Apply each definition's declared state. The synchronizer and original smoke test remain disabled;
-the pilot canary declares `enabled: true`. For disabled definitions, leave schedules paused, using
+the original canary is disabled and `smoke-test-canary-2` declares `enabled: true`.
+For disabled definitions, leave schedules paused, using
 immediate create-then-pause when native creation cannot start paused. Ongoing activation requires
 an operator-authorized source change and synchronization. Never hand-edit prepared task objects
 to override desired state. Manual updates repeat this same workflow.

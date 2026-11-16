@@ -46,6 +46,7 @@ test('should load external definitions through the real public Agent System expo
           {
             automationId: 'smoke',
             id: 'fixture-worker',
+            status: 'active',
             environmentId: 'fixture-cloud',
             name: 'Custom smoke',
             group: 'CHECKS',

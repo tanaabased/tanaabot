@@ -8,7 +8,7 @@ results and configuration receipts; main-chat summaries use the bold title descr
 
 After a successful result, add one short sentence beginning with ✅ stating what completed and
 what changed, if anything. No separate large success card is needed. A no-op may simply say
-“✅ Synchronization complete: both schedules were already current.” Respect native notification
+“✅ Synchronization complete: all selected schedules were already current.” Respect native notification
 settings; an empty successful run does not justify an extra direct message.
 
 For detailed results, show a separate quoted **## ⚠️** card for incomplete, uncertain or actionable limitations and a
@@ -23,8 +23,8 @@ tool results or private handoff artifacts; unresolved problems get one actionabl
 ## Summary for the owning dot
 
 In addition to its detailed result, each automation defines a short summary: status, useful
-outcome, whether the reader needs to review or act, and a link to the actual run/chat when the
-host supplies one. Use a quoted card with a bold title containing the automation's purpose emoji
+outcome, whether the reader needs to review or act, and a link to the confirmed active worker.
+Use a quoted card with a bold title containing the automation's purpose emoji
 and uppercase authored display name, without an H2 or the schedule's generated 🤖 prefix. Each automation prompt selects
 its purpose emoji, such as 📅 for calendar review, 🔄 for synchronization or 🧪 for a smoke test.
 Keep status out of this heading.
@@ -36,8 +36,9 @@ its verified state. Update summaries identify what changed and whether the same 
 worker were retained. A saved configuration is not an automation run.
 
 Label a verified worker link “Go to chat →”, whether it uses `codex://threads/...` or HTTPS.
-Copy the native-provided link exactly; do not construct it or describe a chat link as a specific
-run permalink. If no verified link is available, omit that line. Native task pills, their
+Use the native-provided or assembler-generated link for the saved active worker; do not invent
+one or describe a chat link as a specific run permalink. If navigation is unavailable, state that
+limitation and use a supported native task card if it works in the client. Native task pills, their
 checkmarks and their placement belong to the host; do not imitate them or claim they prove
 schedule state.
 

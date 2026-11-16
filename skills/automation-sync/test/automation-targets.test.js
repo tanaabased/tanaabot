@@ -99,6 +99,7 @@ test('should require a verified reusable worker before preparing any schedule', 
   const worker = {
     automationId: 'review',
     id: 'worker',
+    status: 'active',
     environmentId: 'wrong-config',
     name: 'Calendar Review',
     group: 'REPORTS',

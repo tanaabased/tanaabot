@@ -10,5 +10,9 @@
   "smoke-test-canary": {
     "emoji": "🧪",
     "request": "Run the scheduled canary and report its marker and execution evidence."
+  },
+  "smoke-test-canary-2": {
+    "emoji": "🧪",
+    "request": "Run canary #2 and report its distinct marker and execution evidence."
   }
 }

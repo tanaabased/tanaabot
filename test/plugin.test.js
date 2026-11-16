@@ -46,7 +46,8 @@ test('packed plugin retains canonical skills, assets and usable links', async ()
       [
         { id: 'sync', enabled: false },
         { id: 'smoke-test', enabled: false },
-        { id: 'smoke-test-canary', enabled: true },
+        { id: 'smoke-test-canary', enabled: false },
+        { id: 'smoke-test-canary-2', enabled: true },
       ],
     );
     const assembled = planSync({
@@ -58,6 +59,7 @@ test('packed plugin retains canonical skills, assets and usable links', async ()
         workers: definitions.manifest.automations.map((job) => ({
           automationId: job.id,
           id: `fixture-worker-${job.id}`,
+          status: 'active',
           environmentId: 'fixture-cloud',
           name: job.displayName,
           group: 'REPORTS',
@@ -69,7 +71,7 @@ test('packed plugin retains canonical skills, assets and usable links', async ()
     });
     assert.deepEqual(
       assembled.operations.map(({ task }) => task.name),
-      ['🤖 AUTOMATION SYNC', '🤖 SMOKE TEST', '🤖 SMOKE TEST CANARY'],
+      ['🤖 AUTOMATION SYNC', '🤖 SMOKE TEST', '🤖 SMOKE TEST CANARY', '🤖 SMOKE TEST CANARY #2'],
     );
     const smoke = assembled.operations.find(({ automationId }) => automationId === 'smoke-test');
     assert.equal(smoke.task.prompt.split('\n')[0], 'TANAABOT-SYNC-CANARY: ORBITAL-GOOSE-732');
@@ -87,6 +89,14 @@ test('packed plugin retains canonical skills, assets and usable links', async ()
       weekdayWildcard: true,
     });
     assert.match(canary.task.prompt, /TANAABOT-SCHEDULE-CANARY-1/);
+    const canary2 = assembled.operations.find(
+      ({ automationId }) => automationId === 'smoke-test-canary-2',
+    );
+    assert.equal(canary.task.enabled, false);
+    assert.equal(canary2.task.enabled, true);
+    assert.deepEqual(canary2.task.schedule, canary.task.schedule);
+    assert.match(canary2.task.prompt, /TANAABOT-SCHEDULE-CANARY-2/);
+    assert.doesNotMatch(canary2.task.prompt, /TANAABOT-SCHEDULE-CANARY-1/);
     assert.ok(assembled.operations.every(({ task }) => task.schedule.timezone === null));
     assert.equal(skills, join(payload, 'skills'));
     assert.equal(existsSync(join(payload, '.agents/plugins/marketplace.json')), false);

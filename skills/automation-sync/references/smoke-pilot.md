@@ -1,64 +1,58 @@
 # Authorized smoke pilot
 
-Use the canonical sync workflow during an operator-authorized validation window. Keep the
-existing synchronizer and original smoke schedule IDs and their workers in `REPORTS`. The
-canary worker was already initialized; reuse it. Its five-minute schedule was rejected and
-was not saved. Confirm current native state before applying; do not infer absence from that
-earlier result or create duplicate workers.
+Use the canonical sync workflow during an operator-authorized validation window. Keep the existing
+synchronizer and original smoke schedule IDs. The original `smoke-test-canary` now declares
+`enabled: false`; preserve its paused state and archived chat history. The fresh
+`smoke-test-canary-2` declares an enabled ten-minute schedule and uses its own worker and marker.
+Inspect current native state before applying; source definitions do not establish what was saved.
 
-## Pass one: upgrade the synchronizer only
+## Run the current synchronizer
 
-1. Run the existing saved synchronizer once. If Run now requires temporary enablement, do that
-   only within the authorized pilot window and restore its paused state afterward.
-2. Fetch clean canonical GitHub `main`, pin one commit, and immediately read that revision's sync
-   skill. An incoming dispatcher without `dispatchVersion: 2` selects the bootstrap path. Use
-   `id: "sync"` in both targets and sync assembly; an explicit sync-only request does the same.
-3. Update only the synchronizer, preserving its native ID, worker and intended paused state.
-   Verify the saved prompt has `dispatchVersion: 2`, the new worker header, and the applied source
-   revision. Show its `AUTOMATION SYNC · UPDATED` configuration card first.
-4. End this pass without changing the smoke task or creating/enabling the canary schedule.
-   Saving a new dispatcher does not replace the one already running. Do not automatically start
-   pass two or claim the new dispatcher executed.
+1. Use Run now on the existing version-2 synchronizer. If temporary enablement is required, restore
+   its paused state afterward. Fetch and pin clean canonical GitHub `main`, then load that revision's
+   sync skill and required references. Select `all`; update and verify sync first if it changed.
+   Saving its new prompt does not prove the current invocation used that new dispatcher.
+2. Retain the original smoke schedule and active worker. Resolve each worker's native archive
+   status. For a confirmed archived managed worker, follow the [replacement procedure](./native-tasks.md#replace-a-confirmed-archived-worker)
+   and retain its native schedule ID, cadence and enabled state. Unknown status is not permission
+   to create a replacement. Keep archived chats intact.
+3. Initialize the new `SMOKE TEST CANARY #2` worker in the selected published Cloud configuration
+   and `REPORTS`. Inspect its `CHAT CREATED` card. Reconcile previous attempts before creating;
+   reuse an existing verified worker if this step already succeeded.
+4. Save `smoke-test-canary-2` with its exact ten-minute cadence and enabled state. Verify the next
+   occurrence and saved worker ID. Do not run the canary manually during configuration. Inspect
+   the separate `SMOKE TEST CANARY #2 · CREATED` schedule card in that same worker.
+5. Inspect the separate main-chat summaries and their “Go to chat →” links. Test the final active
+   worker on iOS and desktop, including an assembler-generated link when native creation supplied
+   no URL. If a client cannot navigate, test a native task card; if neither works, report navigation
+   unavailable. Backend access does not establish client navigation. Do not link an archived worker.
 
-## Pass two: execute the updated saved task
-
-1. Start a distinct Run now from the updated saved synchronizer. Verify the incoming request
-   actually contains `dispatchVersion: 2` and its generated readable header. Fetch and pin current
-   canonical `main` and load that skill; record the saved dispatcher and selected source revisions
-   separately if they differ.
-2. Select `all`. If the synchronizer changed again, apply and verify it first. Update the original
-   smoke task in place, retaining its ID, worker and paused state. Its literal first saved prompt
-   line must change from `TANAABOT-SYNC-CANARY: ORBITAL-GOOSE-731` to
-   `TANAABOT-SYNC-CANARY: ORBITAL-GOOSE-732`. Check the native editor and saved result.
-3. Create the separate `smoke-test-canary` schedule using its existing worker. Its authored
-   cadence is every ten minutes, with `enabled: true`. Verify the native scheduler can represent
-   that cadence exactly and inspect its next occurrence and saved state. Do not silently translate
-   the schedule or invoke Run now on the canary during configuration.
-4. Inspect the actual incoming worker message: its own title and short request must precede the
-   JSON and prose. Check the client's preview and collapse behavior; Markdown alone does not
-   establish either. Confirm forwarding preserved the generated content.
-5. Follow [configuration results](./configuration-receipts.md). Inspect the original smoke worker's
-   `SMOKE TEST · UPDATED` card and the canary worker's `SMOKE TEST CANARY · CREATED` card, including
-   saved state, source revision, IDs and before/after changes. Verify real quoted H2 rendering,
-   blank lines after titles and before final statuses, and absence of routine preparation cards.
-   Confirm each compact summary arrives separately in the main chat and its link opens the right
-   worker. Transcript text alone does not establish visual rendering or message separation.
+If the saved dispatcher still predates `dispatchVersion: 2`, first perform a sync-only upgrade with
+`id: "sync"` for both targets and assembly, verify saving, and stop. A separate Run now then follows
+the steps above. Version-2 dispatchers do not need this bootstrap on every source update.
 
 ## No-op, scheduled occurrence and cleanup
 
-Synchronize unchanged before cleanup. Confirm no writes, duplicates, timestamp changes or update
-cards. Retain every saved schedule ID and worker. Leave unrelated schedules untouched.
+Synchronize unchanged before cleanup. Confirm no writes, duplicate workers, timestamp changes or
+new creation/update cards. Retain the saved schedule IDs and replacement bindings. A source change
+between runs is not an unchanged test.
 
-Let one authorized ten-minute canary occurrence execute. Inspect `TANAABOT-SCHEDULE-CANARY-1`,
+Let one authorized ten-minute occurrence of canary #2 execute. Inspect `TANAABOT-SCHEDULE-CANARY-2`,
 native scheduled-run evidence, observed execution environment, worker output and main-chat summary.
-Pause the canary after the first observed run and verify it. If paused before it runs, record
-execution as unverified. A manual run does not prove unattended execution.
+Check that the incoming request's readable title precedes its metadata and instructions, and inspect
+actual card rendering and separate summary delivery. A transcript alone does not prove those visuals.
 
-Before syncing again, change the canary source to `enabled: false` through an authorized source
-change and synchronize it. Otherwise the enabled source would re-enable the paused schedule.
-Keep the original smoke test and synchronizer paused and restore any temporary enablement.
-Do not delete schedules or workers automatically.
+Pause canary #2 after the first observed run and verify it. If paused before it runs, record execution
+as unverified. Before another sync, make an authorized source change to set its `enabled: false`;
+otherwise normal sync would re-enable it. Keep the original canary, smoke test and synchronizer
+paused and restore temporary enablement. Do not delete or archive schedules or workers automatically.
 
-An unattended synchronizer creating or updating a schedule is a separate remaining check.
-Neither manual sync pass nor a scheduled canary proves it. Preserve the supported coordinator
-handoff if the worker lacks scheduling tools, and distinguish prepared actions from saved changes.
+If archive replacement still needs a live trial, obtain authorization to archive a selected test
+worker, then synchronize and verify exactly one active replacement, the same saved schedule ID and
+unchanged cadence/state. Run another unchanged sync and confirm no further replacement. Ordinary
+scheduled dispatch must not perform this repair. Interrupted or competing native operations need
+their own controlled trial; pure assembler tests do not prove exclusive native creation.
+
+An unattended synchronizer creating or updating a schedule remains a separate check. Neither a
+manual sync nor a scheduled canary proves it. Preserve the supported coordinator handoff if the
+worker lacks scheduling tools, and distinguish prepared actions from verified saved changes.

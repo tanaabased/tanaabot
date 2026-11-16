@@ -23,7 +23,7 @@ remains pending in [#5](https://github.com/tanaabased/tanaabot/issues/5).
 - [Dotpackages](./INVENTORY.md#dotpackages): Global guidance and configuration stubs.
 - [Skills](./INVENTORY.md#skills): Tanaabot Voice, Skill Author and Startup Check.
 - [Configuration files](./INVENTORY.md#configuration-files): Setup declarations and Codex plugin sources.
-- [Automations](./INVENTORY.md#automations): Synchronizer, smoke test and a temporary ten-minute pilot canary.
+- [Automations](./INVENTORY.md#automations): Synchronizer, smoke test and pilot canaries.
 
 ## Install
 
@@ -62,8 +62,10 @@ loader from its temporary GitHub `main` dependency. It combines the
 changed native tasks and leaves unchanged ones alone. Shared-guidance changes update affected tasks.
 Names are generated as 🤖 plus the uppercase display name. The daily schedules use the native
 scheduler's local timezone: midnight for sync and 00:15 for smoke, with no timezone override.
-For an existing saved synchronizer, use the [two-pass upgrade pilot](./skills/automation-sync/references/smoke-pilot.md)
-before synchronizing all definitions. The original smoke test stays paused. The temporary `smoke-test-canary` declares an enabled
+For a version-2 synchronizer, Run now loads current `main` and updates sync first, then the other
+definitions. The [pilot procedure](./skills/automation-sync/references/smoke-pilot.md) retains the
+sync-only bootstrap for older dispatchers. The original smoke test and canary stay paused.
+The fresh `smoke-test-canary-2` declares an enabled
 ten-minute schedule; apply it only in an authorized live pilot, then pause it and reconcile its
 source state using the [pilot procedure](./skills/automation-sync/references/smoke-pilot.md).
 Tanaabot defaults to its published Cloud environment and reusable chats under `REPORTS`;

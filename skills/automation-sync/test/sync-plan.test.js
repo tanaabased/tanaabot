@@ -39,6 +39,7 @@ function input(overrides = {}) {
       workers: ['sync', 'smoke'].map((id) => ({
         automationId: id,
         id: `worker-${id}`,
+        status: 'active',
         environmentId: 'test-environment',
         name: `Test ${id}`,
         group: 'REPORTS',
@@ -88,6 +89,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     request.context.workers.push({
       automationId: 'canary',
       id: 'worker-canary',
+      status: 'active',
       environmentId: 'test-environment',
       name: 'Test canary',
       group: 'REPORTS',
@@ -225,13 +227,13 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     assert.equal(result.operations[0].task.prompt, initial[0].task.prompt);
   });
 
-  test('should allow an unavailable presentation link without losing worker routing', () => {
+  test('should derive a missing link from the verified active worker ID', () => {
     const request = input();
     delete request.context.workers[0].url;
     const worker = workerRequest(planSync(request).operations[0].task);
     assert.equal(worker.thread.id, 'worker-sync');
     assert.equal(worker.execution.environmentId, 'test-environment');
-    assert.equal(Object.hasOwn(worker.thread, 'url'), false);
+    assert.equal(worker.thread.url, 'codex://threads/worker-sync');
     request.context.workers[0].environmentId = 'wrong-environment';
     assert.throws(() => planSync(request), /reusable-worker-target-mismatch/);
   });
@@ -310,6 +312,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     request.context.workers.push({
       automationId: 'canary',
       id: 'worker-canary',
+      status: 'active',
       environmentId: 'test-environment',
       name: 'Test canary',
       group: 'REPORTS',
@@ -383,6 +386,111 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     const request = input({ existingTasks: saved() });
     request.context.workers[0].id = 'replacement-worker';
     assert.throws(() => planSync(request), /reusable-worker-replacement-required:sync/);
+  });
+
+  test('should refuse archived, unknown and malformed worker identities', () => {
+    for (const status of ['archived', 'unknown', 'offline', undefined]) {
+      const request = input();
+      request.context.workers[0].status = status;
+      assert.throws(() => planSync(request), /reusable-worker-not-active:sync/);
+    }
+    for (const id of ['worker/id', 'worker?query', 'worker#fragment', ' worker', 'worker%2Fid']) {
+      const request = input();
+      request.context.workers[0].id = id;
+      assert.throws(() => planSync(request), /native-worker-id-invalid:sync/);
+    }
+  });
+
+  test('should rebind a confirmed archived worker in place, recover a retry and then no-op', () => {
+    for (const enabled of [false, true]) {
+      const request = input({ now: later });
+      request.manifest.automations[0].enabled = enabled;
+      request.existingTasks = saved(request);
+      const original = structuredClone(request.existingTasks[0]);
+      const replacement = request.context.workers[0];
+      replacement.replaces = {
+        id: replacement.id,
+        status: 'archived',
+        environmentId: replacement.environmentId,
+      };
+      replacement.id = 'replacement-worker';
+      delete replacement.url;
+      const result = planSync(request);
+      const update = result.operations[0];
+      assert.equal(update.kind, 'update');
+      assert.equal(update.nativeId, original.id);
+      assert.deepEqual(update.expectedCurrent, original.task);
+      assert.equal(update.task.enabled, enabled);
+      assert.deepEqual(update.task.schedule, original.task.schedule);
+      assert.equal(workerRequest(update.task).thread.id, 'replacement-worker');
+      assert.equal(workerRequest(update.task).thread.url, 'codex://threads/replacement-worker');
+      assert.equal(result.operations[1].kind, 'unchanged');
+      assert.deepEqual(planSync(request), result, 'a retry prepares the same guarded update');
+      assert.deepEqual(request.existingTasks[0], original, 'the prior binding is not mutated');
+
+      request.existingTasks[0] = { id: update.nativeId, task: update.task };
+      request.now = '2026-03-01T00:00:00Z';
+      assert.equal(planSync(request).operations[0].kind, 'unchanged');
+      delete replacement.replaces;
+      assert.equal(planSync(request).operations[0].kind, 'unchanged');
+
+      replacement.replaces = {
+        id: 'worker-sync',
+        status: 'archived',
+        environmentId: 'test-environment',
+      };
+      replacement.id = 'competing-worker';
+      assert.throws(() => planSync(request), /reusable-worker-replacement-required:sync/);
+    }
+  });
+
+  test('should require exact archive evidence and preserve explicit targets and rebind settings', () => {
+    const request = input({ existingTasks: saved() });
+    const replacement = request.context.workers[0];
+    replacement.id = 'replacement-worker';
+    delete replacement.url;
+    const archived = { id: 'worker-sync', status: 'archived', environmentId: 'test-environment' };
+    for (const evidence of [
+      undefined,
+      { ...archived, status: 'active' },
+      { ...archived, status: 'unknown' },
+      { ...archived, id: 'different-worker' },
+      { ...archived, environmentId: 'other-environment' },
+    ]) {
+      replacement.replaces = evidence;
+      assert.throws(() => planSync(request), /reusable-worker-replacement-required:sync/);
+    }
+    replacement.replaces = archived;
+    replacement.status = 'unknown';
+    assert.throws(() => planSync(request), /reusable-worker-not-active:sync/);
+    replacement.status = 'active';
+    request.manifest.automations[0].overrides.codex = { target: { thread: 'worker-sync' } };
+    assert.throws(() => planSync(request), /reusable-worker-target-mismatch:sync/);
+    delete request.manifest.automations[0].overrides.codex;
+    request.manifest.automations[0].enabled = true;
+    assert.throws(() => planSync(request), /worker-rebind-settings-changed:sync/);
+    request.manifest.automations[0].enabled = false;
+    request.manifest.automations[0].schedule.seconds = 7200;
+    assert.throws(() => planSync(request), /worker-rebind-settings-changed:sync/);
+  });
+
+  test('should backfill a missing saved link once and retain the exact task afterward', () => {
+    const request = input({ existingTasks: saved(), now: later });
+    const old = request.existingTasks[0];
+    old.task.prompt = old.task.prompt.replaceAll(
+      '"url": "https://example.test/chats/sync"',
+      '"url": null',
+    );
+    delete request.context.workers[0].url;
+    const update = planSync(request).operations[0];
+    assert.equal(update.kind, 'update');
+    assert.equal(update.nativeId, old.id);
+    assert.equal(update.task.enabled, old.task.enabled);
+    assert.equal(workerRequest(update.task).thread.url, 'codex://threads/worker-sync');
+    request.existingTasks[0] = { id: old.id, task: update.task };
+    const unchanged = planSync({ ...request, now: '2026-03-01T00:00:00Z' }).operations[0];
+    assert.equal(unchanged.kind, 'unchanged');
+    assert.deepEqual(unchanged.task, update.task);
   });
 
   test('should select one ID and leave unrelated native tasks untouched', () => {
