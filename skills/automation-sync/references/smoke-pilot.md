@@ -3,10 +3,10 @@
 Use the canonical sync workflow during an operator-authorized validation window. Keep the existing
 synchronizer and original smoke schedule IDs. The original `smoke-test-canary` now declares
 `enabled: false`; preserve its paused state and archived chat history. The fresh
-`smoke-test-canary-2` declares an enabled hourly schedule and uses its own worker and marker.
+`smoke-test-canary-2` declares an enabled one-time schedule and uses its own worker and marker.
 Inspect current native state before applying; source definitions do not establish what was saved.
-For a quick bounded pilot, first author an operator-selected future `schedule.at` timestamp for
-canary #2 and publish that source change. The assembler will skip it after that time; do not replace
+Run sync before canary #2's declared `schedule.at` timestamp. If that time has passed, first author
+and publish a new operator-selected future timestamp. The assembler will skip it after that time; do not replace
 it with a relative delay on every sync. Leave the other definitions' cadence and enabled state alone.
 
 ## Run the current synchronizer

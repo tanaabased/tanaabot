@@ -66,8 +66,8 @@ For a version-2 synchronizer, Run now loads current `main` and updates sync firs
 definitions. The [pilot procedure](./skills/automation-sync/references/smoke-pilot.md) retains the
 sync-only bootstrap for older dispatchers. The original smoke test and canary stay paused.
 The fresh `smoke-test-canary-2` declares an enabled
-hourly schedule; apply it only in an authorized live pilot, then pause it and reconcile its
-source state using the [pilot procedure](./skills/automation-sync/references/smoke-pilot.md).
+one-time schedule; run sync before its declared timestamp using the
+[pilot procedure](./skills/automation-sync/references/smoke-pilot.md).
 Tanaabot defaults to its published Cloud environment and reusable chats under `REPORTS`;
 per-automation environment, thread and group overrides use the shared Agent System schema.
 Native Cloud scheduling access, smoke output and unattended synchronization still require the
