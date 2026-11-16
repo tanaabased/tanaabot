@@ -27,6 +27,7 @@ updates; the script itself makes no service writes.
 ## Required Reading
 
 - **Always:** Read [native task inputs and application](./references/native-tasks.md),
+  [configuration receipts](./references/configuration-receipts.md),
   the shared [metadata](../../prompts/automations/partials/metadata.md),
   [execution](../../prompts/automations/partials/execution.md) and
   [presentation](../../prompts/automations/partials/presentation.md) partials, the coordinator's
@@ -110,13 +111,21 @@ automatically or switch credentials to recover a failure.
    writer changed an update's current values, recompute from the latest native record.
 7. Trust a successful native result that includes saved settings. Read back only omitted values,
    uncertain effects or the pilot's explicit checks; do not add a routine verification pass.
+   Deliver the verified creation/update receipt to its existing worker using the receipt-only
+   procedure, then report each automation in its own main-chat summary message. Unchanged actions
+   produce no update receipt. Distinguish saved state, receipt delivery and actual execution.
    Report completed actions and actionable limits in the shared card style. Keep private native
    bindings out of public repository files.
 
-The definitions start with `enabled: false`; seeding must leave schedules paused, using immediate
-create-then-pause when native creation cannot start paused. Ongoing activation requires
+Apply each definition's declared state. The synchronizer and original smoke test remain disabled;
+the pilot canary declares `enabled: true`. For disabled definitions, leave schedules paused, using
+immediate create-then-pause when native creation cannot start paused. Ongoing activation requires
 an operator-authorized source change and synchronization. Never hand-edit prepared task objects
 to override desired state. Manual updates repeat this same workflow.
+
+Before applying the enabled pilot canary, follow the [smoke pilot](./references/smoke-pilot.md)
+to confirm the authorized window, displayed next occurrence and cleanup plan. Source declarations
+alone do not authorize live activation or an unattended invocation.
 
 The synchronizer is scheduled at midnight and the smoke test at 00:15 in the native scheduler's
 local timezone, with no timezone override. Check its displayed next run when seeding; do not infer
@@ -137,6 +146,7 @@ the later time does not guarantee synchronization completed.
 
 - [Native task inputs](./references/native-tasks.md): Native mapping and stdin shape.
 - [Smoke pilot](./references/smoke-pilot.md): Revision update, no-op, partial drift and delivery checks.
+- [Configuration receipts](./references/configuration-receipts.md): Verified worker-local creation/update records.
 - `scripts/prepare-dependency.js`: Git dependency manifest build.
 - `scripts/sync-task.js`: Read-only assembly and comparison.
 - `lib/`, `utils/`, `test/`: Loader integration, comparison and owned tests.

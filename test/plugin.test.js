@@ -46,6 +46,7 @@ test('packed plugin retains canonical skills, assets and usable links', async ()
       [
         { id: 'sync', enabled: false },
         { id: 'smoke-test', enabled: false },
+        { id: 'smoke-test-canary', enabled: true },
       ],
     );
     const assembled = planSync({
@@ -68,8 +69,24 @@ test('packed plugin retains canonical skills, assets and usable links', async ()
     });
     assert.deepEqual(
       assembled.operations.map(({ task }) => task.name),
-      ['🤖 AUTOMATION SYNC', '🤖 SMOKE TEST'],
+      ['🤖 AUTOMATION SYNC', '🤖 SMOKE TEST', '🤖 SMOKE TEST CANARY'],
     );
+    const smoke = assembled.operations.find(({ automationId }) => automationId === 'smoke-test');
+    assert.equal(smoke.task.prompt.split('\n')[0], 'TANAABOT-SYNC-CANARY: ORBITAL-GOOSE-731');
+    const canary = assembled.operations.find(
+      ({ automationId }) => automationId === 'smoke-test-canary',
+    );
+    assert.equal(canary.task.schedule.kind, 'cron');
+    assert.deepEqual(canary.task.schedule.fields, {
+      minutes: Array.from({ length: 12 }, (_, index) => index * 5),
+      hours: Array.from({ length: 24 }, (_, index) => index),
+      days: Array.from({ length: 31 }, (_, index) => index + 1),
+      months: Array.from({ length: 12 }, (_, index) => index + 1),
+      weekdays: Array.from({ length: 7 }, (_, index) => index),
+      dayWildcard: true,
+      weekdayWildcard: true,
+    });
+    assert.match(canary.task.prompt, /TANAABOT-SCHEDULE-CANARY-1/);
     assert.ok(assembled.operations.every(({ task }) => task.schedule.timezone === null));
     assert.equal(skills, join(payload, 'skills'));
     assert.equal(existsSync(join(payload, '.agents/plugins/marketplace.json')), false);

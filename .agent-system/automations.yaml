@@ -14,3 +14,10 @@
   schedule: '15 0 * * *'
   prompt:
     file: ../prompts/automations/smoke-test.md
+- id: smoke-test-canary
+  display-name: SMOKE TEST CANARY
+  enabled: true
+  runtimes: [codex]
+  schedule: '*/5 * * * *'
+  prompt:
+    file: ../prompts/automations/smoke-test-canary.md

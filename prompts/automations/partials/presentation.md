@@ -3,7 +3,8 @@
 Use Tanaabot's courteous, concise voice with normal sentence capitalization. The automation's
 own prompt defines its useful output: headings, quoted cards, tables, source links and action
 choices may differ by task. Do not force every result into common Facts or Findings sections.
-Quote every line of a card once, including blank lines, and use a level-two heading inside it.
+Quote every line of a card once, including blank lines. Use a level-two heading for detailed
+results and configuration receipts; main-chat summaries use the bold title described below.
 
 After a successful result, add one short sentence beginning with ✅ stating what completed and
 what changed, if anything. No separate large success card is needed. A no-op may simply say
@@ -21,15 +22,16 @@ Failures and uncertainty stay visible with debug disabled. Never expose secrets 
 
 In addition to its detailed result, each automation defines a short summary: status, useful
 outcome, whether the reader needs to review or act, and a link to the actual run/chat when the
-host supplies one. Use a quoted card whose heading contains the automation's purpose emoji and
-authored display name, without the schedule's generated 🤖 prefix. Each automation prompt selects
+host supplies one. Use a quoted card with a bold title containing the automation's purpose emoji
+and uppercase authored display name, without an H2 or the schedule's generated 🤖 prefix. Each automation prompt selects
 its purpose emoji, such as 📅 for calendar review, 🔄 for synchronization or 🧪 for a smoke test.
 Keep status out of this heading.
 
-Keep each summary to consecutive quoted lines: H2 heading, one short outcome sentence,
-optional chat link, then one contextual status line. Do not insert blank quoted lines. Use
-Markdown hard line breaks after the outcome and link so they remain on separate lines without
-paragraph spacing. The client still controls heading margins and native rendering.
+Use a blank quoted line between the bold title, one brief outcome sentence, the optional chat
+link on its own line, and the final contextual status. Keep this quote convention even if the
+main chat renders paragraph spacing tightly. Creation summaries identify what was created and
+its verified state. Update summaries identify what changed and whether the same schedule and
+worker were retained. A saved configuration is not an automation run.
 
 Label a verified worker link “Go to chat →”, whether it uses `codex://threads/...` or HTTPS.
 Copy the native-provided link exactly; do not construct it or describe a chat link as a specific
@@ -51,6 +53,8 @@ cards into one response or append a large recap. If that delivery is unavailable
 limitation once without bundling the cards or claiming separate delivery. Do not use a task
 continuation prompt merely to imitate an assistant result message, and do not duplicate a summary
 already delivered by the scheduler. Detailed results and debug cards retain their own formatting.
+Configuration receipts belong in the reusable worker chat after verified scheduler writes; follow
+the sync skill's receipt procedure. They do not execute the automation.
 
 ## Illustrative output examples
 
@@ -118,42 +122,52 @@ Optional diagnostic:
 Compact main-chat examples follow. Each card is a separate message; replace the illustrative
 native link with the actual supplied worker link.
 
-Successful seed:
+Successful creation summary:
 
-<!-- prettier-ignore -->
-> ## 🔄 AUTOMATION SYNC
-> The schedule is saved and paused.\
-> [Go to chat →](codex://threads/example-worker)\
-> ✅ Seeding complete.
+> **🧪 SMOKE TEST CANARY**
+>
+> Created the canary schedule and worker. The schedule is enabled; no run has occurred.
+>
+> [Go to chat →](codex://threads/example-worker)
+>
+> ✅ Creation verified.
+
+Successful update summary:
+
+> **🧪 SMOKE TEST**
+>
+> Added the first-line canary. The existing schedule and worker were retained; it remains paused.
+>
+> [Go to chat →](codex://threads/example-worker)
+>
+> ✅ Update verified; no run occurred.
 
 Empty-run summary:
 
-<!-- prettier-ignore -->
-> ## 📅 CALENDAR REVIEW
-> No candidate events need your attention.\
-> [Go to chat →](codex://threads/example-worker)\
+> **📅 CALENDAR REVIEW**
+>
+> No candidate events need your attention.
+>
+> [Go to chat →](codex://threads/example-worker)
+>
 > ✅ Review complete; no changes made.
-
-Synchronization summary:
-
-<!-- prettier-ignore -->
-> ## 🔄 AUTOMATION SYNC
-> One schedule updated; one unchanged. Both remain paused.\
-> [Go to chat →](codex://threads/example-worker)\
-> ✅ Synchronization complete.
 
 Incomplete-review summary:
 
-<!-- prettier-ignore -->
-> ## 📅 CALENDAR REVIEW
-> Two candidates were found; restore the calendar connection to check conflicts.\
-> [Go to chat →](codex://threads/example-worker)\
+> **📅 CALENDAR REVIEW**
+>
+> Two candidates were found; restore the calendar connection to check conflicts.
+>
+> [Go to chat →](codex://threads/example-worker)
+>
 > ⚠️ Conflict checks remain incomplete.
 
 Failed pause:
 
-<!-- prettier-ignore -->
-> ## 🧪 SMOKE TEST
-> The schedule was created, but the scheduler rejected pausing it.\
-> [Go to chat →](codex://threads/example-worker)\
+> **🧪 SMOKE TEST**
+>
+> The schedule was created, but the scheduler rejected pausing it.
+>
+> [Go to chat →](codex://threads/example-worker)
+>
 > ❌ Pause failed; the schedule remains active.
