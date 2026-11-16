@@ -26,6 +26,6 @@
   enabled: true
   runtimes: [codex]
   schedule:
-    at: '2026-11-16T10:27:00-05:00'
+    at: '2026-11-16T11:25:00-05:00'
   prompt:
     file: ../prompts/automations/smoke-test-canary-2.md
