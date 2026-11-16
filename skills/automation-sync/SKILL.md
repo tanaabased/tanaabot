@@ -99,7 +99,8 @@ automatically or switch credentials to recover a failure.
    Run `bun skills/automation-sync/scripts/sync-task.js` with `mode: "targets"` and JSON on stdin
    using the reference's input shape. Resolve its desired workers through native chat controls.
    Reuse the saved native worker ID; for a new automation, create one Cloud chat in the selected
-   published environment with an initialization-only prompt, then place it in the desired sidebar
+   published environment with the [initialization card instructions](./references/native-tasks.md#initialization-card),
+   then place it in the desired sidebar
    section. Do not execute the automation during initialization. Preserve its native ID and URL
    in the schedule prompt, never a separate state file. Apply authorized title/group changes through
    native controls. An unavailable or differently bound existing worker requires intervention,

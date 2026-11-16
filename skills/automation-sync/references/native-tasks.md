@@ -37,7 +37,8 @@ For initial seeding, inspect existing native chats before creating one; names al
 automation ownership. If a prior create was uncertain, reconcile it before another create.
 
 For a new worker, use the native Cloud-chat creation control with the selected published configuration
-ID and an initialization-only prompt. Wait for that initialization to finish. Use native sidebar
+ID and an initialization-only prompt that requests the [initialization card](#initialization-card).
+Wait for that initialization to finish. Use native sidebar
 controls to find or create the desired section and place the chat there. Apply authorized title/group
 changes to an existing worker without replacing its ID. Verify its Cloud configuration from native
 association or the original launch receipt, not a name or repository claim. A missing existing worker
@@ -51,6 +52,30 @@ deep link must identify the verified worker. Do not construct URLs from IDs. Omi
 link was supplied; a missing presentation link does not prevent routing by verified worker ID.
 Native worker IDs and optional links live in the saved schedule prompt and current native
 responses, not a separate database.
+
+### Initialization card
+
+In the creation prompt, identify the worker's automation and supply its emoji from
+`prompts/automations/requests.json` and its authored display name. Instruct the worker to complete
+required Cloud startup checks, then finish initialization with one small quoted card in its own
+chat. Do not run the automation, change schedules or send a separate main-chat summary.
+
+Use an H2 with the emoji, uppercase display name and `· CHAT CREATED`. Keep a blank quoted line
+after the heading and before the contextual status. For successful initialization:
+
+> ## 🧪 SMOKE TEST CANARY · CHAT CREATED
+>
+> Reusable worker initialized. Awaiting schedule configuration.
+>
+> ✅ Worker ready. No automation has run.
+
+If startup leaves an unresolved check, replace the body with the specific limitation and use
+`⚠️ Worker setup needs attention. No automation has run.` For a confirmed startup failure, use
+`❌ Worker setup failed. No automation has run.` Never infer readiness from chat creation alone.
+
+This card records new chat initialization, not a saved schedule. Reusing a worker does not emit
+another `CHAT CREATED` card. After a schedule is saved, deliver its separate
+[configuration card](./configuration-receipts.md) to the same worker.
 
 ## Assemble schedules
 
