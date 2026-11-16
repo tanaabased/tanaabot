@@ -1,63 +1,45 @@
-# Authorized smoke pilot
+# Clean-start smoke pilot
 
-Use the canonical sync workflow during an operator-authorized validation window. Keep the existing
-synchronizer and original smoke schedule IDs. The original `smoke-test-canary` now declares
-`enabled: false`; preserve its paused state and archived chat history. The fresh
-`smoke-test-canary-2` declares an enabled one-time schedule and uses its own worker and marker.
-Inspect current native state before applying; source definitions do not establish what was saved.
-Run sync before canary #2's declared `schedule.at` timestamp. If that time has passed, first author
-and publish a new operator-selected future timestamp. The assembler will skip it after that time; do not replace
-it with a relative delay on every sync. Leave the other definitions' cadence and enabled state alone.
+The repository declares only enabled `sync` and enabled `smoke-test-canary-3`. Sync runs at
+midnight Eastern. Canary #3 is a true one-shot with an expired placeholder timestamp until
+this pilot is ready. Source settings do not establish saved native state.
 
-## Run the current synchronizer
+## Cleanup and seed
 
-1. Use Run now on the existing version-2 synchronizer. If temporary enablement is required, restore
-   its paused state afterward. Fetch and pin clean canonical GitHub `main`, then load that revision's
-   sync skill and required references. Select `all`; update and verify sync first if it changed.
-   Saving its new prompt does not prove the current invocation used that new dispatcher.
-2. Retain the original smoke schedule and active worker. Resolve each worker's native archive
-   status. For a confirmed archived managed worker, follow the [replacement procedure](./native-tasks.md#replace-a-confirmed-archived-worker)
-   and retain its native schedule ID, cadence and enabled state. Unknown status is not permission
-   to create a replacement. Keep archived chats intact.
-3. Initialize the new `SMOKE TEST CANARY #2` worker in the selected published Cloud configuration
-   and `REPORTS`. Inspect its `CHAT CREATED` card. Reconcile previous attempts before creating;
-   reuse an existing verified worker if this step already succeeded.
-4. Save `smoke-test-canary-2` with its compiled schedule and declared enabled state. Verify the next
-   occurrence and saved worker ID. Do not run the canary manually during configuration. Inspect
-   the separate `SMOKE TEST CANARY #2 · CREATED` schedule card in that same worker.
-5. Inspect the separate main-chat summaries and their “Go to chat →” links. Test the final active
-   worker on iOS and desktop, including an assembler-generated link when native creation supplied
-   no URL. If a client cannot navigate, test a native task card; if neither works, report navigation
-   unavailable. Backend access does not establish client navigation. Do not link an archived worker.
+1. The operator manually removes the old Tanaabot pilot schedules and worker chats, including
+   the old synchronizer and smoke canaries. Leave **UPDATE CLOUD CANON** and unrelated tasks
+   untouched. Do not delete or archive anything as part of this skill.
+2. Inspect the relevant native schedule and chat listings to confirm the clean slate. If an old
+   managed item remains, report it for operator cleanup rather than creating a duplicate.
+3. Fetch fresh canonical `main` and follow the sync skill with `id: "sync"` for both targets and
+   assembly. Use the existing published Tanaabot Cloud environment. Initialize its reusable
+   `AUTOMATION SYNC` worker in `REPORTS`, then save the enabled midnight Eastern schedule.
+4. Verify the saved enabled state and displayed next run. Inspect the worker's `CHAT CREATED`
+   card, separate `AUTOMATION SYNC · CREATED` configuration card and run-results card.
+   Stop after seeding; do not run the saved sync task or the canary automatically.
 
-If the saved dispatcher still predates `dispatchVersion: 2`, first perform a sync-only upgrade with
-`id: "sync"` for both targets and assembly, verify saving, and stop. A separate Run now then follows
-the steps above. Version-2 dispatchers do not need this bootstrap on every source update.
+## Publish the pilot time and run
 
-## No-op, scheduled occurrence and cleanup
+Once cleanup and seeding are ready, agree with the operator on a timezone-aware absolute
+`schedule.at` about 30 minutes ahead and promptly publish it to `main`. Do not choose the live
+firing time during earlier repository preparation. If the lead time has evaporated, agree on
+and publish a replacement before proceeding. Never replace it with a rolling relative delay.
 
-Synchronize unchanged before cleanup. Confirm no writes, duplicate workers, timestamp changes or
-new creation/update cards. Retain the saved schedule IDs and replacement bindings. A source change
-between runs is not an unchanged test.
+1. The operator uses **Run now** once on the saved sync task. It fetches fresh `main`, updates
+   itself first if needed, then creates the `SMOKE TEST CANARY #3` worker and one-shot schedule.
+2. Verify the saved firing instant and enabled state against the published definition. Do not
+   run the canary manually. Inspect its `CHAT CREATED` and separate schedule `CREATED` cards.
+3. In the sync worker, verify the configuration card if sync changed, followed by one separate
+   `AUTOMATION SYNC · RUN RESULTS` card with a row for each considered automation. In the main
+   chat, inspect individual compact summaries without a duplicate aggregate.
+4. Test each “Go to chat →” link to the active worker on desktop and iOS where available.
+   Report an untested client as unverified; backend access does not prove client navigation.
+5. Let the scheduled occurrence run. Check `TANAABOT-SCHEDULE-CANARY-3`, native scheduled-run
+   evidence, the observed Cloud environment, worker result and main-chat summary.
+6. Run sync again after the firing time. Verify Canary #3 is skipped without rearming, recreating
+   its schedule or replacing its worker. A skipped result alone does not prove it executed.
 
-Let the authorized occurrence of canary #2 execute. Inspect `TANAABOT-SCHEDULE-CANARY-2`,
-native scheduled-run evidence, observed execution environment, worker output and main-chat summary.
-Check that the incoming request's readable title precedes its metadata and instructions, and inspect
-actual card rendering and separate summary delivery. A transcript alone does not prove those visuals.
-
-For a one-time pilot, sync again after its scheduled time and confirm it is skipped without
-rearming or replacing its worker. A skipped result alone does not prove it executed.
-For the hourly fallback, pause canary #2 after the first observed run and verify it. If paused before it runs, record execution
-as unverified. Before another sync, make an authorized source change to set its `enabled: false`;
-otherwise normal sync would re-enable it. Keep the original canary, smoke test and synchronizer
-paused and restore temporary enablement. Do not delete or archive schedules or workers automatically.
-
-If archive replacement still needs a live trial, obtain authorization to archive a selected test
-worker, then synchronize and verify exactly one active replacement, the same saved schedule ID and
-unchanged cadence/state. Run another unchanged sync and confirm no further replacement. Ordinary
-scheduled dispatch must not perform this repair. Interrupted or competing native operations need
-their own controlled trial; pure assembler tests do not prove exclusive native creation.
-
-An unattended synchronizer creating or updating a schedule remains a separate check. Neither a
-manual sync nor a scheduled canary proves it. Preserve the supported coordinator handoff if the
-worker lacks scheduling tools, and distinguish prepared actions from verified saved changes.
+Leave sync enabled. Any later cleanup of chats or schedules belongs to the operator. An unattended
+sync creating or updating a schedule remains a separate test; manual sync and a scheduled canary
+do not establish it. Preserve the coordinator handoff when the worker lacks scheduling tools and
+report prepared actions separately from verified saved changes.

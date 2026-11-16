@@ -35,5 +35,7 @@ are available only here. Follow the current automation-sync skill and its native
 to apply those actions in their returned order under the existing authorization. Apply and verify
 a changed synchronizer first. Keep any bootstrap-only selection; do not expand it to other jobs.
 Return verified configuration results to the workers using the skill's display-only procedure.
+Also return all considered outcomes to the sync worker for its separate run-results card, without
+rerunning synchronization. Keep the aggregate out of the main-chat summaries.
 Preparation output is machine handoff data, not a result card. Keep it in tool output or a private
 handoff artifact. Do not echo it as a normal message or treat it as completed synchronization.

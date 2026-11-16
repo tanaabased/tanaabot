@@ -3,16 +3,8 @@
     "emoji": "🔄",
     "request": "Synchronize the repository automations from the latest main revision."
   },
-  "smoke-test": {
+  "smoke-test-canary-3": {
     "emoji": "🧪",
-    "request": "Run the smoke check and report the observed task metadata."
-  },
-  "smoke-test-canary": {
-    "emoji": "🧪",
-    "request": "Run the scheduled canary and report its marker and execution evidence."
-  },
-  "smoke-test-canary-2": {
-    "emoji": "🧪",
-    "request": "Run canary #2 and report its distinct marker and execution evidence."
+    "request": "Run canary #3 and report its distinct marker and execution evidence."
   }
 }

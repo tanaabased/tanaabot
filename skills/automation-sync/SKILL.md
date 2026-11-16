@@ -94,7 +94,7 @@ automatically or switch credentials to recover a failure.
 4. For a delegated sync from a saved dispatcher whose incoming metadata lacks `dispatchVersion: 2`,
    perform only the synchronizer upgrade: use `id: "sync"` for both targets and sync below.
    Inspect the incoming occurrence, not newly assembled metadata, when choosing this path.
-   Explicit operator-requested sync-only runs use the same selection. Leave smoke and canary
+   Explicit operator-requested sync-only runs use the same selection. Leave canary
    actions for a separate invocation of the updated saved task. Do not run that task automatically.
    Otherwise retain the operator's selected ID or the normal `all` selection.
    Run `bun skills/automation-sync/scripts/sync-task.js` with `mode: "targets"` and JSON on stdin
@@ -127,13 +127,17 @@ automatically or switch credentials to recover a failure.
    uncertain effects or the pilot's explicit checks; do not add a routine verification pass.
    Deliver the verified creation/update receipt to its existing worker using the receipt-only
    procedure, then report each automation in its own main-chat summary message. Unchanged actions
-   produce no update receipt. Distinguish saved state, receipt delivery and actual execution.
+   produce no update receipt. Then show one separate `AUTOMATION SYNC · RUN RESULTS` card
+   in the sync worker using the configuration-results reference, with every considered automation
+   and its verified outcome. Do not duplicate that aggregate in the main chat.
+   Distinguish saved state, receipt delivery and actual execution.
    Keep preparation output in tool results or a private handoff artifact; it is not a normal
    result card. Report completed actions and actionable limits in the shared card style. Keep private native
    bindings out of public repository files.
 
-Apply each definition's declared state. The synchronizer and original smoke test remain disabled;
-the original canary is disabled and `smoke-test-canary-2` declares `enabled: true`.
+Apply each definition's declared state. The only repository definitions are enabled `sync` and
+enabled `smoke-test-canary-3`. Sync runs at midnight in `America/New_York`; Canary #3 is a
+one-shot. Its expired placeholder timestamp is skipped until the operator publishes a pilot time.
 For disabled definitions, leave schedules paused, using
 immediate create-then-pause when native creation cannot start paused. Ongoing activation requires
 an operator-authorized source change and synchronization. Never hand-edit prepared task objects
@@ -143,11 +147,8 @@ Before applying the enabled pilot canary, follow the [smoke pilot](./references/
 to confirm the authorized window, displayed next occurrence and cleanup plan. Source declarations
 alone do not authorize live activation or an unattended invocation.
 
-The synchronizer is scheduled at midnight and the smoke test at 00:15 in the native scheduler's
-local timezone, with no timezone override. Check its displayed next run when seeding; do not infer
-the scheduler's timezone from the Cloud worker. The seed runs synchronization immediately rather
-than waiting for midnight. Keep the smoke schedule paused outside an authorized validation window;
-the later time does not guarantee synchronization completed.
+For the clean-start pilot, seed only `sync`, leave it enabled and wait for the operator's manual
+Run now. Follow the pilot reference for cleanup, timestamp publication and execution evidence.
 
 ## Optimization
 

@@ -11,7 +11,7 @@ previous saved values with the verified result rather than describing the desire
 
 Use one quoted card with an H2 containing the purpose emoji, uppercase authored display name
 and a spaced middle dot followed by `CREATED` or `UPDATED`, for example
-`> ## 🧪 SMOKE TEST · UPDATED`. Do not put “receipt” in the visible title. Include:
+`> ## 🔄 AUTOMATION SYNC · UPDATED`. Do not put “receipt” in the visible title. Include:
 
 - Purpose of the automation.
 - Published Cloud environment, reusable worker and `REPORTS` placement.
@@ -40,8 +40,36 @@ Do not repeat a verified schedule write to repair presentation. Reconcile uncert
 the same worker before sending again. The live pilot must inspect actual worker rendering;
 saved scheduler state and a prepared Markdown card do not establish that the receipt was shown.
 
-Normal worker output consists of these verified configuration cards. Keep preparation tables,
-transport details and raw metadata in tool results or private handoff artifacts. If a problem
+Keep preparation tables, transport details and raw metadata in tool results or private handoff
+artifacts. If a problem
 is recovered, do not repeat its warning as a successful result. If it remains unresolved, show
 one actionable warning or error with the affected saved state and next step. Compact summaries
 belong only in the main chat, not before or after the worker's configuration card.
+
+## Synchronization run results
+
+After native application finishes, display one separate aggregate card in the sync worker.
+If sync itself was created or updated, show its configuration card first, then this run-results
+card as a separate message. An unchanged sync needs only the run-results card; never invent an
+update to produce two cards. Keep each automation's configuration receipt in its own worker.
+
+Use one row per automation considered in this invocation. Report verified native outcomes,
+not the assembler's proposed operations: ✅ Created, ✅ Updated, ✅ Unchanged, ⚠️ Skipped or
+❌ Error. Include a concise note where useful. Mark unapplied handoffs or unavailable evidence
+as ⚠️ Pending or ⚠️ Unverified, never success. An elapsed one-shot is Skipped; that alone does
+not establish that it ran. For example, after verified application:
+
+> ## 🔄 AUTOMATION SYNC · RUN RESULTS
+>
+> | Automation           | Status     | Note                                                  |
+> | -------------------- | ---------- | ----------------------------------------------------- |
+> | AUTOMATION SYNC      | ✅ Updated | Saved new instructions; retained schedule and worker. |
+> | SMOKE TEST CANARY #3 | ✅ Created | Enabled for the verified one-time occurrence.         |
+>
+> ✅ Synchronization complete. The canary has not run yet.
+
+Use a contextual final status reflecting failures, pending actions or missing evidence. Do not
+duplicate this aggregate in the main chat; retain its individual compact linked summaries.
+If the coordinator owns native writes, return the verified outcomes to the sync worker for this
+report without rerunning synchronization. Raw preparation JSON stays in tool results or private
+handoff artifacts.

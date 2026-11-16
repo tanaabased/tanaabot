@@ -6,7 +6,7 @@ prepare a clean source snapshot without discarding existing task edits. Read tha
 `skills/automation-sync/SKILL.md` and follow it for all declared automations. Resolve its required
 references from the same snapshot. Do not reuse only the instructions from an earlier run.
 If this invocation's incoming metadata predates `dispatchVersion: 2`, follow the skill's sync-only
-bootstrap selection. Do not consume the smoke update or canary creation in that pass. A distinct
+bootstrap selection. Do not create the canary in that pass. A distinct
 Run now from the updated saved schedule tests the new dispatcher.
 
 The skill supplies the dependency preparation, task assembly, native schedule comparison and
@@ -28,12 +28,14 @@ manual update procedure. Do not silently claim synchronization or enqueue a subs
 
 After verified native application, put the configuration cards in the affected workers using the
 skill's display-only procedure. Titles use the authored name and `· CREATED` or `· UPDATED`.
-Do not print an additional synchronization preparation card or aggregate results table. When
+Then display one `AUTOMATION SYNC · RUN RESULTS` card in the sync worker, following the
+configuration-results reference. Include every considered automation and its verified outcome;
+keep this separate from sync's own `CREATED` or `UPDATED` configuration card. When
 application belongs to the coordinator, return the exact prepared actions through tool output
 or a private handoff artifact and leave configuration results pending until it verifies the writes.
 
 For the owning dot, deliver one compact summary per affected automation with its verified worker
 link and final contextual status. Do not add a second aggregate synchronization card. An unchanged
-run may return one brief sync outcome without new configuration cards. Preserve missing-tool
+run still produces the worker's run-results card without new configuration cards. Preserve missing-tool
 handoffs as pending; never call them completed synchronization. Use the host's saved delivery
 mechanism without a duplicate direct send.

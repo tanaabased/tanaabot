@@ -2,30 +2,19 @@
 # Native schedule names and linked main-chat summaries are assembled by automation-sync.
 - id: sync
   display-name: AUTOMATION SYNC
-  enabled: false
-  runtimes: [codex]
-  schedule: '0 0 * * *'
-  prompt:
-    file: ../prompts/automations/sync.md
-- id: smoke-test
-  display-name: SMOKE TEST
-  enabled: false
-  runtimes: [codex]
-  schedule: '15 0 * * *'
-  prompt:
-    file: ../prompts/automations/smoke-test.md
-- id: smoke-test-canary
-  display-name: SMOKE TEST CANARY
-  enabled: false
-  runtimes: [codex]
-  schedule: '0 * * * *'
-  prompt:
-    file: ../prompts/automations/smoke-test-canary.md
-- id: smoke-test-canary-2
-  display-name: 'SMOKE TEST CANARY #2'
   enabled: true
   runtimes: [codex]
   schedule:
-    at: '2026-11-16T11:25:00-05:00'
+    cron: '0 0 * * *'
+    timezone: America/New_York
   prompt:
-    file: ../prompts/automations/smoke-test-canary-2.md
+    file: ../prompts/automations/sync.md
+- id: smoke-test-canary-3
+  display-name: 'SMOKE TEST CANARY #3'
+  enabled: true
+  runtimes: [codex]
+  schedule:
+    # Inert until cleanup and seeding are ready; publish the operator's pilot time then.
+    at: '2000-01-01T00:00:00Z'
+  prompt:
+    file: ../prompts/automations/smoke-test-canary-3.md

@@ -1,7 +1,7 @@
-# Harmless scheduled canary #2
+# Harmless scheduled canary #3
 
 Perform no external writes or schedule changes. Return a quoted result card headed
-`## 🧪 SMOKE TEST CANARY #2` with the marker `TANAABOT-SCHEDULE-CANARY-2`, the automation ID,
+`## 🧪 SMOKE TEST CANARY #3` with the marker `TANAABOT-SCHEDULE-CANARY-3`, the automation ID,
 contentHash and updatedAt from this task's metadata, and the observed execution environment.
 Report whether the invocation was scheduled or manual only when native evidence establishes it.
 If expected metadata or environment evidence is unavailable, report the missing evidence.

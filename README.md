@@ -44,34 +44,32 @@ setup result, publish the environment and start a fresh task to verify it.
 
 ## Synchronize scheduled tasks
 
-Paste this into the designated tanaabot dot for an initial seed or a later manual update:
+Paste this into the designated tanaabot dot to start the clean-slate pilot:
 
 ```text
-Read and follow skills/automation-sync/SKILL.md from the latest main
-revision of https://github.com/tanaabased/tanaabot.
+Read and follow skills/automation-sync/SKILL.md and its required references
+from the latest main revision of https://github.com/tanaabased/tanaabot.
 
-Synchronize all declared automations in this Tanaabot context using
-the existing published Cloud environment. Apply their declared state,
-including create-then-pause where necessary. Do not run the automations.
+Follow skills/automation-sync/references/smoke-pilot.md through
+“Cleanup and seed” using the existing published Tanaabot Cloud environment.
+Verify the operator's cleanup, leave UPDATE CLOUD CANON untouched, and seed
+only the enabled AUTOMATION SYNC schedule. Do not run the saved task or the
+canary. Report the saved state and stop before choosing the pilot timestamp.
 ```
 
-The skill installs the checkout's locked dependencies and prepares Agent System's public manifest
-loader from its temporary GitHub `main` dependency. It combines the
-[definitions](./.agent-system/automations.yaml), task prompts and shared metadata, execution and
-[presentation partials](./prompts/automations/partials/presentation.md), then updates
-changed native tasks and leaves unchanged ones alone. Shared-guidance changes update affected tasks.
-Names are generated as 🤖 plus the uppercase display name. The daily schedules use the native
-scheduler's local timezone: midnight for sync and 00:15 for smoke, with no timezone override.
-For a version-2 synchronizer, Run now loads current `main` and updates sync first, then the other
-definitions. The [pilot procedure](./skills/automation-sync/references/smoke-pilot.md) retains the
-sync-only bootstrap for older dispatchers. The original smoke test and canary stay paused.
-The fresh `smoke-test-canary-2` declares an enabled
-one-time schedule; run sync before its declared timestamp using the
-[pilot procedure](./skills/automation-sync/references/smoke-pilot.md).
-Tanaabot defaults to its published Cloud environment and reusable chats under `REPORTS`;
-per-automation environment, thread and group overrides use the shared Agent System schema.
-Native Cloud scheduling access, smoke output and unattended synchronization still require the
-separately authorized live pilot tracked in [#8](https://github.com/tanaabased/tanaabot/issues/8).
+The [pilot procedure](./skills/automation-sync/references/smoke-pilot.md) owns the remaining
+steps: publish Canary #3's one-time firing timestamp when ready, then use **Run now** on sync.
+Each sync loads fresh `main` and updates itself before the other selected automations.
+The [definitions](./.agent-system/automations.yaml) contain only enabled `sync` (midnight Eastern)
+and enabled `smoke-test-canary-3`. The canary's expired placeholder is skipped until its pilot
+time is published; elapsed one-shots are never automatically rearmed.
+
+The skill prepares locked dependencies and assembles task prompts with shared guidance, then
+updates changed native tasks and leaves unchanged ones alone. Workers live in `REPORTS`.
+Configuration cards and the aggregate sync run-results card appear in the worker chats;
+the main chat receives individual compact linked summaries. Saved configuration, scheduled
+execution and unattended synchronization remain separate evidence in the
+[pilot](https://github.com/tanaabased/tanaabot/issues/8).
 
 ## Contributing
 

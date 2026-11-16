@@ -112,14 +112,14 @@ Failed operation:
 
 > ## ❌ Automation update failed
 >
-> The scheduler rejected the update to 🤖 SMOKE TEST. Resolve the reported scheduling permission
+> The scheduler rejected the update to 🤖 AUTOMATION SYNC. Resolve the reported scheduling permission
 > before trying again. Report the saved state only if the native result establishes it.
 
 Optional diagnostic:
 
 > ## 🔬 Debug
 >
-> **Automation:** `smoke-test`  
+> **Automation:** `sync`\
 > **Reason for update:** Shared presentation guidance changed  
 > **Configuration updated:** Use the actual metadata.updatedAt value.
 
@@ -128,7 +128,7 @@ native link with the actual supplied worker link.
 
 Successful creation summary:
 
-> **🧪 SMOKE TEST CANARY**
+> **🧪 SMOKE TEST CANARY #3**
 >
 > Created the canary schedule and worker. The schedule is enabled; no run has occurred.
 >
@@ -138,9 +138,9 @@ Successful creation summary:
 
 Successful update summary:
 
-> **🧪 SMOKE TEST**
+> **🔄 AUTOMATION SYNC**
 >
-> Added the first-line canary. The existing schedule and worker were retained; it remains paused.
+> Updated the sync instructions. The existing schedule and worker were retained; it remains enabled.
 >
 > [Go to chat →](codex://threads/example-worker)
 >
@@ -168,7 +168,7 @@ Incomplete-review summary:
 
 Failed pause:
 
-> **🧪 SMOKE TEST**
+> **📅 CALENDAR REVIEW**
 >
 > The schedule was created, but the scheduler rejected pausing it.
 >
