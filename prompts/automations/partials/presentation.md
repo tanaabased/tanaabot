@@ -15,8 +15,22 @@ For detailed results, show a separate quoted **## ⚠️** card for incomplete, 
 quoted **## ❌** card for an actual failed operation. Give a concise title, the consequence and
 the useful next action. Preserve useful partial results. A prepared action or expected wait is
 not automatically a warning. Do not append an unqualified success footer to a partial failure.
-Show a quoted **## 🔬 Debug** card only when metadata.debug is true and diagnostic facts help.
-Failures and uncertainty stay visible with debug disabled. Never expose secrets or private bindings.
+Normal cards contain the useful outcome, status and relevant links, without a diagnostic checklist.
+When `metadata.debug` is true, put run diagnostics in a separate quoted **## 🔬 Debug** card
+in the worker only. Include:
+
+- Trigger type, verified from the native occurrence rather than inferred from the prompt.
+- Scheduled time and actual start, with timezones and the observed event identified. A worker
+  start is not automatically the scheduler start; `updatedAt` is neither.
+- Intended environment and observed environment, using readable names and native launch/runtime
+  evidence. Never compare a published configuration ID with an ephemeral machine ID.
+- Saved source revision from task metadata and the source revision actually read or executed.
+  A fetched checkout alone does not prove it supplied this run's instructions.
+
+Label any missing evidence **Unverified**; do not invent values or block an otherwise valid task
+merely to fill the card. For configuration-only receipts, label execution fields **Not applicable**.
+Failures and actionable uncertainty remain visible with debug disabled. Do not expose secrets,
+private filesystem paths, raw bindings or credential/account identifiers in any card.
 Do not repeat recovered warnings in normal output. Keep preparation and transport details in
 tool results or private handoff artifacts; unresolved problems get one actionable diagnostic.
 
@@ -97,7 +111,7 @@ Verified synchronization configuration result:
 >
 > **State**
 >
-> The schedule remains paused. No automation run occurred.
+> The schedule remains enabled. No automation run occurred.
 >
 > ✅ Update verified.
 
@@ -115,22 +129,28 @@ Failed operation:
 > The scheduler rejected the update to 🤖 AUTOMATION SYNC. Resolve the reported scheduling permission
 > before trying again. Report the saved state only if the native result establishes it.
 
-Optional diagnostic:
+Optional diagnostic (illustrative; replace values with observed evidence):
 
 > ## 🔬 Debug
 >
-> **Automation:** `sync`\
-> **Reason for update:** Shared presentation guidance changed  
-> **Configuration updated:** Use the actual metadata.updatedAt value.
+> **Trigger:** Manual — confirmed by the native occurrence.
+>
+> **Scheduled start:** Not applicable to this manual run.
+>
+> **Actual start:** Unverified — no native start timestamp was supplied.
+>
+> **Environment:** Intended Tanaabot; observed Tanaabot from native launch evidence.
+>
+> **Source:** Saved revision and actually used revision are unverified in this example.
 
 Compact main-chat examples follow. Each card is a separate message; replace the illustrative
 native link with the actual supplied worker link.
 
 Successful creation summary:
 
-> **🧪 SMOKE TEST CANARY #3**
+> **🔄 AUTOMATION SYNC**
 >
-> Created the canary schedule and worker. The schedule is enabled; no run has occurred.
+> Created the sync schedule and worker. The schedule is enabled; no run has occurred.
 >
 > [Go to chat →](codex://threads/example-worker)
 >

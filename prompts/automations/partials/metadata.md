@@ -14,5 +14,6 @@ and source revision. Missing `agent.yaml` debug configuration means `debug: fals
 worker's published environment, and `worker` identifies its reusable chat, sidebar group and
 native-provided results URL. The coordinator's own execution remains inherited from the owning dot.
 
-Do not print the metadata on every run. Use it for execution checks and, when useful, the debug
-card. A smoke test may explicitly request these values as its result evidence.
+Do not print the metadata on every run. Use it for execution and comparison. Only when
+`debug: true`, present the diagnostic fields defined by the presentation partial in a separate
+worker Debug card. Saved metadata does not establish the actual trigger, start or source used.

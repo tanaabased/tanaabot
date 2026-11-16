@@ -13,15 +13,15 @@ Use one quoted card with an H2 containing the purpose emoji, uppercase authored 
 and a spaced middle dot followed by `CREATED` or `UPDATED`, for example
 `> ## 🔄 AUTOMATION SYNC · UPDATED`. Do not put “receipt” in the visible title. Include:
 
-- Purpose of the automation.
-- Published Cloud environment, reusable worker and `REPORTS` placement.
-- Source repository and exact source commit applied to this configuration.
-- Configured cadence, actual scheduler timezone and displayed next occurrence when available.
-- Result destination and native schedule ID.
-- Saved enabled/paused state and whether an automation run occurred. Do not infer execution from
-  chat initialization, receipt delivery or a native task checkmark.
-- For updates, a before → after section listing actual changes and confirming whether the native
-  schedule ID and worker were retained.
+- What was created or materially changed, including relevant before → after values.
+- Configured cadence, timezone, next occurrence when useful, and saved enabled/paused state.
+- Whether the schedule and worker were retained, without printing their private IDs.
+- A verified worker link when useful and whether a run actually occurred. Configuration alone
+  does not establish execution.
+
+Keep source-revision comparisons and environment diagnostics in the separate worker Debug card
+only when `debug: true`, following the shared presentation partial. Do not include raw bindings,
+private paths or native schedule IDs in visible cards. Use those internally for reconciliation.
 
 Separate sections with blank quoted lines and keep each field readable on its own line. Put a
 blank quoted line immediately after the H2 title and before the final status. Finish
@@ -61,12 +61,11 @@ not establish that it ran. For example, after verified application:
 
 > ## 🔄 AUTOMATION SYNC · RUN RESULTS
 >
-> | Automation           | Status     | Note                                                  |
-> | -------------------- | ---------- | ----------------------------------------------------- |
-> | AUTOMATION SYNC      | ✅ Updated | Saved new instructions; retained schedule and worker. |
-> | SMOKE TEST CANARY #3 | ✅ Created | Enabled for the verified one-time occurrence.         |
+> | Automation      | Status     | Note                                                  |
+> | --------------- | ---------- | ----------------------------------------------------- |
+> | AUTOMATION SYNC | ✅ Updated | Saved new instructions; retained schedule and worker. |
 >
-> ✅ Synchronization complete. The canary has not run yet.
+> ✅ Synchronization complete. The saved schedule is current.
 
 Use a contextual final status reflecting failures, pending actions or missing evidence. Do not
 duplicate this aggregate in the main chat; retain its individual compact linked summaries.

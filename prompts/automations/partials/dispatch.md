@@ -16,6 +16,12 @@ Send the complete generated `prompt` unchanged, including its readable header, m
 instructions. Do not reconstruct its JSON or prepend another metadata block. Apply its model and effort only when
 explicitly set and supported; null preserves the worker's native settings.
 
+When debug is enabled, include available native occurrence evidence as a separate context section
+alongside the unchanged generated request in that same continuation: trigger type, scheduled and
+actual start, and readable launch environment. Do not invent missing evidence, expose raw bindings
+or rewrite the request JSON. Do not send another turn merely to supply diagnostics. The worker
+owns its separate Debug card; do not echo it into the main-chat summary.
+
 Wait for that turn to finish through the native status controls. An accepted send is not a
 completed run. If the send response is missing or uncertain, reconcile that occurrence in the
 same chat before another send. Never retry a denial or create a replacement worker automatically.

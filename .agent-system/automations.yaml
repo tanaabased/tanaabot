@@ -9,11 +9,3 @@
     timezone: America/New_York
   prompt:
     file: ../prompts/automations/sync.md
-- id: smoke-test-canary-3
-  display-name: 'SMOKE TEST CANARY #3'
-  enabled: true
-  runtimes: [codex]
-  schedule:
-    at: '2026-11-16T11:43:29-05:00'
-  prompt:
-    file: ../prompts/automations/smoke-test-canary-3.md

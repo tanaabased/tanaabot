@@ -49,21 +49,20 @@ Cloud startup explicitly loads the local skills without requiring this plugin's 
 
 ## Configuration files
 
-| Source                                                     | Owns                                                        |
-| ---------------------------------------------------------- | ----------------------------------------------------------- |
-| [Agent manifest](./.agent-system/agent.yaml)               | Name, ID, avatar and setup/automation references            |
-| [Automation definitions](./.agent-system/automations.yaml) | Synchronizer and smoke-test schedules and prompt references |
-| [Host setup](./.agent-system/setup-host.yaml)              | Host mode check/apply declaration                           |
-| [Agent setup](./.agent-system/setup-agent.yaml)            | Agent mode check/apply declaration                          |
-| [Plugin manifest](./.codex-plugin/plugin.json)             | Plugin identity, skills and branding                        |
-| [Package metadata](./package.json)                         | Tool versions, scripts and explicit package contents        |
+| Source                                                     | Owns                                                 |
+| ---------------------------------------------------------- | ---------------------------------------------------- |
+| [Agent manifest](./.agent-system/agent.yaml)               | Name, ID, avatar and setup/automation references     |
+| [Automation definitions](./.agent-system/automations.yaml) | Synchronizer schedule and prompt reference           |
+| [Host setup](./.agent-system/setup-host.yaml)              | Host mode check/apply declaration                    |
+| [Agent setup](./.agent-system/setup-agent.yaml)            | Agent mode check/apply declaration                   |
+| [Plugin manifest](./.codex-plugin/plugin.json)             | Plugin identity, skills and branding                 |
+| [Package metadata](./package.json)                         | Tool versions, scripts and explicit package contents |
 
 ## Automations
 
-| Automation            | Declared state                                    |
-| --------------------- | ------------------------------------------------- |
-| `sync`                | Enabled; daily at midnight Eastern                |
-| `smoke-test-canary-3` | Enabled one-shot at the published pilot timestamp |
+| Automation | Declared state                     |
+| ---------- | ---------------------------------- |
+| `sync`     | Enabled; daily at midnight Eastern |
 
 ## Artwork
 

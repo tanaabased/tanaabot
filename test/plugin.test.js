@@ -43,10 +43,7 @@ test('packed plugin retains canonical skills, assets and usable links', async ()
     assert.equal(definitions.status, 'loaded');
     assert.deepEqual(
       definitions.manifest.automations.map(({ id, enabled }) => ({ id, enabled })),
-      [
-        { id: 'sync', enabled: true },
-        { id: 'smoke-test-canary-3', enabled: true },
-      ],
+      [{ id: 'sync', enabled: true }],
     );
     const input = {
       ...(await loadDefinitions(payload)),
@@ -68,28 +65,15 @@ test('packed plugin retains canonical skills, assets and usable links', async ()
       },
       now: '2026-01-01T00:00:00Z',
     };
-    const parked = planSync({
-      ...input,
-      now: new Date(Date.parse(input.manifest.automations[1].schedule.at) + 1000).toISOString(),
-    });
-    assert.equal(parked.operations[1].kind, 'skipped');
-    assert.equal(parked.operations[1].reason, 'one-shot-elapsed');
-
-    // Exercise the packed canary prompt with an authorized future pilot fixture.
-    input.manifest.automations[1].schedule.at = '2026-01-02T12:00:00-05:00';
     const assembled = planSync(input);
     assert.deepEqual(
       assembled.operations.map(({ task }) => task.name),
-      ['🤖 AUTOMATION SYNC', '🤖 SMOKE TEST CANARY #3'],
+      ['🤖 AUTOMATION SYNC'],
     );
-    const [sync, canary] = assembled.operations;
+    const [sync] = assembled.operations;
     assert.equal(sync.task.enabled, true);
     assert.equal(sync.task.schedule.default_timezone, 'America/New_York');
     assert.match(sync.task.schedule.schedule, /FREQ=DAILY;BYHOUR=0;BYMINUTE=0;BYSECOND=0/);
-    assert.equal(canary.task.enabled, true);
-    assert.match(canary.task.prompt, /TANAABOT-SCHEDULE-CANARY-3/);
-    assert.match(canary.task.schedule.schedule, /DTSTART:20260102T170000Z/);
-    assert.doesNotMatch(canary.task.schedule.schedule, /RRULE/);
     assert.equal(skills, join(payload, 'skills'));
     assert.equal(existsSync(join(payload, '.agents/plugins/marketplace.json')), false);
     assert.equal(existsSync(join(payload, '.agents/skills')), false);
