@@ -1,20 +1,21 @@
 # Startup report
 
-Return one quoted Markdown card with these six rows, in this order. Use normal sentence
+Return the quoted startup card with these six rows, in this order. Use normal sentence
 capitalization. Successful and not-applicable rows contain only the section name and status.
 Keep the evidence in working context; include details only for failed or unverified checks, unless
-the operator explicitly requests diagnostic evidence.
+the operator explicitly requests diagnostic evidence. Append the success-only identity card below
+only when its conditions are met.
 
 ## Sections
 
-| Section         | Required evidence                                                                                                                                                                                                                                                                                                                                               |
-| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Environment     | Prepared Tanaabot checkout, canonical origin and source revision identified; supported Linux and actual task command launcher established. The saved environment selects the manifest's 1Password Environment, contains valid variables and all its values match the actual exported environment. Derive the variables from the file; never print their values. |
-| Dependencies    | Brewfile executables discoverable on the task's effective PATH, usable version output, and declared Node/Bun major versions satisfied. Homebrew maintenance permissions are not required.                                                                                                                                                                       |
-| Dotfiles        | The `ai`, `shell`, `git`, `gh` and `ssh` dotpackages link to the prepared sources and match them. Shell initialization supplies tools and saved variables in fresh shells. The private environment file is outside the checkout, owned by this user with mode 600 in a real mode-700 directory; private storage and key paths are not symlinks.                 |
-| Tanaabot skills | All local `SKILL.md` files beneath the prepared checkout's `skills/` are readable, have nonempty instructions and valid frontmatter with unique names and nonempty descriptions. Their names, descriptions and absolute paths are retained in chat context. This is explicit local loading; native catalog registration is not required or implied.             |
-| Canon skills    | The task catalog contains machine names starting with `tanaab-`, allowing host qualification. Use ownership metadata when available to exclude unrelated matches. This establishes basic availability, not a complete release inventory or ownership from names alone. Installation and updates belong to the ChatGPT account.                                  |
-| Identity        | Effective Git name/email, SSH signing configuration, public key and allowed signers match the prepared configuration; the private key matches the approved public key. Effective SSH configuration selects that identity. A read-only GitHub API request through the existing CLI credential returns the manifest's GitHub username.                            |
+| Section         | Required evidence                                                                                                                                                                                                                                                                                                                                                                                  |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Environment     | Prepared Tanaabot checkout, canonical origin and source revision identified; supported Linux and actual task command launcher established. The saved environment selects the manifest's 1Password Environment, contains valid variables and all its values match the actual exported environment. Derive the variables from the file; never print secret values.                                   |
+| Dependencies    | Brewfile executables discoverable on the task's effective PATH, usable version output, and declared Node/Bun major versions satisfied. Homebrew maintenance permissions are not required.                                                                                                                                                                                                          |
+| Dotfiles        | The `ai`, `shell`, `git`, `gh` and `ssh` dotpackages link to the prepared sources and match them. Shell initialization supplies tools and saved variables in fresh shells. The private environment file is outside the checkout, owned by this user with mode 600 in a real mode-700 directory; private storage and key paths are not symlinks.                                                    |
+| Tanaabot skills | All local `SKILL.md` files beneath the prepared checkout's `skills/` are readable, have nonempty instructions and valid frontmatter with unique names and nonempty descriptions. Their names, descriptions and absolute paths are retained in chat context. This is explicit local loading; native catalog registration is not required or implied.                                                |
+| Canon skills    | The task catalog contains machine names starting with `tanaab-`, allowing host qualification. Use ownership metadata when available to exclude unrelated matches. This establishes basic availability, not a complete release inventory or ownership from names alone. Installation and updates belong to the ChatGPT account.                                                                     |
+| Identity        | Effective Git name/email, agent email binding, SSH signing configuration, public key and allowed signers match the prepared configuration; the private key matches the approved public key. Effective SSH configuration selects that identity. The GitHub CLI credential returns the manifest's username, and that account's complete public authentication-key listing contains the matching key. |
 
 Use this same skill and card for post-install review and fresh-task startup. A saved environment
 file proves a snapshot was fetched; an offline check cannot prove it still matches current 1Password
@@ -43,13 +44,42 @@ operation it ran, not an exit code returned by the skill or proof of unrelated s
 For a failed or incomplete card, describe the specific missing condition in its row and give one
 concise **Next step** for the affected checks. Add **Technical detail** only when a safe error code,
 path or command materially helps recovery. Never include tokens, secret values or credential dumps.
-Do not append raw logs, a second summary, separate diagnostic cards, or routine successful revisions
-and tool paths. Do not repair anything during verification.
+Do not append raw logs, duplicate status summaries, separate warning cards, or routine successful
+revisions and tool paths. The identity card below is the only additional success card. Do not repair
+anything during verification.
+
+## Identity card
+
+Append this card after the startup card only when **Environment** and **Identity** both passed.
+Otherwise omit it; failures and uncertainty belong in the corresponding startup rows and their
+shared Next step. This avoids claiming loaded environment values or a verified identity when their
+checks could not establish them.
+
+Use the verified GitHub login, effective Git name/email, resolved agent email and configured SSH
+private-key path. Show the public-key ownership result and existing SSH signing configuration.
+Report 1Password as loaded and available only from the passed Environment check; do not refresh it
+or print passwords, tokens, Environment contents or private-key material. A registered authentication
+key and a matching local private key establish ownership, not a successful SSH connection or commit
+signature. Keep those live tests separate.
+
+The example below assumes all checks passed and the displayed identity values were observed:
+
+> ## 🤖 Identity
+>
+> - **GitHub:** `tanaabot` — authenticated
+> - **Git name:** `tanaabot`
+> - **Git email:** `tanaabot@tanaab.dev`
+> - **Agent email:** `tanaabot@tanaab.dev`
+> - **SSH key:** `~/.ssh/id_tanaabot`
+> - **SSH ownership:** Registered to `tanaabot`; private/public keys match
+> - **Git signing:** SSH configured
+> - **1Password environment:** Loaded and available
 
 ## Examples
 
-These illustrate formatting; they are not observed results. Replace failure details and next steps
-with actual evidence. Preserve the quoted H2 heading and blank quoted line before the rows.
+These illustrate the startup card's formatting; they are not observed results. Append the identity
+card when its conditions are met. Replace failure details and next steps with actual evidence.
+Preserve the quoted H2 heading and blank quoted line before the rows.
 
 ### Passed
 
@@ -80,12 +110,10 @@ with actual evidence. Preserve the quoted H2 heading and blank quoted line befor
 > ## ❌ Startup check failed
 >
 > - **Environment — passed**
-> - **Dependencies — failed:** `gh`, declared in the Brewfile, is missing from the task's PATH.
+> - **Dependencies — passed**
 > - **Dotfiles — passed**
 > - **Tanaabot skills — passed**
 > - **Canon skills — passed**
-> - **Identity — passed**
+> - **Identity — failed:** The approved public authentication key is absent from the verified GitHub account.
 >
-> **Next step:** Repair the dependency during environment setup, then rerun verification.
->
-> **Technical detail:** The dependency check returned exit code `1`. No repair was attempted.
+> **Next step:** Check the approved key's GitHub authentication-key registration, then rerun verification.

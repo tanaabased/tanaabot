@@ -40,6 +40,16 @@ test "$(stat -c '%a' "$HOME/.ssh/id_tanaabot")" = 600
 test "$(stat -c '%u' "$HOME/.ssh/id_tanaabot")" = "$(id -u)"
 ssh-keygen -y -P '' -f "$HOME/.ssh/id_tanaabot" | cut -d ' ' -f 1,2 | cmp - "$TANABOOT_PACKAGE_ROOT/dotfiles/ssh/.ssh/id_tanaabot.pub"
 
+# should verify the approved public key belongs to the configured github account
+bash -l <<'SH'
+set -euo pipefail
+expected=$(bun --no-env-file -e 'process.stdout.write(Bun.YAML.parse(await Bun.file(process.env.TANABOOT_PACKAGE_ROOT + "/.agent-system/agent.yaml").text()).github.username)')
+login=$(gh api --hostname github.com user --jq .login)
+test "$login" = "$expected"
+public=$(awk '{print $1 " " $2}' "$HOME/.ssh/id_tanaabot.pub")
+gh api --hostname github.com --paginate "users/$login/keys" --jq '.[].key' | awk '{print $1 " " $2}' | grep -Fx -- "$public" >/dev/null
+SH
+
 # should keep the environment snapshot private and outside packaged sources
 test ! -L "$HOME/.local/state/tanaabot"
 test ! -L "$HOME/.local/state/tanaabot/environment.json"
