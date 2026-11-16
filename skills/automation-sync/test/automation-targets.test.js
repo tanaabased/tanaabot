@@ -13,7 +13,7 @@ const manifest = {
       runtimes: ['codex'],
       overrides: {},
       payload: { kind: 'prompt', prompt: 'Review.' },
-      schedule: { kind: 'cron', expression: '0 0 * * *', timezone: null },
+      schedule: { kind: 'every', seconds: 3600, missedRun: 'native' },
     },
   ],
 };
@@ -32,6 +32,15 @@ test('should default to Tanaabot Cloud, REPORTS and the authored name without mu
   assert.deepEqual(target.thread, { name: 'Calendar Review', group: 'REPORTS' });
   assert.equal(target.destination.id, 'main-chat');
   assert.equal(JSON.stringify(manifest), before);
+});
+
+test('should reject cadence before worker preparation and omit elapsed one-shot workers', () => {
+  const configured = structuredClone(manifest);
+  configured.automations[0].schedule = { kind: 'every', seconds: 600 };
+  assert.throws(() => automationTargets(configured, context), /minimum-interval:1h/);
+  configured.automations[0].schedule = { kind: 'at', at: '2026-01-01T12:00:00Z' };
+  assert.equal(automationTargets(configured, context, 'all', '2026-01-01T11:00:00Z').length, 1);
+  assert.deepEqual(automationTargets(configured, context, 'all', '2026-01-01T12:00:00Z'), []);
 });
 
 test('should honor shared-schema environment, thread and group overrides', () => {
@@ -79,7 +88,7 @@ test('should require a verified reusable worker before preparing any schedule', 
   const configured = structuredClone(manifest);
   Object.assign(configured.automations[0], {
     enabled: false,
-    schedule: { kind: 'cron', expression: '0 0 * * *', timezone: null },
+    schedule: { kind: 'every', seconds: 3600, missedRun: 'native' },
     payload: { kind: 'prompt', prompt: 'Review.' },
   });
   const request = {

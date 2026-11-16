@@ -7,6 +7,7 @@ import {
   taskPrompt,
 } from '../utils/task-prompt.js';
 import automationTargets from './automation-targets.js';
+import cloudSchedule from '../utils/cloud-schedule.js';
 import requestHeader from '../utils/request-header.js';
 
 const repository = 'tanaabased/tanaabot';
@@ -111,7 +112,7 @@ export function planSync({
     throw new Error('source-revision-required');
   }
   const updatedAt = new Date(now).toISOString();
-  const targets = automationTargets(manifest, context, id);
+  const targets = automationTargets(manifest, context, id, now);
   if (typeof partials.dispatch !== 'string' || !partials.dispatch.trim())
     throw new Error('shared-partial-required:dispatch');
   const records = existingRecords(existingTasks);
@@ -121,6 +122,25 @@ export function planSync({
     .filter((job) => job.runtimes.includes('codex'))
     .toSorted((a, b) => Number(b.id === 'sync') - Number(a.id === 'sync'))
     .map((job) => {
+      const identity = { repository, agentId: manifest.agent.id, automationId: job.id };
+      const matches = records.filter(
+        ({ parsed }) =>
+          parsed &&
+          Object.entries(identity).every(([key, value]) => parsed.metadata[key] === value),
+      );
+      if (matches.length > 1) throw new Error(`native-task-ambiguous:${job.id}`);
+      const current = matches[0];
+      if (current) validateTask(current.task);
+      // An elapsed one-shot is history, even if the scheduler paused it after execution.
+      // Never recreate it or repair its enabled state during reconciliation.
+      if (job.schedule.kind === 'at' && Date.parse(job.schedule.at) <= Date.parse(now)) {
+        return {
+          automationId: job.id,
+          kind: 'skipped',
+          reason: 'one-shot-elapsed',
+          ...(current ? { nativeId: current.id, task: current.task } : {}),
+        };
+      }
       const worker = bindWorker(
         targets.find((target) => target.automationId === job.id),
         context.workers,
@@ -135,13 +155,16 @@ export function planSync({
       const task = {
         name: `🤖 ${(job.displayName ?? job.id.replaceAll('-', ' ')).trim().toUpperCase()}`,
         enabled: job.enabled,
-        schedule: job.schedule,
+        schedule: cloudSchedule(job.schedule, {
+          now,
+          previous: current?.task.schedule,
+          timezone: context.timezone,
+        }),
         execution: { kind: 'inherited' },
         destination: worker.destination,
         model: null,
         effort: null,
       };
-      const identity = { repository, agentId: manifest.agent.id, automationId: job.id };
       const semantic = {
         dispatchVersion: 2,
         ...task,
@@ -152,15 +175,7 @@ export function planSync({
         debug: manifest.debug === true,
       };
       const contentHash = fingerprint({ ...identity, task: semantic });
-      const matches = records.filter(
-        ({ parsed }) =>
-          parsed &&
-          Object.entries(identity).every(([key, value]) => parsed.metadata[key] === value),
-      );
-      if (matches.length > 1) throw new Error(`native-task-ambiguous:${job.id}`);
-      const current = matches[0];
       if (current) {
-        validateTask(current.task);
         const previous = current.parsed.metadata;
         if (previous.worker?.id && previous.worker.id !== worker.thread.id) {
           const retired = context.workers.find(

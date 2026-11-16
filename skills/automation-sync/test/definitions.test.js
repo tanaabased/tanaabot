@@ -41,6 +41,7 @@ test('should load external definitions through the real public Agent System expo
       now: '2026-01-01T00:00:00Z',
       source: { revision: 'a'.repeat(40), dirty: false },
       context: {
+        timezone: 'America/New_York',
         environments: [{ id: 'fixture-cloud', name: 'fixture' }],
         workers: [
           {
@@ -57,8 +58,11 @@ test('should load external definitions through the real public Agent System expo
       },
     });
     assert.match(result.operations[0].task.prompt, /Fixture presentation guidance\./);
-    assert.equal(result.operations[0].task.schedule.kind, 'cron');
-    assert.equal(result.operations[0].task.schedule.timezone, null);
+    assert.match(
+      result.operations[0].task.schedule.schedule,
+      /RRULE:FREQ=DAILY;BYHOUR=0;BYMINUTE=0;BYSECOND=0/,
+    );
+    assert.equal(result.operations[0].task.schedule.default_timezone, 'America/New_York');
     assert.deepEqual(loaded.manifest.automations[0].overrides.codex.environment, {
       type: 'cloud',
       name: 'fixture',

@@ -59,6 +59,47 @@ function saved(request = input()) {
 }
 
 describe('skills/automation-sync/lib/sync-plan', () => {
+  test('should preserve a one-shot until due, then leave its schedule and worker untouched', () => {
+    const request = input({ id: 'smoke' });
+    request.manifest.automations[1].enabled = true;
+    request.manifest.automations[1].schedule = {
+      kind: 'at',
+      at: '2026-01-02T04:00:00.000Z',
+      missedRun: 'native',
+    };
+    request.existingTasks = saved(request);
+    const unchanged = planSync({ ...request, now: '2026-01-02T03:30:00Z' }).operations[0];
+    assert.equal(unchanged.kind, 'unchanged');
+    assert.equal(
+      unchanged.task.schedule.schedule,
+      'BEGIN:VEVENT\nDTSTART:20260102T040000Z\nEND:VEVENT',
+    );
+    const previous = structuredClone(request.existingTasks);
+    // A completed task may be paused and its chat archived. Neither needs repair.
+    request.existingTasks[0].task.enabled = false;
+    request.context.workers = [];
+    request.partials.presentation += '\nNew instructions.';
+    const after = planSync({ ...request, now: later }).operations[0];
+    assert.equal(after.kind, 'skipped');
+    assert.equal(after.reason, 'one-shot-elapsed');
+    assert.equal(after.nativeId, 'native-smoke');
+    assert.equal(after.task.enabled, false);
+    assert.equal(after.task.prompt, previous[0].task.prompt);
+    assert.equal(after.expectedCurrent, undefined);
+    const absent = planSync({ ...request, existingTasks: [], now: later }).operations[0];
+    assert.equal(absent.kind, 'skipped');
+    assert.equal(absent.task, undefined);
+    assert.equal(absent.nativeId, undefined);
+  });
+
+  test('should retain the interval anchor when only task instructions change', () => {
+    const request = input({ existingTasks: saved(), now: later });
+    request.manifest.automations[0].payload.prompt = 'Revised work.';
+    const update = planSync(request).operations[0];
+    assert.equal(update.kind, 'update');
+    assert.deepEqual(update.task.schedule, request.existingTasks[0].task.schedule);
+  });
+
   test('should bootstrap only sync, then apply the reserved smoke update and canary create, then no-op', () => {
     const old = saved();
     const request = input({ existingTasks: old, now: later });
@@ -567,7 +608,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
   test('should reject unsupported jobs and malformed markers before preparing writes', () => {
     const request = input();
     request.manifest.automations[0].schedule = { kind: 'in', seconds: 60 };
-    assert.throws(() => planSync(request), /recurring-schedule-required/);
+    assert.throws(() => planSync(request), /cloud-schedule-relative-unsupported/);
     assert.throws(
       () => readTaskPrompt('<tanaabot-automation-metadata>broken'),
       /task-marker-invalid/,

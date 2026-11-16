@@ -18,13 +18,13 @@
   display-name: SMOKE TEST CANARY
   enabled: false
   runtimes: [codex]
-  schedule: '*/10 * * * *'
+  schedule: '0 * * * *'
   prompt:
     file: ../prompts/automations/smoke-test-canary.md
 - id: smoke-test-canary-2
   display-name: 'SMOKE TEST CANARY #2'
   enabled: true
   runtimes: [codex]
-  schedule: '*/10 * * * *'
+  schedule: '0 * * * *'
   prompt:
     file: ../prompts/automations/smoke-test-canary-2.md

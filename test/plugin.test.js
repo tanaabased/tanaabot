@@ -55,6 +55,7 @@ test('packed plugin retains canonical skills, assets and usable links', async ()
       source: { revision: 'a'.repeat(40), dirty: false },
       existingTasks: [],
       context: {
+        timezone: 'America/New_York',
         environments: [{ id: 'fixture-cloud', name: 'tanaabot' }],
         workers: definitions.manifest.automations.map((job) => ({
           automationId: job.id,
@@ -78,26 +79,20 @@ test('packed plugin retains canonical skills, assets and usable links', async ()
     const canary = assembled.operations.find(
       ({ automationId }) => automationId === 'smoke-test-canary',
     );
-    assert.equal(canary.task.schedule.kind, 'cron');
-    assert.deepEqual(canary.task.schedule.fields, {
-      minutes: [0, 10, 20, 30, 40, 50],
-      hours: Array.from({ length: 24 }, (_, index) => index),
-      days: Array.from({ length: 31 }, (_, index) => index + 1),
-      months: Array.from({ length: 12 }, (_, index) => index + 1),
-      weekdays: Array.from({ length: 7 }, (_, index) => index),
-      dayWildcard: true,
-      weekdayWildcard: true,
-    });
+    assert.match(canary.task.schedule.schedule, /BYMINUTE=0;BYSECOND=0/);
     assert.match(canary.task.prompt, /TANAABOT-SCHEDULE-CANARY-1/);
     const canary2 = assembled.operations.find(
       ({ automationId }) => automationId === 'smoke-test-canary-2',
     );
     assert.equal(canary.task.enabled, false);
     assert.equal(canary2.task.enabled, true);
-    assert.deepEqual(canary2.task.schedule, canary.task.schedule);
     assert.match(canary2.task.prompt, /TANAABOT-SCHEDULE-CANARY-2/);
     assert.doesNotMatch(canary2.task.prompt, /TANAABOT-SCHEDULE-CANARY-1/);
-    assert.ok(assembled.operations.every(({ task }) => task.schedule.timezone === null));
+    assert.ok(
+      assembled.operations.every(
+        ({ task }) => task.schedule.default_timezone === 'America/New_York',
+      ),
+    );
     assert.equal(skills, join(payload, 'skills'));
     assert.equal(existsSync(join(payload, '.agents/plugins/marketplace.json')), false);
     assert.equal(existsSync(join(payload, '.agents/skills')), false);

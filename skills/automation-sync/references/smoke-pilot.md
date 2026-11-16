@@ -3,8 +3,11 @@
 Use the canonical sync workflow during an operator-authorized validation window. Keep the existing
 synchronizer and original smoke schedule IDs. The original `smoke-test-canary` now declares
 `enabled: false`; preserve its paused state and archived chat history. The fresh
-`smoke-test-canary-2` declares an enabled ten-minute schedule and uses its own worker and marker.
+`smoke-test-canary-2` declares an enabled hourly schedule and uses its own worker and marker.
 Inspect current native state before applying; source definitions do not establish what was saved.
+For a quick bounded pilot, first author an operator-selected future `schedule.at` timestamp for
+canary #2 and publish that source change. The assembler will skip it after that time; do not replace
+it with a relative delay on every sync. Leave the other definitions' cadence and enabled state alone.
 
 ## Run the current synchronizer
 
@@ -19,7 +22,7 @@ Inspect current native state before applying; source definitions do not establis
 3. Initialize the new `SMOKE TEST CANARY #2` worker in the selected published Cloud configuration
    and `REPORTS`. Inspect its `CHAT CREATED` card. Reconcile previous attempts before creating;
    reuse an existing verified worker if this step already succeeded.
-4. Save `smoke-test-canary-2` with its exact ten-minute cadence and enabled state. Verify the next
+4. Save `smoke-test-canary-2` with its compiled schedule and declared enabled state. Verify the next
    occurrence and saved worker ID. Do not run the canary manually during configuration. Inspect
    the separate `SMOKE TEST CANARY #2 · CREATED` schedule card in that same worker.
 5. Inspect the separate main-chat summaries and their “Go to chat →” links. Test the final active
@@ -37,12 +40,14 @@ Synchronize unchanged before cleanup. Confirm no writes, duplicate workers, time
 new creation/update cards. Retain the saved schedule IDs and replacement bindings. A source change
 between runs is not an unchanged test.
 
-Let one authorized ten-minute occurrence of canary #2 execute. Inspect `TANAABOT-SCHEDULE-CANARY-2`,
+Let the authorized occurrence of canary #2 execute. Inspect `TANAABOT-SCHEDULE-CANARY-2`,
 native scheduled-run evidence, observed execution environment, worker output and main-chat summary.
 Check that the incoming request's readable title precedes its metadata and instructions, and inspect
 actual card rendering and separate summary delivery. A transcript alone does not prove those visuals.
 
-Pause canary #2 after the first observed run and verify it. If paused before it runs, record execution
+For a one-time pilot, sync again after its scheduled time and confirm it is skipped without
+rearming or replacing its worker. A skipped result alone does not prove it executed.
+For the hourly fallback, pause canary #2 after the first observed run and verify it. If paused before it runs, record execution
 as unverified. Before another sync, make an authorized source change to set its `enabled: false`;
 otherwise normal sync would re-enable it. Keep the original canary, smoke test and synchronizer
 paused and restore temporary enablement. Do not delete or archive schedules or workers automatically.

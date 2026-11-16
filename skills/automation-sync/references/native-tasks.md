@@ -14,6 +14,7 @@ Run `bun skills/automation-sync/scripts/sync-task.js` with JSON on stdin:
   "mode": "targets",
   "id": "all",
   "context": {
+    "timezone": "America/New_York",
     "environments": [{ "id": "verified-published-config-id", "name": "tanaabot" }],
     "destination": { "kind": "dot", "id": "verified-main-chat-id" }
   }
@@ -123,6 +124,7 @@ Repeat with `mode: "sync"` (also the default), adding `existingTasks` and `conte
   "mode": "sync",
   "id": "sync",
   "context": {
+    "timezone": "America/New_York",
     "environments": [{ "id": "verified-published-config-id", "name": "tanaabot" }],
     "destination": { "kind": "dot", "id": "verified-main-chat-id" },
     "workers": [
@@ -141,17 +143,17 @@ Repeat with `mode: "sync"` (also the default), adding `existingTasks` and `conte
 }
 ```
 
-Normalize saved native schedules into `existingTasks` records with `id` and `task`:
+Copy saved native settings into `existingTasks` records with `id` and `task`:
 
-| `task` field      | Value                                                                 |
-| ----------------- | --------------------------------------------------------------------- |
-| `name`            | Native schedule name: 🤖 plus the uppercase display name              |
-| `enabled`         | Actual active/paused state as a boolean                               |
-| `schedule`        | Shared normalized native cadence and timezone                         |
-| `execution`       | `{ "kind": "inherited" }`: the hosted coordinator's execution context |
-| `destination`     | Owning main chat, `{ "kind": "dot", "id": "native-id" }`              |
-| `model`, `effort` | Coordinator's native overrides, or `null` for native defaults         |
-| `prompt`          | Exact compiled coordinator prompt, including its worker request       |
+| `task` field      | Value                                                                                      |
+| ----------------- | ------------------------------------------------------------------------------------------ |
+| `name`            | Native schedule name: 🤖 plus the uppercase display name                                   |
+| `enabled`         | Actual active/paused state as a boolean                                                    |
+| `schedule`        | Object containing the exact native `schedule`, `default_timezone` and `timing_mode` fields |
+| `execution`       | `{ "kind": "inherited" }`: the hosted coordinator's execution context                      |
+| `destination`     | Owning main chat, `{ "kind": "dot", "id": "native-id" }`                                   |
+| `model`, `effort` | Coordinator's native overrides, or `null` for native defaults                              |
+| `prompt`          | Exact compiled coordinator prompt, including its worker request                            |
 
 The worker uses the published Cloud environment and receives its own metadata, all shared worker
 guidance and the authored automation prompt. Its opening is rendered from the shared
@@ -167,16 +169,32 @@ delegation established by the pilot; it does not create missing tools or native 
 For unrelated tasks, only `id`, `task.name` and `task.prompt` are needed. Read remaining fields for
 marker-matched tasks. Do not invent unavailable native values. The ownership marker identifies
 repository, agent and automation; an unmarked name collision or multiple matching markers stops
-the action. `operations` returns `create`, `update` or `unchanged`, with the existing `nativeId` and
+the action. `operations` returns `create`, `update`, `unchanged` or `skipped`, with the existing `nativeId` and
 `expectedCurrent` for updates. If another writer changed that record, recompute before application.
+
+The assembler translates Agent System schedules into native VEVENT fields. Recurring intervals
+must be at least one hour and use whole minutes; cron must also leave at least an hour between
+runs. Daily, weekly, monthly and seasonal selections are supported when their day constraints
+can be represented exactly. A restricted day-of-month OR weekday combination is rejected.
+Native acceptance and execution still require the Cloud pilot; local compilation is not proof of either.
+
+Use `schedule: {at: "<ISO timestamp with offset>"}` for a one-time run, with whole-second precision.
+Relative `in` schedules and recurrence bounds are not supported yet. Choose a future timestamp
+when preparing the pilot. Elapsed one-time definitions are skipped without creating workers,
+changing saved tasks or claiming execution. To run again, explicitly author a new future time.
+The assembler preserves saved recurrence anchors across syncs and prompt edits. Copy native
+schedule fields directly; do not reconstruct them from a description or convert them back to cron.
 
 Apply exact compiled prompts and settings through the owning dot's native schedule controls.
 Apply returned operations in order: the synchronizer comes first when selected. For a sync-only
 bootstrap use `id: "sync"` in both targets and sync requests, resolving only its worker. Verify
 its saved prompt before a distinct Run now; an update cannot replace the already-running dispatcher.
 Newly compiled metadata carries `dispatchVersion: 2` to distinguish that next invocation.
-Never use the contributor's local scheduler as a substitute or write scheduler files. Preserve
-local-time cron when `timezone` is null; do not insert UTC or the Cloud worker's timezone. Inspect
+Never use the contributor's local scheduler as a substitute or write scheduler files. Supply the
+native scheduler's IANA timezone as `context.timezone` in both modes. Omitted source timezones use
+the saved task's timezone, or this native default for a new task. Do not substitute the Cloud
+worker's timezone. Copy `task.schedule.schedule`, `task.schedule.default_timezone` and
+`task.schedule.timing_mode` into the corresponding native call fields. Inspect
 the displayed next run during seeding to confirm local midnight. The later smoke schedule is not
 a completion dependency. Source `enabled: false` means paused, regardless of other defaults.
 

@@ -65,7 +65,7 @@ updates; the script itself makes no service writes.
 
 ## Outputs
 
-The assembler returns exact task objects and `create`, `update` or `unchanged` actions. Shared
+The assembler returns exact task objects and `create`, `update`, `unchanged` or `skipped` actions. Shared
 guidance participates in comparison; unchanged timestamps and native IDs are retained. A prepared
 action, launched worker or report does not establish that schedules were saved. It generates every
 native name as 🤖 followed by the uppercase display name. Omitted debug defaults to false.
@@ -90,6 +90,7 @@ automatically or switch credentials to recover a failure.
 3. List published runnable Cloud configurations and the dot's existing schedules, including paused
    tasks, following pagination. Read missing fields for matching tasks only. An incomplete listing
    cannot prove a job or worker is absent.
+   Supply the native scheduler's IANA timezone as `context.timezone`; do not use the worker's clock.
 4. For a delegated sync from a saved dispatcher whose incoming metadata lacks `dispatchVersion: 2`,
    perform only the synchronizer upgrade: use `id: "sync"` for both targets and sync below.
    Inspect the incoming occurrence, not newly assembled metadata, when choosing this path.
@@ -97,7 +98,8 @@ automatically or switch credentials to recover a failure.
    actions for a separate invocation of the updated saved task. Do not run that task automatically.
    Otherwise retain the operator's selected ID or the normal `all` selection.
    Run `bun skills/automation-sync/scripts/sync-task.js` with `mode: "targets"` and JSON on stdin
-   using the reference's input shape. Resolve its desired workers through native chat controls.
+   using the reference's input shape. This validates Cloud cadence before worker creation and omits
+   elapsed one-time targets. Resolve only its returned workers through native chat controls.
    Verify native active/archive status. Reuse the saved active worker; for a confirmed archived
    managed worker, follow the reference's [replacement procedure](./references/native-tasks.md#replace-a-confirmed-archived-worker).
    Unknown or inaccessible workers do not qualify. For a new automation, create one Cloud chat in the selected
@@ -112,13 +114,14 @@ automatically or switch credentials to recover a failure.
    state itself. Dirty source is preview-only; use a clean checkout before applying. Review the
    returned source and actions. The compiled scheduled prompt coordinates the worker; its embedded
    worker request contains the automation instructions and metadata.
-6. Skip unchanged actions. Apply actions in returned order; verify a changed synchronizer before
+6. Leave `unchanged` and `skipped` actions untouched. Report skipped reasons without claiming a run
+   completed. Apply actions in returned order; verify a changed synchronizer before
    proceeding to other selected jobs, and show its configuration card first. Stop dependent
    application if that self-update fails. Apply creates/updates through the owning dot's supported native controls with the exact
    compiled content and native ID. For disabled definitions, follow the native-task reference's
    paused-create or immediate create-then-pause procedure and verify the final state.
-   Translate normalized schedules only when the native API can
-   represent them exactly. Resolve listing/earlier-effect uncertainty before creating. If another
+   Copy the compiled `task.schedule` fields directly into the native scheduling call; do not
+   translate or repair recurrence strings in prose. Resolve listing/earlier-effect uncertainty before creating. If another
    writer changed an update's current values, recompute from the latest native record.
 7. Trust a successful native result that includes saved settings. Read back only omitted values,
    uncertain effects or the pilot's explicit checks; do not add a routine verification pass.

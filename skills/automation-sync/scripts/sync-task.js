@@ -24,6 +24,7 @@ try {
     revision: git('rev-parse', 'HEAD'),
     dirty: git('status', '--porcelain').length > 0,
   };
+  const now = new Date().toISOString();
   if (input.mode !== undefined && !['targets', 'sync'].includes(input.mode))
     throw new Error('sync-mode-invalid');
   const result =
@@ -31,7 +32,7 @@ try {
       ? {
           schema: 'tanaabot.automation-targets/v1',
           source,
-          targets: automationTargets(loaded.manifest, input.context, input.id),
+          targets: automationTargets(loaded.manifest, input.context, input.id, now),
         }
       : planSync({
           ...loaded,
@@ -39,7 +40,7 @@ try {
           existingTasks: input.existingTasks,
           context: input.context,
           id: input.id,
-          now: new Date().toISOString(),
+          now,
         });
   process.stdout.write(
     `${JSON.stringify({ ...result, ...(result.operations && loaded.manifest.debug ? { presentation: syncReport(result, true) } : {}) }, null, 2)}\n`,
