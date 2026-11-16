@@ -7,7 +7,6 @@ import {
   taskPrompt,
 } from '../utils/task-prompt.js';
 import automationTargets from './automation-targets.js';
-import readWorkerPrompt from '../utils/read-worker-prompt.js';
 import requestHeader from '../utils/request-header.js';
 
 const repository = 'tanaabased/tanaabot';
@@ -86,7 +85,6 @@ function compileTask(task, metadata, worker, body, dispatch, canary, header) {
     ...worker,
     prompt: `${header}\n\n${taskPrompt({ ...metadata, role: 'worker' }, body)}`,
   };
-  readWorkerPrompt(request.prompt);
   // Escape nested markers so the outer task keeps one unambiguous ownership header.
   const payload = JSON.stringify(request, null, 2).replaceAll('<', '\\u003c');
   return {

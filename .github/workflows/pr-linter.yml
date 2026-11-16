@@ -17,4 +17,6 @@ jobs:
       - name: Install dependencies
         run: bun install --frozen-lockfile --ignore-scripts
       - name: Run ESLint, Prettier and ShellCheck
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: bun run lint

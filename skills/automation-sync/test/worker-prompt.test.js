@@ -2,9 +2,8 @@ import { test } from 'bun:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-import readWorkerPrompt from '../utils/read-worker-prompt.js';
 import requestHeader from '../utils/request-header.js';
-import { readTaskPrompt, taskPrompt } from '../utils/task-prompt.js';
+import { taskPrompt } from '../utils/task-prompt.js';
 
 const template = readFileSync(
   new URL('../../../prompts/automations/partials/request.md', import.meta.url),
@@ -32,8 +31,6 @@ test('should give different automations readable openings without changing their
     const original = taskPrompt(metadata, 'Full instructions.');
     const prompt = `${header}\n\n${original}`;
     assert.equal(prompt.slice(header.length + 2), original);
-    assert.deepEqual(readWorkerPrompt(prompt), readWorkerPrompt(original));
-    assert.throws(() => readTaskPrompt(prompt), /task-marker-misplaced/);
   }
 });
 
@@ -59,20 +56,5 @@ test('should reject missing or multiline header fields and invalid template slot
   assert.throws(
     () => requestHeader(`${template}{{unknown}}`, 'Sync', fields),
     /request-header-slot-invalid/,
-  );
-});
-
-test('should reject arbitrary worker preambles, malformed metadata and coordinator payloads', () => {
-  const header = requestHeader(template, 'Sync', { emoji: '🔄', request: 'Synchronize.' });
-  const worker = taskPrompt(metadata, 'Run.');
-  assert.throws(() => readWorkerPrompt(`Arbitrary text\n${worker}`), /task-marker-misplaced/);
-  assert.throws(
-    () => readWorkerPrompt(`${header}\n\n<tanaabot-automation-metadata>broken`),
-    /task-marker-invalid/,
-  );
-  assert.throws(
-    () =>
-      readWorkerPrompt(`${header}\n\n${taskPrompt({ ...metadata, role: 'coordinator' }, 'Run.')}`),
-    /worker-prompt-invalid/,
   );
 });

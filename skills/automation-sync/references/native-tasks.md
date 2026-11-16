@@ -94,8 +94,7 @@ The worker uses the published Cloud environment and receives its own metadata, a
 guidance and the authored automation prompt. Its opening is rendered from the shared
 `prompts/automations/partials/request.md` template, the automation display name, and its emoji
 and short request in `prompts/automations/requests.json`. Each selected automation needs an entry.
-The worker parser accepts that opening and previous metadata-first requests; saved schedule
-ownership remains metadata-first, with only the supported optional canary preceding it.
+Saved schedule ownership remains metadata-first, with only the supported optional canary preceding it.
 The client owns preview length and collapse behavior; the template does not create an accordion.
 The coordinator continues that worker, waits for its
 result and returns the compact linked summary through normal main-chat delivery. Scheduling a

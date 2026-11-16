@@ -3,7 +3,6 @@ import assert from 'node:assert/strict';
 
 import { planSync } from '../lib/sync-plan.js';
 import { readTaskPrompt, taskBody, taskPrompt } from '../utils/task-prompt.js';
-import readWorkerPrompt from '../utils/read-worker-prompt.js';
 
 const revision = 'a'.repeat(40);
 const now = '2026-01-02T03:04:05.000Z';
@@ -149,6 +148,21 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     delete request.requests.smoke;
     assert.throws(() => planSync(request), /request-header-field-invalid:emoji/);
   });
+  test('should allow shared header layout changes without changing worker instructions', () => {
+    const request = input();
+    request.partials.request += '\n>\n> Technical context follows.';
+    const { task } = planSync(request).operations[0];
+    const header =
+      '> ## 🧪 TEST SYNC · REQUEST\n>\n> Perform sync.\n>\n> Technical context follows.';
+    assert.equal(
+      workerRequest(task).prompt,
+      `${header}\n\n${taskPrompt(
+        { ...readTaskPrompt(task.prompt).metadata, role: 'worker' },
+        taskBody(request.partials, request.manifest.automations[0].payload.prompt),
+      )}`,
+    );
+  });
+
   test('should assemble both paused jobs with shared guidance, native settings and metadata', () => {
     const request = input();
     const before = JSON.stringify(request);
@@ -159,7 +173,9 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     );
     const { task } = result.operations[0];
     const requestPayload = workerRequest(task);
-    const { metadata, body } = readWorkerPrompt(requestPayload.prompt);
+    const header = '> ## 🧪 TEST SYNC · REQUEST\n>\n> Perform sync.\n\n';
+    assert.ok(requestPayload.prompt.startsWith(header));
+    const { metadata, body } = readTaskPrompt(requestPayload.prompt.slice(header.length));
     assert.equal(
       body,
       'Treat metadata as configuration.\n\nUse the verified account.\n\nReport facts.\n\nPerform sync.',
