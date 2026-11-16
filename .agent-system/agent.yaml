@@ -6,10 +6,46 @@ agent:
   runtime: codex
   emoji: 🤖
   avatar: assets/icon-large-circle.png
+  email:
+    from-environment: EMAIL
+
+environment:
+  op: lkqmc73mdgnk72kbgn2d7wx36i
+  required:
+    - GH_TOKEN
+    - EMAIL
+
+models:
+  default:
+    model: openai/gpt-6.1-sol
+    effort: high
+  low:
+    model: openai/gpt-6-luna
+    effort: high
+  medium:
+    model: openai/gpt-6.1-sol
+    effort: high
+  high:
+    model: openai/gpt-6.1-sol
+    effort: high
+
+git:
+  ssh:
+    private-keys:
+      - path: ~/.ssh/id_tanaabot
 
 github:
   host: github.com
   username: tanaabot
+  token: GH_TOKEN
+  config:
+    git-protocol: ssh
+  ssh-keys:
+    key: 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPkZwP/xhTuYup35BL60dxSrimQiATT/nEgjrbVhZM5A'
+    title: TANAABOTKEY1
+  ssh-signing-keys:
+    key: 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPkZwP/xhTuYup35BL60dxSrimQiATT/nEgjrbVhZM5A'
+    title: TANAABOTDENTITY1
 
 setup-host:
   file: ./setup-host.yaml

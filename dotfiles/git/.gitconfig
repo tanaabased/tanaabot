@@ -1,4 +1,10 @@
-# Scaffold only: no identity or signing configuration is active.
-# Setup must obtain user.name and user.email from the selected runtime identity.
-# SSH signing needs a separately selected public key, signer access and trust policy.
-# Do not copy a contributor's identity, signing key path or allowed_signers file.
+[user]
+	name = tanaabot
+	email = tanaabot@tanaab.dev
+	signingkey = ~/.ssh/id_tanaabot.pub
+[gpg]
+	format = ssh
+[commit]
+	gpgsign = true
+[gpg "ssh"]
+	allowedSignersFile = ~/.config/git/allowed_signers

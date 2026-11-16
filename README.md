@@ -20,7 +20,7 @@ remains pending in [#5](https://github.com/tanaabased/tanaabot/issues/5).
 
 - [Tanaboot](./TANABOOT.md): The setup entrypoint, with host and agent modes.
 - [Dependencies](./INVENTORY.md#dependencies): The Brewfile and shared provisioning tools.
-- [Dotpackages](./INVENTORY.md#dotpackages): Global guidance and configuration stubs.
+- [Dotpackages](./INVENTORY.md#dotpackages): Global guidance and runtime configuration.
 - [Skills](./INVENTORY.md#skills): Tanaabot Voice, Skill Author and Startup Check.
 - [Configuration files](./INVENTORY.md#configuration-files): Setup declarations and Codex plugin sources.
 - [Automations](./INVENTORY.md#automations): Scheduled automation inventory.

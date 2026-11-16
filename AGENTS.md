@@ -69,7 +69,8 @@ Tanaabot onboarding.
    Verify that this text is saved in the environment's Start skill field. Its presence in this
    repository only records the procedure; it does not configure the environment.
 
-5. Present installation and read-only check results for operator review before publication. Report
+5. Run [Tanaabot Startup Check](./skills/startup-check/SKILL.md) after installation, using the actual
+   task command launcher, and present its shared six-section card for operator review before publication. Report
    failed or unavailable checks; never recommend publishing after a failed install. After publication,
    follow the [fresh-pilot checklist](./TANABOOT.md#cloud-verification). Verify startup runs without a
    manual bootstrap prompt and a subsequent request selects and reads the appropriate local skill.
@@ -78,7 +79,8 @@ Tanaabot onboarding.
    persistent instruction delivery is a post-pilot follow-up in
    [#16](https://github.com/tanaabased/tanaabot/issues/16).
 
-Do not add accounts, authentication, SSH access, Agent System binding or schedules during onboarding.
+Use only the configured Tanaabot SSH key through Bootbox; do not generate a new identity or add inbound
+SSH access. Do not add accounts, Agent System binding or schedules during onboarding.
 Keep the persistent shell initialization in the shell dotpackage. Do not edit repository sources to
 work around setup failures; report them for a coding task.
 
@@ -111,6 +113,16 @@ Check changed local links, manifest paths and packed resources.
 Follow `examples/AGENTS.md` for repository Leia scenarios. Run scenarios in CI or a
 disposable Cloud test environment; developer-machine execution requires explicit authorization.
 Report source checks separately from Cloud execution and live installation.
+
+Tanaboot shell behavior belongs in Leia scenarios under `examples/`, using the packaged entrypoint
+and real tools. Keep commands and assertions in each scenario's README. Do not add standalone shell
+test runners or fake tool helpers under `test/`, source the entrypoint to test its internal functions,
+or replace provisioning commands with mocks. Keep JavaScript parsing and planning tests with their
+owners; ShellCheck remains static validation rather than installation evidence.
+
+Keep a test only for a distinct repository-owned failure or contract. Check existing coverage and
+the upstream owner first; do not recreate Homebrew, Bootbox or 1Password's own test suites. Prefer a
+small delegation and readiness journey over costly machine fixtures or repeated success assertions.
 
 ## Change boundaries
 

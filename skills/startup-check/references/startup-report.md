@@ -7,17 +7,19 @@ the operator explicitly requests diagnostic evidence.
 
 ## Sections
 
-| Section         | Required evidence                                                                                                                                                                                                                                                                                                                                   |
-| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Environment     | Prepared Tanaabot checkout, canonical origin and source revision identified; supported Linux environment and actual task command launcher established. Required environment variables and 1Password integration may be added later; they are not pilot requirements.                                                                                |
-| Dependencies    | Brewfile executables discoverable on the task's effective PATH, usable version output, and declared Node/Bun major versions satisfied. Homebrew maintenance permissions are not required.                                                                                                                                                           |
-| Dotfiles        | Active dotpackages installed at their intended home-relative destinations, Stow links resolve to the prepared sources, files are readable and match those sources, and shell initialization actually supplies the tools. Include the `ai` guidance file here; exclude inactive Git, GitHub and SSH stubs.                                           |
-| Tanaabot skills | All local `SKILL.md` files beneath the prepared checkout's `skills/` are readable, have nonempty instructions and valid frontmatter with unique names and nonempty descriptions. Their names, descriptions and absolute paths are retained in chat context. This is explicit local loading; native catalog registration is not required or implied. |
-| Canon skills    | The task catalog contains machine names starting with `tanaab-`, allowing host qualification. Use ownership metadata when available to exclude unrelated matches. This establishes basic availability, not a complete release inventory or ownership from names alone. Installation and updates belong to the ChatGPT account.                      |
-| Identity        | Not applicable for this pilot. SSH keys, GitHub authentication and other identity requirements are deferred; do not probe them.                                                                                                                                                                                                                     |
+| Section         | Required evidence                                                                                                                                                                                                                                                                                                                                               |
+| --------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Environment     | Prepared Tanaabot checkout, canonical origin and source revision identified; supported Linux and actual task command launcher established. The saved environment selects the manifest's 1Password Environment, contains valid variables and all its values match the actual exported environment. Derive the variables from the file; never print their values. |
+| Dependencies    | Brewfile executables discoverable on the task's effective PATH, usable version output, and declared Node/Bun major versions satisfied. Homebrew maintenance permissions are not required.                                                                                                                                                                       |
+| Dotfiles        | The `ai`, `shell`, `git`, `gh` and `ssh` dotpackages link to the prepared sources and match them. Shell initialization supplies tools and saved variables in fresh shells. The private environment file is outside the checkout, owned by this user with mode 600 in a real mode-700 directory; private storage and key paths are not symlinks.                 |
+| Tanaabot skills | All local `SKILL.md` files beneath the prepared checkout's `skills/` are readable, have nonempty instructions and valid frontmatter with unique names and nonempty descriptions. Their names, descriptions and absolute paths are retained in chat context. This is explicit local loading; native catalog registration is not required or implied.             |
+| Canon skills    | The task catalog contains machine names starting with `tanaab-`, allowing host qualification. Use ownership metadata when available to exclude unrelated matches. This establishes basic availability, not a complete release inventory or ownership from names alone. Installation and updates belong to the ChatGPT account.                                  |
+| Identity        | Effective Git name/email, SSH signing configuration, public key and allowed signers match the prepared configuration; the private key matches the approved public key. Effective SSH configuration selects that identity. A read-only GitHub API request through the existing CLI credential returns the manifest's GitHub username.                            |
 
-Automatic global-instruction delivery is separate post-pilot work. Neither its absence nor the
-absence of deferred identity or 1Password configuration creates a startup warning.
+Use this same skill and card for post-install review and fresh-task startup. A saved environment
+file proves a snapshot was fetched; an offline check cannot prove it still matches current 1Password
+contents. Refresh belongs to installation or explicit maintenance, never startup verification.
+Automatic global-instruction delivery remains separate post-pilot work and does not create a warning.
 
 A passed Tanaabot skills row establishes local loading in this chat. It does not prove that the
 environment automatically ran its saved Start skill or that a later request selected the right
@@ -58,7 +60,7 @@ with actual evidence. Preserve the quoted H2 heading and blank quoted line befor
 > - **Dotfiles — passed**
 > - **Tanaabot skills — passed**
 > - **Canon skills — passed**
-> - **Identity — not applicable**
+> - **Identity — passed**
 
 ### Incomplete
 
@@ -69,7 +71,7 @@ with actual evidence. Preserve the quoted H2 heading and blank quoted line befor
 > - **Dotfiles — passed**
 > - **Tanaabot skills — passed**
 > - **Canon skills — unverified:** This task's catalog does not expose the evidence needed to check Canon availability.
-> - **Identity — not applicable**
+> - **Identity — passed**
 >
 > **Next step:** Inspect Canon availability in a fresh task with access to its supplied skill catalog.
 
@@ -82,7 +84,7 @@ with actual evidence. Preserve the quoted H2 heading and blank quoted line befor
 > - **Dotfiles — passed**
 > - **Tanaabot skills — passed**
 > - **Canon skills — passed**
-> - **Identity — not applicable**
+> - **Identity — passed**
 >
 > **Next step:** Repair the dependency during environment setup, then rerun verification.
 >

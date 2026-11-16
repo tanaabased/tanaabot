@@ -19,15 +19,17 @@ the dependent task incomplete.
 ## Dotpackages
 
 Packages use a home-relative layout. `ai` contains guidance and `shell` initializes Homebrew and Node for Bash.
-Git, GitHub and SSH configuration remain inactive stubs. Fresh-task Cloud startup remains unverified.
+Agent setup also applies Git, GitHub and SSH configuration, retrieves the approved SSH key and
+refreshes the private 1Password Environment file.
+Fresh-task Cloud startup remains unverified.
 
-| Package | Source                                                           | Status                                                                      |
-| ------- | ---------------------------------------------------------------- | --------------------------------------------------------------------------- |
-| `ai`    | [Global guidance](./dotfiles/ai/.codex/AGENTS.md)                | Applied by agent setup                                                      |
-| `shell` | [Shell initialization](./dotfiles/shell/.config/tanaabot/env.sh) | Homebrew and Node PATH; sourced by the active Bash login file and `.bashrc` |
-| `git`   | [Git configuration](./dotfiles/git/.gitconfig)                   | Identity and SSH signing stub                                               |
-| `gh`    | [GitHub CLI preferences](./dotfiles/gh/.config/gh/config.yml)    | No account or authentication configured                                     |
-| `ssh`   | [SSH configuration](./dotfiles/ssh/.ssh/config)                  | Outbound authentication stub; inbound authorized keys deferred              |
+| Package | Source                                                           | Status                                                                                       |
+| ------- | ---------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| `ai`    | [Global guidance](./dotfiles/ai/.codex/AGENTS.md)                | Applied by agent setup                                                                       |
+| `shell` | [Shell initialization](./dotfiles/shell/.config/tanaabot/env.sh) | Homebrew, Node PATH and saved environment exports; sourced by Bash login files and `.bashrc` |
+| `git`   | [Git configuration](./dotfiles/git/.gitconfig)                   | Tanaabot identity, SSH signing and approved signer trust                                     |
+| `gh`    | [GitHub CLI preferences](./dotfiles/gh/.config/gh/config.yml)    | SSH protocol; authentication uses the separate `GH_TOKEN` environment value                  |
+| `ssh`   | [SSH configuration](./dotfiles/ssh/.ssh/config)                  | Approved key for outbound SSH; no inbound authorized keys                                    |
 
 ## Dependencies
 

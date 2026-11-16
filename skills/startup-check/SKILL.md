@@ -50,8 +50,10 @@ separate operator-authorized scope. This skill inspects the saved installation o
 2. Record the task tool's actual shell and command-launch flags. Run
    `bash <prepared-checkout>/tanaboot.sh --check` through that same launcher, without first sourcing
    shell initialization or changing PATH. The command checks declared tools, fresh shells and readable
-   configuration offline. Preserve its exit status and diagnostics. It does not inspect the container's
-   plugin registry or require maintenance permissions.
+   configuration offline, including private environment file safety and equality with the actual
+   exported environment. The variable names come from that file, not a fixed checklist. Preserve its
+   exit status and safe diagnostics. It does not inspect the container's plugin registry or require
+   maintenance permissions.
 3. Assign Environment, Dependencies and Dotfiles results using the report contract. For the active
    dotpackages, also verify that Stow destinations link to the expected prepared source files; a
    matching copy alone does not prove correct Stow installation. The installed global `AGENTS.md`
@@ -59,6 +61,10 @@ separate operator-authorized scope. This skill inspects the saved installation o
    [#16](https://github.com/tanaabased/tanaabot/issues/16); do not add a separate guidance row or warning.
    If the combined command stops early, retain its completed checks and continue independent
    read-only inspection. A check prevented by missing prerequisites is unverified, not another failure.
+   The independent environment check is
+   `bun --no-env-file <prepared-checkout>/scripts/environment-task.js --check`, through the same unmodified launcher.
+   Never print the environment file, values, hashes, tokens or command environment. Do not source the
+   loader to turn a failed visibility check into a pass.
 4. For **Tanaabot skills**, enumerate `SKILL.md` files beneath the prepared checkout's `skills/`
    directory. Verify each instruction file is readable and has a nonempty body and valid YAML
    frontmatter with nonempty string `name` and `description` fields. Names must be unique within
@@ -81,8 +87,17 @@ separate operator-authorized scope. This skill inspects the saved installation o
    unverified. Canon is delivered through the ChatGPT account independently of this repository.
    Do not inspect the container's plugin registry, require a fixed version or inventory, install,
    update, or query npm during this check.
-6. Mark Identity not applicable for this pilot. Do not request credentials, inspect tokens, test SSH
-   access or authenticate to a service. Future identity or 1Password checks need explicit requirements.
+6. For **Identity**, check effective Git identity, SSH signing settings, public-key trust and SSH
+   identity selection against the prepared manifest and dotfiles. Tanaboot checks the private/public
+   key match without printing either key. Inspect effective settings with read-only Git and SSH
+   configuration commands; do not create a commit, start an agent or attempt SSH access at startup.
+   Verify the existing GitHub CLI credential with `gh api --hostname github.com user --jq .login`
+   and compare the login with `github.username` in the manifest. A wrong identity or rejected
+   credential fails Identity; unavailable network or missing prerequisites leave authentication
+   unverified. Keep raw service errors private. Do not log in, register keys, change credentials,
+   fall back to another account or inspect connector credentials. Email configuration is identity,
+   not proof of Google authentication; connected-account selection remains
+   [#11](https://github.com/tanaabased/tanaabot/issues/11).
 7. Compose one card using the report contract. Keep successful and not-applicable rows terse; show
    explanatory details only for failed or unverified rows. Retain revision and diagnostic evidence in
    the working context without creating a receipt or printing routine success details. A script
@@ -99,7 +114,7 @@ separate operator-authorized scope. This skill inspects the saved installation o
 
 Confirm that no provisioning or state change was attempted, that all six rows appear in order, and
 that only failed or unverified checks carry details. Apply the overall failure/uncertainty rules;
-not-applicable identity and deferred instruction delivery do not prevent a pass. Distinguish machine
+deferred instruction delivery does not prevent a pass. Distinguish machine
 checks, explicit local Tanaabot loading and Canon catalog availability. Confirm the retained local
 inventory contains each skill's name, description and absolute path. This does not alter the native
 catalog. Maintenance validation checks structure and packaged references; a fresh Cloud trial must

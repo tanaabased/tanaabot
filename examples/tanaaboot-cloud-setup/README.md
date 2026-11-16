@@ -2,7 +2,7 @@
 
 Select the actual workspace revision with the packaged Cloud wrapper, then run that revision's
 Tanaboot on a disposable Linux runner. Local Git remote data supplies two candidate revisions;
-provisioning uses the real packaged entrypoint.
+version and preview commands prove selection and forwarding without repeating host installation.
 
 ## Setup
 
@@ -43,19 +43,18 @@ for input in '' --agent --ref=main; do
   printf '%s\n' "$output" | grep -F 'Provide a branch, tag or full commit SHA'
 done
 
-# should select main in the workspace and run host setup there
+# should select main in the workspace and run that revision's entrypoint
 set -o pipefail
 git clone -q "$TMPDIR/remote" "$TMPDIR/branch-workspace"
 cd "$TMPDIR/branch-workspace"
 git remote set-url origin https://github.com/tanaabased/tanaabot.git
 export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.$TMPDIR/remote.insteadOf" GIT_CONFIG_VALUE_0=https://github.com/tanaabased/tanaabot.git
-bash scripts/cloud-setup.sh main --host 2>&1 | tee "$TMPDIR/branch.log"
+bash scripts/cloud-setup.sh main --version 2>&1 | tee "$TMPDIR/branch.log"
 sha=$(cat "$TMPDIR/second")
 grep -F "Workspace revision: main ($sha)" "$TMPDIR/branch.log"
-grep -F 'done: host apply complete.' "$TMPDIR/branch.log"
+grep -Fx 'fixture-second' "$TMPDIR/branch.log"
 test "$(git rev-parse HEAD)" = "$sha"
 test -z "$(git status --porcelain)"
-bash tanaboot.sh --host --check
 test ! -e "${XDG_DATA_HOME:-$HOME/.local/share}/tanaabot/sources/tanaabot"
 
 # should peel an annotated tag even when checkout removes the running wrapper
@@ -73,12 +72,12 @@ test "$(git rev-parse HEAD)" = "$sha"
 test ! -e scripts/cloud-setup.sh
 test -z "$(find "$TMPDIR/snapshots" -mindepth 1 -print -quit)"
 
-# should accept a full commit through an external wrapper and check the selected workspace
+# should accept a full commit through an external wrapper
 set -o pipefail
 cd "$TMPDIR/branch-workspace"
 export GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0="url.$TMPDIR/remote.insteadOf" GIT_CONFIG_VALUE_0=https://github.com/tanaabased/tanaabot.git
 sha=$(cat "$TMPDIR/first")
-bash "$TANABOOT_PACKAGE_ROOT/scripts/cloud-setup.sh" "$sha" --host --check
+bash "$TANABOOT_PACKAGE_ROOT/scripts/cloud-setup.sh" "$sha" --version | grep -Fx 'fixture-first'
 test "$(git rev-parse HEAD)" = "$sha"
 
 # should forward mode and action options to the selected revision

@@ -1,3 +1,2 @@
-# Scaffold only: no GitHub account or authentication is selected here.
-# Resolve the approved account through the executing host; never bundle hosts.yml or tokens.
-{}
+version: 1
+git_protocol: ssh

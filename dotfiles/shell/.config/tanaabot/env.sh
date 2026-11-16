@@ -11,3 +11,21 @@ if [ -x "$_tanaabot_brew" ]; then
   export PATH
 fi
 unset _tanaabot_brew
+
+# Keep secret values out of shell tracing. Values are data, never shell source.
+_tanaabot_trace=0
+case $- in *x*) _tanaabot_trace=1; set +x ;; esac
+_tanaabot_source="$(readlink -f -- "${BASH_SOURCE[0]}")"
+_tanaabot_root="${_tanaabot_source%/dotfiles/shell/.config/tanaabot/env.sh}"
+if command -v bun >/dev/null 2>&1; then
+  while IFS= read -r -d '' _tanaabot_name && IFS= read -r -d '' _tanaabot_value; do
+    export "$_tanaabot_name=$_tanaabot_value"
+  done < <(bun --no-env-file "$_tanaabot_root/scripts/environment-task.js" --export)
+fi
+unset _tanaabot_source _tanaabot_root _tanaabot_name _tanaabot_value
+if [ "$_tanaabot_trace" = 1 ]; then
+  unset _tanaabot_trace
+  set -x
+else
+  unset _tanaabot_trace
+fi

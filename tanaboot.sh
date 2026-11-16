@@ -15,6 +15,7 @@ fi
 REPO_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
 SCRIPT_VERSION="${SCRIPT_VERSION:-$(git -C "${REPO_DIR}" describe --tags --always 2>/dev/null || printf '%s' '0.0.0-unreleased')}"
 BOOTBOX_URL="https://bootbox.tanaab.sh/bootbox.sh"
+SSH_KEY_SPEC="io7gvjejiyau6my2xasglxbydy/id_tanaabot"
 DATA_DIR="${XDG_DATA_HOME:-${HOME}/.local/share}/tanaabot"
 DEBUG="${TANABOOT_DEBUG:-${DEBUG:-${RUNNER_DEBUG:-}}}"
 TARGET="bootstrap"
@@ -86,7 +87,7 @@ The default mode selects host then agent. Choose one mode and one action.
 
 ${tty_tp}Options:${tty_reset}
   --host              Select host dependencies only
-  --agent             Select guidance and shell initialization only
+  --agent             Select dotfiles, environment and the Tanaabot SSH key
   --check             Check installed tools and configuration offline
   --dry-run           Preview delegation without downloads or changes
   --debug             Show diagnostics ${tty_dim}[default: ${debug_display}]${tty_reset}
@@ -94,7 +95,8 @@ ${tty_tp}Options:${tty_reset}
   -h, --help          Show this help
 
 ${tty_tp}Environment Variables:${tty_reset}
-  TANABOOT_DEBUG        Same as --debug
+  TANABOOT_DEBUG            Same as --debug
+  OP_SERVICE_ACCOUNT_TOKEN  1Password service account for environment refresh and SSH key retrieval
 
 HELP
 }
@@ -142,8 +144,12 @@ plan_host() {
 
 plan_agent() {
   printf '\n%sagent%s\n' "${tty_tp}" "${tty_reset}"
+  plan_action ensure 'The approved SSH private key; reuse an existing matching key'
+  plan_command bootbox.sh --no-sudo --ssh-key "${SSH_KEY_SPEC}"
+  plan_action refresh 'Private 1Password Environment file, or reuse it when no token is supplied'
+  plan_command bun --no-env-file "${REPO_DIR}/scripts/environment-task.js" --ensure
   plan_action stow 'Home-relative dotpackages through Bootbox'
-  plan_command bootbox.sh --no-sudo --dotpkg "${REPO_DIR}/dotfiles/ai" --dotpkg "${REPO_DIR}/dotfiles/shell"
+  plan_command bootbox.sh --no-sudo --dotpkg "${REPO_DIR}/dotfiles/ai" --dotpkg "${REPO_DIR}/dotfiles/shell" --dotpkg "${REPO_DIR}/dotfiles/git" --dotpkg "${REPO_DIR}/dotfiles/gh" --dotpkg "${REPO_DIR}/dotfiles/ssh"
 }
 
 require_tool() {
@@ -173,15 +179,38 @@ prepare_bootbox() {
 }
 
 run_bootbox() (
-  local variable prefix script="${BOOTBOX_SCRIPT}"
+  local variable prefix key_token="" script="${BOOTBOX_SCRIPT}"
+  if [[ "${1:-}" == --ssh-key ]]; then key_token="${OP_SERVICE_ACCOUNT_TOKEN:-}"; fi
   # Inherited profile inputs must not add secrets, SSH keys or overwrite behavior.
   for variable in ${!BOOTBOX_@} ${!TANAAB_@} OP_SERVICE_ACCOUNT_TOKEN INTERACTIVE; do
     unset "${variable}"
   done
   prefix="$(brew --prefix)" || fail 'Cannot determine the selected Homebrew prefix.'
   cd -- "$(dirname -- "${script}")"
-  HOMEBREW_PREFIX="${prefix}" HOMEBREW_NO_SUDO=1 NONINTERACTIVE=1 BOOTBOX_QUIET=1 BOOTBOX_DEBUG="${DEBUG}" bash "${script}" --no-sudo "$@"
+  BOOTBOX_OP_TOKEN="${key_token}" HOMEBREW_PREFIX="${prefix}" HOMEBREW_NO_SUDO=1 NONINTERACTIVE=1 BOOTBOX_QUIET=1 BOOTBOX_DEBUG="${DEBUG}" bash "${script}" --no-sudo "$@"
 )
+
+check_ssh_key() {
+  local key="${HOME}/.ssh/id_tanaabot" public key_type key_data expected_type expected_data
+  require_tool ssh-keygen
+  [[ -d "${HOME}/.ssh" && ! -L "${HOME}/.ssh" && -O "${HOME}/.ssh" ]] || fail 'SSH keys need a real .ssh directory owned by this user.'
+  [[ -f "${key}" && ! -L "${key}" && -O "${key}" ]] || fail 'The approved SSH private key is missing or has an unsafe path. Run agent setup.'
+  public="$(ssh-keygen -y -P '' -f "${key}" </dev/null 2>/dev/null)" || fail 'The SSH private key is unreadable, encrypted or has unsafe permissions.'
+  read -r key_type key_data _ <<< "${public}"
+  read -r expected_type expected_data _ < "${REPO_DIR}/dotfiles/ssh/.ssh/id_tanaabot.pub"
+  [[ "${key_type} ${key_data}" == "${expected_type} ${expected_data}" ]] || fail 'The installed SSH private key does not match the approved public key. Preserve it and resolve the conflict.'
+}
+
+install_ssh_key() {
+  if [[ -e "${HOME}/.ssh/id_tanaabot" || -L "${HOME}/.ssh/id_tanaabot" ]]; then
+    check_ssh_key
+    note 'Reusing the approved SSH private key.'
+    return
+  fi
+  [[ -n "${OP_SERVICE_ACCOUNT_TOKEN:-}" ]] || fail 'Set OP_SERVICE_ACCOUNT_TOKEN through private Cloud configuration before initial SSH key setup.'
+  run_bootbox --ssh-key "${SSH_KEY_SPEC}" || return
+  check_ssh_key
+}
 
 find_homebrew() {
   local candidate
@@ -266,14 +295,19 @@ shell_startup_files() {
 }
 
 check_shells() {
-  local mode
+  local mode name
+  local -a fresh_environment=(env -u BASH_ENV)
+  # Remove saved variables as well as tool paths so inherited values cannot hide a broken loader.
+  while IFS= read -r name; do
+    fresh_environment+=(-u "${name}")
+  done < <(jq -r '.variables | keys[]' "${HOME}/.local/state/tanaabot/environment.json")
   note 'Shell: inherited non-interactive Bash'
-  bash -c 'source "$1"; check_tools' _ "${REPO_DIR}/tanaboot.sh" || fail 'Non-interactive Bash cannot discover the declared tools. Check the Cloud command launcher environment.'
+  bash -c 'source "$1"; check_tools; bun --no-env-file "${REPO_DIR}/scripts/environment-task.js" --check' _ "${REPO_DIR}/tanaboot.sh" || fail 'Non-interactive Bash cannot discover the declared tools or environment. Check the Cloud command launcher environment.'
   for mode in -lc -ic; do
     note "Shell: fresh Bash ${mode} from system PATH"
     # Remove inherited tool paths so startup files must supply them.
     # shellcheck disable=SC2016
-    env -u BASH_ENV HISTFILE=/dev/null PATH=/usr/bin:/bin bash "${mode}" 'source "$1"; check_tools' _ "${REPO_DIR}/tanaboot.sh" || fail 'Fresh Bash cannot discover the declared tools. Check the active login file and .bashrc initialization.'
+    "${fresh_environment[@]}" HISTFILE=/dev/null PATH=/usr/bin:/bin bash "${mode}" 'source "$1"; check_tools; bun --no-env-file "${REPO_DIR}/scripts/environment-task.js" --check' _ "${REPO_DIR}/tanaboot.sh" || fail 'Fresh Bash cannot discover the declared tools or environment. Check the active login file and .bashrc initialization.'
   done
 }
 
@@ -281,6 +315,15 @@ check_agent() {
   local file
   cmp -s "${REPO_DIR}/dotfiles/ai/.codex/AGENTS.md" "${HOME}/.codex/AGENTS.md" || fail 'Global guidance is missing or differs. Run agent setup; preserve any conflicting guidance.'
   cmp -s "${REPO_DIR}/dotfiles/shell/.config/tanaabot/env.sh" "${HOME}/.config/tanaabot/env.sh" || fail 'Shell initialization is missing or differs. Run agent setup.'
+  for file in .gitconfig .config/git/allowed_signers .config/gh/config.yml .ssh/config .ssh/id_tanaabot.pub; do
+    case "${file}" in
+      .gitconfig | .config/git/*) cmp -s "${REPO_DIR}/dotfiles/git/${file}" "${HOME}/${file}" ;;
+      .config/gh/*) cmp -s "${REPO_DIR}/dotfiles/gh/${file}" "${HOME}/${file}" ;;
+      .ssh/*) cmp -s "${REPO_DIR}/dotfiles/ssh/${file}" "${HOME}/${file}" ;;
+    esac || fail 'Identity dotfiles are missing or differ. Run agent setup; preserve conflicting files.'
+  done
+  check_ssh_key
+  bun --no-env-file "${REPO_DIR}/scripts/environment-task.js" --check
   while IFS= read -r file; do
     grep -Fxq "${SHELL_INIT_LINE}" "${HOME}/${file}" || fail 'Shell startup is incomplete. Run agent setup.'
   done < <(shell_startup_files)
@@ -294,19 +337,26 @@ apply_agent() {
   while IFS= read -r file; do
     [[ ! -L "${HOME}/${file}" && ( ! -e "${HOME}/${file}" || ( -f "${HOME}/${file}" && -w "${HOME}/${file}" ) ) ]] || fail 'Shell startup conflicts with an existing path. Preserve it and resolve the conflict before retrying.'
   done < <(shell_startup_files)
-  for file in .codex .config; do
+  for file in .codex .config .config/git .config/gh .ssh; do
     [[ ! -L "${HOME}/${file}" && ( ! -e "${HOME}/${file}" || ( -d "${HOME}/${file}" && -w "${HOME}/${file}" ) ) ]] || fail 'Shared configuration directories must be writable real directories. Preserve the conflicting path before retrying.'
   done
+  [[ ! -e "${HOME}/.ssh" || -O "${HOME}/.ssh" ]] || fail 'The .ssh directory must be owned by this user.'
   require_tool stow
-  stow --simulate --dir "${REPO_DIR}/dotfiles" --target "${HOME}" ai shell >/dev/null || fail 'Guidance or shell dotfiles conflict with existing configuration. Preserve it and resolve the conflict before retrying.'
+  stow --simulate --dir "${REPO_DIR}/dotfiles" --target "${HOME}" ai shell git gh ssh >/dev/null || fail 'Dotfiles conflict with existing configuration. Preserve it and resolve the conflict before retrying.'
   # Prevent Stow directory folding from sending private runtime writes into Git sources.
-  mkdir -p -- "${HOME}/.codex" "${HOME}/.config"
-  run_bootbox --dotpkg "${REPO_DIR}/dotfiles/ai" --dotpkg "${REPO_DIR}/dotfiles/shell"
+  mkdir -p -- "${HOME}/.codex" "${HOME}/.config/git" "${HOME}/.config/gh" "${HOME}/.ssh"
+  chmod 700 "${HOME}/.ssh"
+  install_ssh_key
+  bun --no-env-file "${REPO_DIR}/scripts/environment-task.js" --ensure
+  run_bootbox --dotpkg "${REPO_DIR}/dotfiles/ai" --dotpkg "${REPO_DIR}/dotfiles/shell" --dotpkg "${REPO_DIR}/dotfiles/git" --dotpkg "${REPO_DIR}/dotfiles/gh" --dotpkg "${REPO_DIR}/dotfiles/ssh"
   while IFS= read -r file; do
     if ! grep -Fxq "${SHELL_INIT_LINE}" "${HOME}/${file}" 2>/dev/null; then
       printf '\n%s\n' "${SHELL_INIT_LINE}" >> "${HOME}/${file}"
     fi
   done < <(shell_startup_files)
+  # Load the same installed initialization that fresh task shells will use.
+  # shellcheck source=dotfiles/shell/.config/tanaabot/env.sh
+  source "${HOME}/.config/tanaabot/env.sh"
   check_agent
 }
 
