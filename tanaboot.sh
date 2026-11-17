@@ -294,17 +294,25 @@ shell_startup_files() {
   printf '%s\n' .profile .bashrc
 }
 
-check_ssh_clients() {
-  local client wrapper configuration
+check_git_transport() {
+  local url
+  [[ "$(gh config get git_protocol --host github.com 2>/dev/null)" == https ]] || fail 'GitHub CLI must select HTTPS. Check its effective configuration.'
+  [[ "$(git config --get-urlmatch credential.helper https://github.com/tanaabased/tanaabot.git 2>/dev/null)" == '!gh auth git-credential' ]] || fail 'GitHub HTTPS must select the gh credential helper. Inspect conflicting Git configuration privately.'
+  for url in git@github.com:tanaabased/tanaabot.git ssh://git@github.com/tanaabased/tanaabot.git; do
+    [[ "$(git ls-remote --get-url "${url}" 2>/dev/null)" == https://github.com/tanaabased/tanaabot.git ]] || fail 'GitHub SSH URLs must resolve to HTTPS. Check Git URL rewrites.'
+  done
+}
+
+remove_retired_ssh_wrappers() {
+  local client wrapper
+  [[ ! -L "${HOME}/.local" && ! -L "${HOME}/.local/bin" ]] || return 0
   for client in ssh scp sftp; do
     wrapper="${HOME}/.local/bin/${client}"
-    [[ -x "/usr/bin/${client}" ]] || fail 'A system SSH client is missing.'
-    [[ -L "${wrapper}" && -x "${wrapper}" && "$(readlink -f -- "${wrapper}")" == "${REPO_DIR}/dotfiles/shell/.local/bin/${client}" ]] || fail 'SSH wrappers must be executable Stow links to the prepared checkout. Run agent setup.'
-    [[ "$(command -v "${client}")" == "${wrapper}" ]] || fail 'The task shell must select SSH clients from ~/.local/bin first. Check shell initialization and PATH.'
+    # Remove only this checkout's retired Stow links, including dangling links.
+    if [[ -L "${wrapper}" && "$(readlink -m -- "${wrapper}")" == "${REPO_DIR}/dotfiles/shell/.local/bin/${client}" ]]; then
+      rm -- "${wrapper}"
+    fi
   done
-  configuration=$(ssh -G github.com 2>/dev/null) || fail 'SSH cannot parse the installed user configuration.'
-  grep -Fxq 'identitiesonly yes' <<< "${configuration}" || fail 'SSH must select only the configured identity.'
-  grep -Fxq -e 'identityfile ~/.ssh/id_tanaabot' -e "identityfile ${HOME}/.ssh/id_tanaabot" <<< "${configuration}" || fail 'SSH does not select the approved Tanaabot key.'
 }
 
 check_shells() {
@@ -315,12 +323,12 @@ check_shells() {
     fresh_environment+=(-u "${name}")
   done < <(jq -r '.variables | keys[]' "${HOME}/.local/state/tanaabot/environment.json")
   note 'Shell: inherited non-interactive Bash'
-  bash -c 'source "$1"; check_tools; check_ssh_clients; bun --no-env-file "${REPO_DIR}/scripts/environment-task.js" --check' _ "${REPO_DIR}/tanaboot.sh" || fail 'Non-interactive Bash cannot discover the declared tools or environment. Check the Cloud command launcher environment.'
+  bash -c 'source "$1"; check_tools; check_git_transport; bun --no-env-file "${REPO_DIR}/scripts/environment-task.js" --check' _ "${REPO_DIR}/tanaboot.sh" || fail 'Non-interactive Bash cannot discover the declared tools or environment. Check the Cloud command launcher environment.'
   for mode in -lc -ic; do
     note "Shell: fresh Bash ${mode} from system PATH"
     # Remove inherited tool paths so startup files must supply them.
     # shellcheck disable=SC2016
-    "${fresh_environment[@]}" HISTFILE=/dev/null PATH=/usr/bin:/bin bash "${mode}" 'source "$1"; check_tools; check_ssh_clients; bun --no-env-file "${REPO_DIR}/scripts/environment-task.js" --check' _ "${REPO_DIR}/tanaboot.sh" || fail 'Fresh Bash cannot discover the declared tools or environment. Check the active login file and .bashrc initialization.'
+    "${fresh_environment[@]}" HISTFILE=/dev/null PATH=/usr/bin:/bin bash "${mode}" 'source "$1"; check_tools; check_git_transport; bun --no-env-file "${REPO_DIR}/scripts/environment-task.js" --check' _ "${REPO_DIR}/tanaboot.sh" || fail 'Fresh Bash cannot discover the declared tools or environment. Check the active login file and .bashrc initialization.'
   done
 }
 
@@ -335,7 +343,7 @@ check_agent() {
       .ssh/*) cmp -s "${REPO_DIR}/dotfiles/ssh/${file}" "${HOME}/${file}" ;;
     esac || fail 'Identity dotfiles are missing or differ. Run agent setup; preserve conflicting files.'
   done
-  check_ssh_clients
+  check_git_transport
   check_ssh_key
   bun --no-env-file "${REPO_DIR}/scripts/environment-task.js" --check
   while IFS= read -r file; do
@@ -351,17 +359,18 @@ apply_agent() {
   while IFS= read -r file; do
     [[ ! -L "${HOME}/${file}" && ( ! -e "${HOME}/${file}" || ( -f "${HOME}/${file}" && -w "${HOME}/${file}" ) ) ]] || fail 'Shell startup conflicts with an existing path. Preserve it and resolve the conflict before retrying.'
   done < <(shell_startup_files)
-  for file in .codex .config .config/git .config/gh .ssh .local .local/bin; do
+  for file in .codex .config .config/git .config/gh .ssh; do
     [[ ! -L "${HOME}/${file}" && ( ! -e "${HOME}/${file}" || ( -d "${HOME}/${file}" && -w "${HOME}/${file}" ) ) ]] || fail 'Shared configuration directories must be writable real directories. Preserve the conflicting path before retrying.'
   done
   [[ ! -e "${HOME}/.ssh" || -O "${HOME}/.ssh" ]] || fail 'The .ssh directory must be owned by this user.'
   require_tool stow
   stow --simulate --dir "${REPO_DIR}/dotfiles" --target "${HOME}" ai shell git gh ssh >/dev/null || fail 'Dotfiles conflict with existing configuration. Preserve it and resolve the conflict before retrying.'
   # Prevent Stow directory folding from sending private runtime writes into Git sources.
-  mkdir -p -- "${HOME}/.codex" "${HOME}/.config/git" "${HOME}/.config/gh" "${HOME}/.ssh" "${HOME}/.local/bin"
+  mkdir -p -- "${HOME}/.codex" "${HOME}/.config/git" "${HOME}/.config/gh" "${HOME}/.ssh"
   chmod 700 "${HOME}/.ssh"
   install_ssh_key
   bun --no-env-file "${REPO_DIR}/scripts/environment-task.js" --ensure
+  remove_retired_ssh_wrappers
   run_bootbox --dotpkg "${REPO_DIR}/dotfiles/ai" --dotpkg "${REPO_DIR}/dotfiles/shell" --dotpkg "${REPO_DIR}/dotfiles/git" --dotpkg "${REPO_DIR}/dotfiles/gh" --dotpkg "${REPO_DIR}/dotfiles/ssh"
   while IFS= read -r file; do
     if ! grep -Fxq "${SHELL_INIT_LINE}" "${HOME}/${file}" 2>/dev/null; then

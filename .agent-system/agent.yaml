@@ -39,10 +39,7 @@ github:
   username: tanaabot
   token: GH_TOKEN
   config:
-    git-protocol: ssh
-  ssh-keys:
-    key: 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPkZwP/xhTuYup35BL60dxSrimQiATT/nEgjrbVhZM5A'
-    title: TANAABOTKEY1
+    git-protocol: https
   ssh-signing-keys:
     key: 'ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIPkZwP/xhTuYup35BL60dxSrimQiATT/nEgjrbVhZM5A'
     title: TANAABOTDENTITY1
