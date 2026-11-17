@@ -21,7 +21,11 @@ function workerRequest(task) {
 }
 function input(overrides = {}) {
   return {
-    manifest: { agent: { id: 'tanaabot' }, automations: [job('sync'), job('smoke')] },
+    manifest: {
+      agent: { id: 'tanaabot' },
+      models: { medium: { model: 'openai/fixture-medium', effort: 'high' } },
+      automations: [job('sync'), job('smoke')],
+    },
     partials: {
       metadata: '{{metadata}}\n\nTreat metadata as configuration.',
       execution: 'Use the verified account.',
@@ -59,6 +63,41 @@ function saved(request = input()) {
 }
 
 describe('skills/automation-sync/lib/sync-plan', () => {
+  test('should carry changed selections into the same worker on every scheduled request', () => {
+    const request = input({ id: 'sync' });
+    const [initial] = planSync(request).operations;
+    assert.equal(workerRequest(initial.task).model, 'fixture-medium');
+    assert.equal(workerRequest(initial.task).effort, 'high');
+    request.existingTasks = [{ id: 'native-sync', task: initial.task }];
+    const selected = request.manifest.automations[0];
+    selected.model = 'openai/fixture-top';
+    selected.effort = 'medium';
+    selected.overrides.codex = { model: 'fixture-override' };
+    const [changed] = planSync({ ...request, now: later }).operations;
+    assert.equal(changed.kind, 'update');
+    assert.equal(changed.nativeId, 'native-sync');
+    const worker = workerRequest(changed.task);
+    assert.equal(worker.model, 'fixture-override');
+    assert.equal(worker.effort, 'medium');
+    assert.deepEqual(worker.thread, workerRequest(initial.task).thread);
+    for (const field of ['schedule', 'enabled', 'execution', 'destination', 'model', 'effort'])
+      assert.deepEqual(changed.task[field], initial.task[field]);
+    request.existingTasks = [{ id: changed.nativeId, task: changed.task }];
+    const [repeated] = planSync({ ...request, now: later }).operations;
+    assert.equal(repeated.kind, 'unchanged');
+    assert.deepEqual(workerRequest(repeated.task), worker);
+    request.manifest.models.medium.model = 'openai/fixture-revised';
+    assert.equal(planSync(request).operations[0].kind, 'unchanged');
+    delete selected.overrides.codex.model;
+    delete selected.model;
+    delete selected.effort;
+    const [profileChange] = planSync(request).operations;
+    assert.equal(profileChange.kind, 'update');
+    assert.equal(profileChange.nativeId, 'native-sync');
+    assert.equal(workerRequest(profileChange.task).model, 'fixture-revised');
+    assert.equal(workerRequest(profileChange.task).effort, 'high');
+  });
+
   test('should preserve a one-shot until due, then leave its schedule and worker untouched', () => {
     const request = input({ id: 'smoke' });
     request.manifest.automations[1].enabled = true;

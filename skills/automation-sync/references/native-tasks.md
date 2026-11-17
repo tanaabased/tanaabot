@@ -42,7 +42,8 @@ For initial seeding, inspect existing native chats before creating one; names al
 automation ownership. If a prior create was uncertain, reconcile it before another create.
 
 For a new worker, use the native Cloud-chat creation control with the selected published configuration
-ID and an initialization-only prompt that requests the [initialization card](#initialization-card).
+ID, the target's `model` and `effort` (Codex controls use `model` and `thinking`), and an
+initialization-only prompt that requests the [initialization card](#initialization-card).
 Wait for that initialization to finish. Use native sidebar
 controls to find or create the desired section and place the chat there. Apply authorized title/group
 changes to an existing worker without replacing its ID. Verify its Cloud configuration from native
@@ -51,6 +52,16 @@ or a known native configuration mismatch stops the affected action; do not creat
 Use the saved binding and successful native launch. `environmentId` below is the published
 configuration ID from those controls, never a machine ID reported inside the container.
 Do not require the worker to independently reproduce the configuration ID.
+
+Worker model selection uses `overrides.codex.model`, then top-level `model`, then the configured
+`medium` profile. Effort independently uses `overrides.codex.effort`, then top-level `effort`, then
+the selected profile's effort or the effort configured for that model, then `high`. If the same
+literal model has conflicting configured efforts, select a named profile or supply explicit effort.
+Missing profiles and unsupported settings stop preparation. Native controls validate availability;
+never silently substitute another model or effort. Apply the generated settings on every worker
+continuation, including existing chats after a source change. The coordinator's schedule settings
+remain separate. Saved requests and chat defaults do not prove which settings a turn executed with;
+use native turn evidence when available and report unavailable execution evidence explicitly.
 
 Keep a native-provided private chat link when available. Otherwise omit input `url`; the assembler
 generates `codex://threads/<worker-id>` from the verified active worker ID. Do not have the model
