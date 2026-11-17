@@ -51,13 +51,13 @@ Read and follow skills/automation-sync/SKILL.md and its required references
 from the latest main revision of https://github.com/tanaabased/tanaabot.
 
 Synchronize the declared automations using the existing published Tanaabot
-Cloud environment. Keep AUTOMATION SYNC enabled. Leave UPDATE CLOUD CANON
-and completed native canary tasks alone. Do not run or delete tasks.
+Cloud environment. Apply each definition's declared state. Leave the legacy
+Canon updater and completed native canary tasks alone. Do not run or delete tasks.
 ```
 
-The [definitions](./.agent-system/automations.yaml) contain only enabled `sync`, running at
-midnight Eastern. Each sync loads fresh `main`, updates itself first and leaves unchanged tasks
-alone. Workers live in `REPORTS`; their configuration and run-results cards are separate from
+The [definitions](./.agent-system/automations.yaml) enable `sync` at midnight and
+`update-cloud-canon` at 1 a.m. Eastern. Each sync loads fresh `main`, updates itself first and
+leaves unchanged tasks alone. Workers live in `REPORTS`; their configuration and run-results cards are separate from
 the compact linked main-chat summaries. Debug is opt-in through `debug: true` in
 [agent.yaml](./.agent-system/agent.yaml), followed by synchronization.
 
