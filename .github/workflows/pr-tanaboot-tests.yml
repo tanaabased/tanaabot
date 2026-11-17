@@ -75,7 +75,7 @@ jobs:
         uses: tanaabased/actions/run-leia@v1
         env:
           NO_COLOR: '1'
-          OP_SERVICE_ACCOUNT_TOKEN: ${{ (matrix.example == 'tanaaboot-agent' || matrix.example == 'tanaaboot-defaults') && secrets.TANAABOTKEY || '' }}
+          OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.TANAABOTKEY }}
         with:
           scenarios: examples/${{ matrix.example }}/README.md
           shell: bash
