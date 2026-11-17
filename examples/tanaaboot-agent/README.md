@@ -4,7 +4,8 @@ Prepare host tools, apply the packaged agent mode, and rerun it to check converg
 owns dotfiles and the approved SSH key on a disposable runner. CI supplies the approved
 `TANAABOTKEY` secret as `OP_SERVICE_ACCOUNT_TOKEN`; an authorized Cloud run supplies it privately.
 The service account needs read access to the configured key item and Environment. This scenario does not
-register keys with GitHub or establish fresh-task Codex Cloud startup. Negative cases temporarily
+register keys with GitHub or establish fresh-task Codex Cloud startup. Its public HTTPS read proves
+connectivity, not token write access or the identity used by a platform proxy. Negative cases temporarily
 replace installed inputs and restore them within the same test; they never modify packaged sources.
 
 ## Setup
@@ -28,31 +29,34 @@ tanaboot.sh --agent
 # should satisfy agent readiness
 bash -lc 'bash "$TANABOOT_PACKAGE_ROOT/tanaboot.sh" --agent --check'
 
-# should use user configuration without disabling host-key verification
+# should read github over https with the installed transport configuration
 bash -l <<'SH'
 set -euo pipefail
-test ! -L "$HOME/.local/bin"
-for client in ssh scp sftp; do
-  wrapper="$HOME/.local/bin/$client"
-  test -L "$wrapper"
-  test -x "$wrapper"
-  test "$(readlink -f "$wrapper")" = "$TANABOOT_PACKAGE_ROOT/dotfiles/shell/.local/bin/$client"
-  test "$(command -v "$client")" = "$wrapper"
+test "$(gh config get git_protocol --host github.com)" = https
+for url in git@github.com:tanaabased/tanaabot.git ssh://git@github.com/tanaabased/tanaabot.git; do
+  test "$(git ls-remote --get-url "$url")" = https://github.com/tanaabased/tanaabot.git
 done
-configuration=$(ssh -G github.com)
-grep -Fx 'identitiesonly yes' <<< "$configuration"
-grep -Fx -e 'identityfile ~/.ssh/id_tanaabot' -e "identityfile $HOME/.ssh/id_tanaabot" <<< "$configuration"
-grep -Fx 'stricthostkeychecking ask' <<< "$configuration"
+refs=$(GIT_TERMINAL_PROMPT=0 git ls-remote --exit-code https://github.com/tanaabased/tanaabot.git HEAD)
+grep -Eq '^[0-9a-f]+[[:space:]]+HEAD$' <<< "$refs"
 SH
 
-# should reject a task launcher that bypasses the installed wrappers
+# should reject a conflicting github credential helper without revealing it
 bash -l <<'SH'
 set -euo pipefail
 status=0
-launcher_path=$(printf '%s' "$PATH" | tr ':' '\n' | grep -Fxv "$HOME/.local/bin" | paste -sd ':' -)
-output=$(PATH="$launcher_path" bash "$TANABOOT_PACKAGE_ROOT/tanaboot.sh" --agent --check 2>&1) || status=$?
+output=$(GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=credential.https://github.com.helper GIT_CONFIG_VALUE_0=private-helper-marker bash "$TANABOOT_PACKAGE_ROOT/tanaboot.sh" --agent --check 2>&1) || status=$?
 test "$status" -eq 1
-grep -F 'select SSH clients from ~/.local/bin first' <<< "$output"
+grep -F 'GitHub HTTPS must select the gh credential helper' <<< "$output"
+! grep -F 'private-helper-marker' <<< "$output"
+SH
+
+# should sign and verify a local commit without ssh transport
+bash -l <<'SH'
+set -euo pipefail
+signing_repo=$(mktemp -d "$TMPDIR/signing.XXXXXX")
+git init -q "$signing_repo"
+env -u SSH_AUTH_SOCK git -C "$signing_repo" -c core.hooksPath=/dev/null commit --allow-empty -m 'verify installed signing identity'
+git -C "$signing_repo" verify-commit HEAD
 SH
 
 # should keep the private key outside the source checkout
@@ -67,14 +71,14 @@ test "$(stat -c '%a' "$HOME/.ssh/id_tanaabot")" = 600
 test "$(stat -c '%u' "$HOME/.ssh/id_tanaabot")" = "$(id -u)"
 ssh-keygen -y -P '' -f "$HOME/.ssh/id_tanaabot" | cut -d ' ' -f 1,2 | cmp - "$TANABOOT_PACKAGE_ROOT/dotfiles/ssh/.ssh/id_tanaabot.pub"
 
-# should verify the approved public key belongs to the configured github account
+# should verify the approved signing key belongs to the configured github account
 bash -l <<'SH'
 set -euo pipefail
 expected=$(bun --no-env-file -e 'process.stdout.write(Bun.YAML.parse(await Bun.file(process.env.TANABOOT_PACKAGE_ROOT + "/.agent-system/agent.yaml").text()).github.username)')
 login=$(gh api --hostname github.com user --jq .login)
 test "$login" = "$expected"
 public=$(awk '{print $1 " " $2}' "$HOME/.ssh/id_tanaabot.pub")
-gh api --hostname github.com --paginate "users/$login/keys" --jq '.[].key' | awk '{print $1 " " $2}' | grep -Fx -- "$public" >/dev/null
+gh api --hostname github.com --paginate "users/$login/ssh_signing_keys" --jq '.[].key' | awk '{print $1 " " $2}' | grep -Fx -- "$public" >/dev/null
 SH
 
 # should keep the environment snapshot private and outside packaged sources
@@ -221,10 +225,21 @@ printf '%s\n' "$output" | grep -F 'unsafe path'
 test -L "$HOME/.ssh/id_tanaabot"
 test "$(readlink "$HOME/.ssh/id_tanaabot")" = "$TMPDIR/approved-key"
 
-# should reuse the approved key without credentials or duplicate startup configuration
+# should reuse private state and remove only retired wrapper links on rerun
 sha256sum "$HOME/.ssh/id_tanaabot" > "$TMPDIR/key-before-rerun"
 cp "$HOME/.local/state/tanaabot/environment.json" "$TMPDIR/environment-before-rerun"
+mkdir -p "$HOME/.local/bin"
+for client in ssh scp sftp; do
+  test ! -e "$HOME/.local/bin/$client"
+  test ! -L "$HOME/.local/bin/$client"
+done
+ln -s "$TANABOOT_PACKAGE_ROOT/dotfiles/shell/.local/bin/ssh" "$HOME/.local/bin/ssh"
+ln -s "$TANABOOT_PACKAGE_ROOT/dotfiles/shell/.local/bin/scp" "$HOME/.local/bin/scp"
+ln -s /usr/bin/sftp "$HOME/.local/bin/sftp"
 env -u OP_SERVICE_ACCOUNT_TOKEN tanaboot.sh --agent
+test ! -L "$HOME/.local/bin/ssh"
+test ! -L "$HOME/.local/bin/scp"
+test "$(readlink "$HOME/.local/bin/sftp")" = /usr/bin/sftp
 sha256sum --check "$TMPDIR/key-before-rerun"
 cmp "$TMPDIR/environment-before-rerun" "$HOME/.local/state/tanaabot/environment.json"
 for file in .bash_profile .bashrc; do

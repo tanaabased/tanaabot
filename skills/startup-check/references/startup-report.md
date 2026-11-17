@@ -8,14 +8,14 @@ only when its conditions are met.
 
 ## Sections
 
-| Section         | Required evidence                                                                                                                                                                                                                                                                                                                                                                                  |
-| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Environment     | Prepared Tanaabot checkout, canonical origin and source revision identified; supported Linux and actual task command launcher established. The saved environment selects the manifest's 1Password Environment, contains valid variables and all its values match the actual exported environment. Derive the variables from the file; never print secret values.                                   |
-| Dependencies    | Brewfile executables discoverable on the task's effective PATH, usable version output, and declared Node/Bun major versions satisfied. Homebrew maintenance permissions are not required.                                                                                                                                                                                                          |
-| Dotfiles        | The `ai`, `shell`, `git`, `gh` and `ssh` dotpackages link to the prepared sources and match them. Shell initialization supplies tools and saved variables in fresh shells. The private environment file is outside the checkout, owned by this user with mode 600 in a real mode-700 directory; private storage and key paths are not symlinks.                                                    |
-| Tanaabot skills | All local `SKILL.md` files beneath the prepared checkout's `skills/` are readable, have nonempty instructions and valid frontmatter with unique names and nonempty descriptions. Their names, descriptions and absolute paths are retained in chat context. This is explicit local loading; native catalog registration is not required or implied.                                                |
-| Canon skills    | The task catalog contains machine names starting with `tanaab-`, allowing host qualification. Use ownership metadata when available to exclude unrelated matches. This establishes basic availability, not a complete release inventory or ownership from names alone. Installation and updates belong to the ChatGPT account.                                                                     |
-| Identity        | Effective Git name/email, agent email binding, SSH signing configuration, public key and allowed signers match the prepared configuration; the private key matches the approved public key. Effective SSH configuration selects that identity. The GitHub CLI credential returns the manifest's username, and that account's complete public authentication-key listing contains the matching key. |
+| Section         | Required evidence                                                                                                                                                                                                                                                                                                                                                                                                                                                          |
+| --------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Environment     | Prepared Tanaabot checkout, canonical origin and source revision identified; supported Linux and actual task command launcher established. The saved environment selects the manifest's 1Password Environment, contains valid variables and all its values match the actual exported environment. Derive the variables from the file; never print secret values.                                                                                                           |
+| Dependencies    | Brewfile executables discoverable on the task's effective PATH, usable version output, and declared Node/Bun major versions satisfied. Homebrew maintenance permissions are not required.                                                                                                                                                                                                                                                                                  |
+| Dotfiles        | The `ai`, `shell`, `git`, `gh` and `ssh` dotpackages link to the prepared sources and match them. Shell initialization supplies tools and saved variables in fresh shells. The private environment file is outside the checkout, owned by this user with mode 600 in a real mode-700 directory; private storage and key paths are not symlinks.                                                                                                                            |
+| Tanaabot skills | All local `SKILL.md` files beneath the prepared checkout's `skills/` are readable, have nonempty instructions and valid frontmatter with unique names and nonempty descriptions. Their names, descriptions and absolute paths are retained in chat context. This is explicit local loading; native catalog registration is not required or implied.                                                                                                                        |
+| Canon skills    | The task catalog contains machine names starting with `tanaab-`, allowing host qualification. Use ownership metadata when available to exclude unrelated matches. This establishes basic availability, not a complete release inventory or ownership from names alone. Installation and updates belong to the ChatGPT account.                                                                                                                                             |
+| Identity        | Effective Git name/email, agent email binding, SSH signing configuration, public key and allowed signers match the prepared configuration; the private key matches the approved public key. GitHub CLI and Git select HTTPS with the intended credential helper and URL rewrites; inspect platform authentication separately. The GitHub CLI credential returns the manifest's username, and that account's complete public signing-key listing contains the matching key. |
 
 Use this same skill and card for post-install review and fresh-task startup. A saved environment
 file proves a snapshot was fetched; an offline check cannot prove it still matches current 1Password
@@ -56,11 +56,11 @@ shared Next step. This avoids claiming loaded environment values or a verified i
 checks could not establish them.
 
 Use the verified GitHub login, effective Git name/email, resolved agent email and configured SSH
-private-key path. Show the public-key ownership result and existing SSH signing configuration.
+private-key path. Show HTTPS as configured and the signing-key registration result separately.
 Report 1Password as loaded and available only from the passed Environment check; do not refresh it
-or print passwords, tokens, Environment contents or private-key material. A registered authentication
-key and a matching local private key establish ownership, not a successful SSH connection or commit
-signature. Keep those live tests separate.
+or print passwords, tokens, Environment contents or private-key material. Signing-key registration and a matching local private key do not prove a successful commit signature.
+HTTPS configuration and API identity do not prove live Git access or repository write permission.
+Keep those pilot results separate; outbound SSH is not required.
 
 The example below assumes all checks passed and the displayed identity values were observed:
 
@@ -70,9 +70,10 @@ The example below assumes all checks passed and the displayed identity values we
 > - **Git name:** `tanaabot`
 > - **Git email:** `tanaabot@tanaab.dev`
 > - **Agent email:** `tanaabot@tanaab.dev`
-> - **SSH key:** `~/.ssh/id_tanaabot`
-> - **SSH ownership:** Registered to `tanaabot`; private/public keys match
-> - **Git signing:** SSH configured
+> - **Signing key:** `~/.ssh/id_tanaabot`
+> - **Signing ownership:** Registered to `tanaabot`; private/public keys match
+> - **Git transport:** HTTPS configured
+> - **Git signing:** Local SSH signing configured
 > - **1Password environment:** Loaded and available
 
 ## Examples
@@ -114,6 +115,6 @@ Preserve the quoted H2 heading and blank quoted line before the rows.
 > - **Dotfiles — passed**
 > - **Tanaabot skills — passed**
 > - **Canon skills — passed**
-> - **Identity — failed:** The approved public authentication key is absent from the verified GitHub account.
+> - **Identity — failed:** The approved public signing key is absent from the verified GitHub account.
 >
-> **Next step:** Check the approved key's GitHub authentication-key registration, then rerun verification.
+> **Next step:** Check the approved key's GitHub signing-key registration, then rerun verification.

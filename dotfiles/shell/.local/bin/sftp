@@ -1,2 +1,0 @@
-#!/bin/sh
-exec /usr/bin/sftp -F "$HOME/.ssh/config" "$@"

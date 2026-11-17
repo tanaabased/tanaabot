@@ -88,34 +88,40 @@ separate operator-authorized scope. This skill inspects the saved installation o
    unverified. Canon is delivered through the ChatGPT account independently of this repository.
    Do not inspect the container's plugin registry, require a fixed version or inventory, install,
    update, or query npm during this check.
-6. For **Identity**, check effective Git identity, SSH signing settings, public-key trust and SSH
-   identity selection against the prepared manifest and dotfiles. Tanaboot checks the private/public
-   key match without printing either key. Inspect effective settings with read-only Git and SSH
-   configuration commands; do not create a commit, start an agent or attempt SSH access at startup.
-   Tanaboot verifies executable SSH wrapper links, their PATH precedence in the task and fresh
-   shells, and `ssh -G github.com` selecting `id_tanaabot` with `IdentitiesOnly yes`. The wrappers
-   select the user configuration with `-F`, bypassing system configuration without disabling host-key
-   verification. Inspect any `GIT_SSH_COMMAND`, `GIT_SSH` or effective `core.sshCommand` override
-   privately: establish whether Git still uses that configuration and identity. A bypass with unknown
-   behavior leaves Git SSH selection unverified; a conflicting identity fails it. Do not print override
-   values or change them. Configuration parsing and GitHub API authentication do not prove live SSH access.
+6. For **Identity**, check effective Git identity, SSH signing settings and public-key trust
+   against the prepared manifest and dotfiles. Tanaboot checks the private/public key match and
+   HTTPS Git configuration offline. It verifies GitHub CLI's protocol, the selected `gh` credential
+   helper and both GitHub SSH-to-HTTPS URL rewrites in the actual task and fresh shells.
+   Inspect effective settings with read-only commands; do not create a commit, start an agent or
+   attempt SSH access at startup. SSH client configuration and authentication-key registration are
+   not requirements for HTTPS Git or local signing.
+   Inspect the effective GitHub credential-helper chain, matching HTTP authorization settings and
+   platform-provided authentication privately for conflicts. The GitHub-scoped empty helper resets
+   inherited helpers before selecting `gh auth git-credential`; `GH_TOKEN` supplies the intended
+   credential. This does not override platform-injected authentication. Preserve proxy variables,
+   TLS verification, platform headers and credential bindings. Do not print helper output or secret
+   values, clear platform authentication, log in or fall back to another account. A conflicting
+   identity fails Identity; unavailable evidence leaves the affected selection unverified.
    Verify the existing GitHub CLI credential with `gh api --hostname github.com user --jq .login`
-   and require the login to match `github.username` in the manifest before checking key ownership.
+   and require the login to match `github.username` in the manifest before checking signing-key registration.
    Reuse that verified login and Tanaboot's established private/public-key match. List the account's
-   public authentication keys with
-   `gh api --hostname github.com --paginate users/<verified-login>/keys --jq '.[].key'`.
+   public signing keys with
+   `gh api --hostname github.com --paginate users/<verified-login>/ssh_signing_keys --jq '.[].key'`.
    Consume every page and compare the key type and base64 key data with the installed approved
    public key, ignoring comments. Require an exact match; a matching title alone is insufficient.
-   This is a public-key ownership check, not an SSH connection or Git signing test. Do not make
-   another private-key check when Tanaboot has already established the match.
-   A wrong identity, rejected credential or absent matching key fails Identity; unavailable network,
-   rate limits or missing prerequisites leave the affected check unverified. Preserve the API command's
-   exit status so an incomplete key listing cannot pass. Keep raw service errors private. Do not log in,
-   register keys, change credentials, fall back to another account or inspect connector credentials.
+   This checks signing-key registration, not SSH authentication or a successful commit signature.
+   Do not repeat the private-key check when Tanaboot has already established the match.
+   A wrong identity, rejected credential or absent matching signing key fails Identity; unavailable
+   network, rate limits or missing prerequisites leave the affected check unverified. Preserve the
+   API command's exit status so an incomplete listing cannot pass. Keep raw service errors private.
+   Do not register keys, change credentials or inspect connector credentials.
    Retain the verified GitHub login, effective Git name/email, agent email resolved from its manifest
-   binding, SSH key path and signing configuration for the identity card. Email configuration is
-   identity, not proof of Google authentication; connected-account selection remains
-   [#11](https://github.com/tanaabased/tanaabot/issues/11).
+   binding, HTTPS configuration and local signing identity for the identity card. API identity,
+   repository permissions, live HTTPS access and local signing are distinct results. A public read
+   may be anonymous or use platform authentication; it does not prove `GH_TOKEN` write access.
+   Live transport and signing tests belong to the authorized Cloud pilot, not read-only startup.
+   Email configuration is identity, not proof of Google authentication; connected-account selection
+   remains [#11](https://github.com/tanaabased/tanaabot/issues/11).
 7. Compose the startup card using the report contract. Keep successful and not-applicable rows terse;
    show explanatory details only for failed or unverified rows. Append the success-only identity
    card only when Environment and Identity both pass. Otherwise omit it and keep the affected
@@ -134,7 +140,7 @@ separate operator-authorized scope. This skill inspects the saved installation o
 
 Confirm that no provisioning, SSH connection or state change was attempted, that all six startup
 rows appear in order, and that only failed or unverified startup rows carry details. Check that the
-key lookup used the verified expected account, consumed all pages and reused the established local
+signing-key lookup used the verified expected account, consumed all pages and reused the established local
 key match. Show the identity card only when Environment and Identity pass; use actual verified
 identity fields and never passwords, tokens or private-key contents. Apply the overall failure/uncertainty
 rules; deferred instruction delivery does not prevent a pass. Distinguish machine checks, explicit local Tanaabot loading and Canon catalog availability. Confirm the retained local

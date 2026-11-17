@@ -48,7 +48,7 @@ standard foundation, including 1Password CLI, plus the [Brewfile](./Brewfile). T
 `https://bootbox.tanaab.sh/bootbox.sh` during setup only. Node and Bun must satisfy the selected revision's
 runtime declarations; Tanaboot checks Node and Bun against their declared major versions.
 
-The default mode installs host dependencies before agent dotfiles and the approved Tanaabot SSH key.
+The default mode installs host dependencies before agent dotfiles and the approved Tanaabot SSH signing key.
 Supply `OP_SERVICE_ACCOUNT_TOKEN` through private Cloud configuration for environment refresh and initial key retrieval;
 the service account needs read access to the manifest's Environment and configured key item. Bootbox installs the key as
 `~/.ssh/id_tanaabot`. A matching existing key is reused without retrieval; a conflicting key is
@@ -57,6 +57,10 @@ the token is supplied; otherwise it reuses a valid saved file. Values are stored
 in `~/.local/state/tanaabot/environment.json` (mode 600, directory mode 700), replaced atomically and
 exported by Bash initialization without evaluating them as shell code. A failed refresh preserves
 the previous file. Shell startup never fetches from 1Password.
+
+GitHub Git transport uses HTTPS with `gh auth git-credential` and the privately loaded `GH_TOKEN`.
+GitHub SSH-style URLs are rewritten to HTTPS. The approved key remains available for local SSH
+commit signing; outbound SSH is not required. Keep platform proxy and TLS settings intact.
 
 To refresh an existing environment explicitly, run from the prepared checkout with its private token
 available, then open a fresh shell:
@@ -151,11 +155,14 @@ After the repository change is available at the selected revision:
    separately from Canon catalog availability.
 4. Make a relevant subsequent request without naming a Tanaabot skill; verify the agent selects
    and reads the appropriate local skill and its required references.
-5. For an authorized SSH identity pilot, run
-   `git ls-remote git@github.com:tanaabased/tanaabot.git HEAD` through the normal task launcher.
-   Keep host-key verification enabled; verify any new GitHub host key before accepting it.
-   Report this live connection result separately from startup's offline SSH configuration check
-   and GitHub API checks. Startup does not attempt SSH connections.
+5. For an authorized identity pilot, run
+   `git ls-remote https://github.com/tanaabased/tanaabot.git HEAD` through the normal task launcher.
+   Verify both GitHub SSH URL forms resolve to HTTPS with `git ls-remote --get-url`, without connecting
+   over SSH. Keep proxy settings and TLS verification enabled. Report live HTTPS access separately
+   from API identity and repository permissions; a public read does not prove token write access.
+6. In a disposable local repository, create and verify a signed commit using the installed Git
+   configuration and approved key. Do not push it. Report this separately from signing configuration
+   and GitHub signing-key registration; startup itself does not create commits.
 
 Package checks and readable files alone do not establish startup or later skill selection.
 This fresh-pilot verification remains acceptance work for [#5](https://github.com/tanaabased/tanaabot/issues/5).
