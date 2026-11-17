@@ -92,6 +92,13 @@ separate operator-authorized scope. This skill inspects the saved installation o
    identity selection against the prepared manifest and dotfiles. Tanaboot checks the private/public
    key match without printing either key. Inspect effective settings with read-only Git and SSH
    configuration commands; do not create a commit, start an agent or attempt SSH access at startup.
+   Tanaboot verifies executable SSH wrapper links, their PATH precedence in the task and fresh
+   shells, and `ssh -G github.com` selecting `id_tanaabot` with `IdentitiesOnly yes`. The wrappers
+   select the user configuration with `-F`, bypassing system configuration without disabling host-key
+   verification. Inspect any `GIT_SSH_COMMAND`, `GIT_SSH` or effective `core.sshCommand` override
+   privately: establish whether Git still uses that configuration and identity. A bypass with unknown
+   behavior leaves Git SSH selection unverified; a conflicting identity fails it. Do not print override
+   values or change them. Configuration parsing and GitHub API authentication do not prove live SSH access.
    Verify the existing GitHub CLI credential with `gh api --hostname github.com user --jq .login`
    and require the login to match `github.username` in the manifest before checking key ownership.
    Reuse that verified login and Tanaboot's established private/public-key match. List the account's

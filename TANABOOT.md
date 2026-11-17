@@ -151,6 +151,11 @@ After the repository change is available at the selected revision:
    separately from Canon catalog availability.
 4. Make a relevant subsequent request without naming a Tanaabot skill; verify the agent selects
    and reads the appropriate local skill and its required references.
+5. For an authorized SSH identity pilot, run
+   `git ls-remote git@github.com:tanaabased/tanaabot.git HEAD` through the normal task launcher.
+   Keep host-key verification enabled; verify any new GitHub host key before accepting it.
+   Report this live connection result separately from startup's offline SSH configuration check
+   and GitHub API checks. Startup does not attempt SSH connections.
 
 Package checks and readable files alone do not establish startup or later skill selection.
 This fresh-pilot verification remains acceptance work for [#5](https://github.com/tanaabased/tanaabot/issues/5).

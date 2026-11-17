@@ -294,6 +294,19 @@ shell_startup_files() {
   printf '%s\n' .profile .bashrc
 }
 
+check_ssh_clients() {
+  local client wrapper configuration
+  for client in ssh scp sftp; do
+    wrapper="${HOME}/.local/bin/${client}"
+    [[ -x "/usr/bin/${client}" ]] || fail 'A system SSH client is missing.'
+    [[ -L "${wrapper}" && -x "${wrapper}" && "$(readlink -f -- "${wrapper}")" == "${REPO_DIR}/dotfiles/shell/.local/bin/${client}" ]] || fail 'SSH wrappers must be executable Stow links to the prepared checkout. Run agent setup.'
+    [[ "$(command -v "${client}")" == "${wrapper}" ]] || fail 'The task shell must select SSH clients from ~/.local/bin first. Check shell initialization and PATH.'
+  done
+  configuration=$(ssh -G github.com 2>/dev/null) || fail 'SSH cannot parse the installed user configuration.'
+  grep -Fxq 'identitiesonly yes' <<< "${configuration}" || fail 'SSH must select only the configured identity.'
+  grep -Fxq -e 'identityfile ~/.ssh/id_tanaabot' -e "identityfile ${HOME}/.ssh/id_tanaabot" <<< "${configuration}" || fail 'SSH does not select the approved Tanaabot key.'
+}
+
 check_shells() {
   local mode name
   local -a fresh_environment=(env -u BASH_ENV)
@@ -302,12 +315,12 @@ check_shells() {
     fresh_environment+=(-u "${name}")
   done < <(jq -r '.variables | keys[]' "${HOME}/.local/state/tanaabot/environment.json")
   note 'Shell: inherited non-interactive Bash'
-  bash -c 'source "$1"; check_tools; bun --no-env-file "${REPO_DIR}/scripts/environment-task.js" --check' _ "${REPO_DIR}/tanaboot.sh" || fail 'Non-interactive Bash cannot discover the declared tools or environment. Check the Cloud command launcher environment.'
+  bash -c 'source "$1"; check_tools; check_ssh_clients; bun --no-env-file "${REPO_DIR}/scripts/environment-task.js" --check' _ "${REPO_DIR}/tanaboot.sh" || fail 'Non-interactive Bash cannot discover the declared tools or environment. Check the Cloud command launcher environment.'
   for mode in -lc -ic; do
     note "Shell: fresh Bash ${mode} from system PATH"
     # Remove inherited tool paths so startup files must supply them.
     # shellcheck disable=SC2016
-    "${fresh_environment[@]}" HISTFILE=/dev/null PATH=/usr/bin:/bin bash "${mode}" 'source "$1"; check_tools; bun --no-env-file "${REPO_DIR}/scripts/environment-task.js" --check' _ "${REPO_DIR}/tanaboot.sh" || fail 'Fresh Bash cannot discover the declared tools or environment. Check the active login file and .bashrc initialization.'
+    "${fresh_environment[@]}" HISTFILE=/dev/null PATH=/usr/bin:/bin bash "${mode}" 'source "$1"; check_tools; check_ssh_clients; bun --no-env-file "${REPO_DIR}/scripts/environment-task.js" --check' _ "${REPO_DIR}/tanaboot.sh" || fail 'Fresh Bash cannot discover the declared tools or environment. Check the active login file and .bashrc initialization.'
   done
 }
 
@@ -322,6 +335,7 @@ check_agent() {
       .ssh/*) cmp -s "${REPO_DIR}/dotfiles/ssh/${file}" "${HOME}/${file}" ;;
     esac || fail 'Identity dotfiles are missing or differ. Run agent setup; preserve conflicting files.'
   done
+  check_ssh_clients
   check_ssh_key
   bun --no-env-file "${REPO_DIR}/scripts/environment-task.js" --check
   while IFS= read -r file; do
@@ -337,14 +351,14 @@ apply_agent() {
   while IFS= read -r file; do
     [[ ! -L "${HOME}/${file}" && ( ! -e "${HOME}/${file}" || ( -f "${HOME}/${file}" && -w "${HOME}/${file}" ) ) ]] || fail 'Shell startup conflicts with an existing path. Preserve it and resolve the conflict before retrying.'
   done < <(shell_startup_files)
-  for file in .codex .config .config/git .config/gh .ssh; do
+  for file in .codex .config .config/git .config/gh .ssh .local .local/bin; do
     [[ ! -L "${HOME}/${file}" && ( ! -e "${HOME}/${file}" || ( -d "${HOME}/${file}" && -w "${HOME}/${file}" ) ) ]] || fail 'Shared configuration directories must be writable real directories. Preserve the conflicting path before retrying.'
   done
   [[ ! -e "${HOME}/.ssh" || -O "${HOME}/.ssh" ]] || fail 'The .ssh directory must be owned by this user.'
   require_tool stow
   stow --simulate --dir "${REPO_DIR}/dotfiles" --target "${HOME}" ai shell git gh ssh >/dev/null || fail 'Dotfiles conflict with existing configuration. Preserve it and resolve the conflict before retrying.'
   # Prevent Stow directory folding from sending private runtime writes into Git sources.
-  mkdir -p -- "${HOME}/.codex" "${HOME}/.config/git" "${HOME}/.config/gh" "${HOME}/.ssh"
+  mkdir -p -- "${HOME}/.codex" "${HOME}/.config/git" "${HOME}/.config/gh" "${HOME}/.ssh" "${HOME}/.local/bin"
   chmod 700 "${HOME}/.ssh"
   install_ssh_key
   bun --no-env-file "${REPO_DIR}/scripts/environment-task.js" --ensure

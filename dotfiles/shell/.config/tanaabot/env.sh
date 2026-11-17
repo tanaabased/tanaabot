@@ -23,6 +23,8 @@ if command -v bun >/dev/null 2>&1; then
   done < <(bun --no-env-file "$_tanaabot_root/scripts/environment-task.js" --export)
 fi
 unset _tanaabot_source _tanaabot_root _tanaabot_name _tanaabot_value
+# Select the user-owned SSH clients after Homebrew and private environment loading.
+export PATH="$HOME/.local/bin:$PATH"
 if [ "$_tanaabot_trace" = 1 ]; then
   unset _tanaabot_trace
   set -x
