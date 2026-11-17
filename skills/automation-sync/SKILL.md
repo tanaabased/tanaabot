@@ -35,6 +35,10 @@ updates; the script itself makes no service writes.
   [account guidance](../../dotfiles/ai/.codex/AGENTS.md#accounts-and-authority).
 - **Before writing the result:** Read [Tanaabot Voice](../voice/SKILL.md) and its required samples,
   unless another voice was requested. Apply the presentation partial's result and summary rules.
+- **Before a full sync's instruction check:** Read
+  [Instruction Sync](../instruction-sync/SKILL.md), its
+  [result layouts](../instruction-sync/references/results.md), and their required references
+  from the same source revision. This check belongs to the main Dot; it is separate from schedule writes.
 
 ## When to Use
 
@@ -123,7 +127,16 @@ automatically or switch credentials to recover a failure.
    Copy the compiled `task.schedule` fields directly into the native scheduling call; do not
    translate or repair recurrence strings in prose. Resolve listing/earlier-effect uncertainty before creating. If another
    writer changed an update's current values, recompute from the latest native record.
-7. Trust a successful native result that includes saved settings. Read back only omitted values,
+7. For a normal `all` pass with authorized instruction-check scope, use Instruction Sync against
+   the same resolved commit even if schedules were unchanged. A Cloud worker prepares the source
+   and returns the pinned repository paths to its owning Dot; the Dot reads its own saved document
+   and runs comparison/proposal there. A missing reader or unsupported handoff limits only this check.
+   Skip it for single-ID updates and the bootstrap-only pass. Include the observed instruction outcome
+   for the run-results card below and deliver the instruction skill's compact main-chat summary separately.
+   This occurrence cannot approve or save proposed instructions. End with awaiting approval when
+   changed; the later operator reply resumes Instruction Sync in the main Dot without rerunning
+   schedule sync. Use a result-only handoff to complete the worker's pending instruction row.
+8. Trust a successful native result that includes saved settings. Read back only omitted values,
    uncertain effects or the pilot's explicit checks; do not add a routine verification pass.
    Deliver the verified creation/update receipt to its existing worker using the receipt-only
    procedure, then report each automation in its own main-chat summary message. Unchanged actions

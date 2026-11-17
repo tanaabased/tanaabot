@@ -75,9 +75,8 @@ Tanaabot onboarding.
    follow the [fresh-pilot checklist](./TANABOOT.md#cloud-verification). Verify startup runs without a
    manual bootstrap prompt and a subsequent request selects and reads the appropriate local skill.
    Record machine readiness, explicit Tanaabot loading and Canon availability separately.
-   Guidance readability does not prove automatic loading;
-   persistent instruction delivery is a post-pilot follow-up in
-   [#16](https://github.com/tanaabased/tanaabot/issues/16).
+   Guidance readability does not prove automatic loading. Main-Dot saved-instruction sync in
+   [#16](https://github.com/tanaabased/tanaabot/issues/16) does not establish Cloud instruction delivery.
 
 Use only the configured Tanaabot SSH key through Bootbox; do not generate a new identity or add inbound
 SSH access. Do not add accounts, Agent System binding or schedules during onboarding.

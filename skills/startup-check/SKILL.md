@@ -57,8 +57,9 @@ separate operator-authorized scope. This skill inspects the saved installation o
 3. Assign Environment, Dependencies and Dotfiles results using the report contract. For the active
    dotpackages, also verify that Stow destinations link to the expected prepared source files; a
    matching copy alone does not prove correct Stow installation. The installed global `AGENTS.md`
-   belongs under Dotfiles. Automatic instruction delivery is outside this pilot's result and remains
-   [#16](https://github.com/tanaabased/tanaabot/issues/16); do not add a separate guidance row or warning.
+   belongs under Dotfiles. Automatic instruction delivery is outside this pilot's result;
+   [#16](https://github.com/tanaabased/tanaabot/issues/16) concerns main-Dot saved instructions, not
+   Cloud loading. Do not add a separate guidance row or warning.
    If the combined command stops early, retain its completed checks and continue independent
    read-only inspection. A check prevented by missing prerequisites is unverified, not another failure.
    The independent environment check is

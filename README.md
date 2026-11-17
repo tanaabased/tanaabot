@@ -21,7 +21,7 @@ remains pending in [#5](https://github.com/tanaabased/tanaabot/issues/5).
 - [Tanaboot](./TANABOOT.md): The setup entrypoint, with host and agent modes.
 - [Dependencies](./INVENTORY.md#dependencies): The Brewfile and shared provisioning tools.
 - [Dotpackages](./INVENTORY.md#dotpackages): Global guidance and runtime configuration.
-- [Skills](./INVENTORY.md#skills): Tanaabot Voice, Skill Author and Startup Check.
+- [Skills](./INVENTORY.md#skills): Voice, skill authoring, startup checks and instruction reporting/sync.
 - [Configuration files](./INVENTORY.md#configuration-files): Setup declarations and Codex plugin sources.
 - [Automations](./INVENTORY.md#automations): Scheduled automation inventory.
 
@@ -64,6 +64,17 @@ the compact linked main-chat summaries. Debug is opt-in through `debug: true` in
 Canary #3's scheduled run passed, as reported by the operator. Its repository definition has
 been removed; native task and chat cleanup remain with the operator. See the
 [pilot record](./skills/automation-sync/references/smoke-pilot.md) for evidence limits.
+
+## Inspect or refresh saved instructions
+
+In the main tanaabot Dot, ask it to read and follow
+[`skills/instruction-report/SKILL.md`](./skills/instruction-report/SKILL.md) from a resolved
+repository revision for a read-only inventory, or
+[`skills/instruction-sync/SKILL.md`](./skills/instruction-sync/SKILL.md) to propose a refresh.
+Use supported repository reads if these skills are absent from the host catalog.
+A full sync can check instructions when authorized, but every changed proposal needs your approval
+in a later main-chat reply before saving. Unchanged checks need no approval. Scheduled handoff
+and later instruction adoption still require live verification; installing these files proves neither.
 
 ## Contributing
 
