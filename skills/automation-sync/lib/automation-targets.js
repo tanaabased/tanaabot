@@ -1,4 +1,5 @@
 import cloudSchedule from '../utils/cloud-schedule.js';
+import workerSettings from '../utils/worker-settings.js';
 
 /** Resolve Tanaabot policy without changing Agent System's omitted defaults. */
 export default function automationTargets(
@@ -41,8 +42,7 @@ export default function automationTargets(
             name: job.thread?.name ?? job.displayName ?? job.id.replaceAll('-', ' '),
             group: job.group ?? 'REPORTS',
           },
-          model: job.overrides.codex?.model ?? null,
-          effort: job.overrides.codex?.effort ?? null,
+          ...workerSettings(job, manifest.models),
           destination: { kind: 'dot', id: context.destination.id },
         },
       ];

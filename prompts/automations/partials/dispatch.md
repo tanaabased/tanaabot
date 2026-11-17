@@ -13,8 +13,13 @@ archived worker is retired and needs synchronization, not dispatch-time replacem
 status without presenting the worker as ready or linking it. Check for an active turn in
 that worker before sending; if one is running, report the overlap instead of queuing duplicate work.
 Send the complete generated `prompt` unchanged, including its readable header, metadata and
-instructions. Do not reconstruct its JSON or prepend another metadata block. Apply its model and effort only when
-explicitly set and supported; null preserves the worker's native settings.
+instructions. Do not reconstruct its JSON or prepend another metadata block. On every continuation,
+pass the request's `model` and `effort` through the supported native model and reasoning-effort
+controls (`model` and `thinking` for Codex chat controls), including repeated scheduled turns.
+Do not inherit stale chat settings or apply worker selections to the coordinator schedule instead.
+If the native control cannot apply the selected combination, stop the affected send and report the
+limitation without substituting. Use returned native turn settings to distinguish requested from
+observed execution; if those settings are unavailable, report execution settings as unverified.
 
 When debug is enabled, include available native occurrence evidence as a separate context section
 alongside the unchanged generated request in that same continuation: trigger type, scheduled and

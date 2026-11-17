@@ -14,11 +14,11 @@ test('should load external definitions through the real public Agent System expo
     await mkdir(join(root, 'prompts/automations/partials'), { recursive: true });
     await writeFile(
       join(root, '.agent-system/agent.yaml'),
-      'schema-version: 1\nagent:\n  id: tanaabot\nautomations:\n  file: ./automations.yaml\n',
+      'schema-version: 1\nagent:\n  id: tanaabot\nmodels:\n  default: {model: openai/fixture-default, effort: high}\n  low: {model: openai/fixture-low, effort: medium}\n  medium: {model: openai/fixture-medium, effort: xhigh}\n  high: {model: openai/fixture-high, effort: high}\nautomations:\n  file: ./automations.yaml\n',
     );
     await writeFile(
       join(root, '.agent-system/automations.yaml'),
-      '- id: smoke\n  enabled: false\n  schedule: "0 0 * * *"\n  thread: Custom smoke\n  group: checks\n  overrides:\n    codex:\n      environment: {type: cloud, name: fixture}\n  prompt:\n    file: ../prompts/automations/smoke.md\n',
+      '- id: smoke\n  enabled: false\n  model: medium\n  effort: medium\n  schedule: "0 0 * * *"\n  thread: Custom smoke\n  group: checks\n  overrides:\n    codex:\n      model: fixture-override\n      environment: {type: cloud, name: fixture}\n  prompt:\n    file: ../prompts/automations/smoke.md\n',
     );
     await writeFile(join(root, 'prompts/automations/smoke.md'), 'Fixture smoke marker.');
     for (const [name, content] of Object.entries({
@@ -58,6 +58,13 @@ test('should load external definitions through the real public Agent System expo
       },
     });
     assert.match(result.operations[0].task.prompt, /Fixture presentation guidance\./);
+    const worker = JSON.parse(
+      result.operations[0].task.prompt.split('```json\n')[1].split('\n```')[0],
+    );
+    assert.equal(worker.model, 'fixture-override');
+    assert.equal(worker.effort, 'medium');
+    assert.equal(result.operations[0].task.model, null);
+    assert.equal(result.operations[0].task.effort, null);
     assert.match(
       result.operations[0].task.schedule.schedule,
       /RRULE:FREQ=DAILY;BYHOUR=0;BYMINUTE=0;BYSECOND=0/,

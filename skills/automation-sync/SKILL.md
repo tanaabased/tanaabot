@@ -144,7 +144,7 @@ For disabled definitions, use immediate create-then-pause when native creation c
 paused. Activation requires operator authorization; never hand-edit prepared task objects to
 override desired state. Manual updates repeat this same workflow.
 
-## Optimization
+## Review Criteria
 
 - **Inspect:** Compare declared IDs, assembled guidance and native tasks without writes.
 - **Compare:** Identify content/settings drift, duplicate markers and unsupported native fields.
