@@ -44,12 +44,27 @@ from PATH, `~/.linuxbrew` or `/home/linuxbrew/.linuxbrew`. If absent, it runs th
 without sudo into `~/.linuxbrew`; the absolute prefix must be no longer than 26 bytes. Homebrew's
 [Linux build prerequisites](https://docs.brew.sh/Homebrew-on-Linux#requirements) must already exist.
 Bootbox then runs with `--no-sudo` and provisions its
-standard foundation, including 1Password CLI, plus the [Brewfile](./Brewfile). Authentication, secret
-retrieval, SSH and identity setup are deferred. Tanaboot downloads the current hosted
+standard foundation, including 1Password CLI, plus the [Brewfile](./Brewfile). Tanaboot downloads the current hosted
 `https://bootbox.tanaab.sh/bootbox.sh` during setup only. Node and Bun must satisfy the selected revision's
 runtime declarations; Tanaboot checks Node and Bun against their declared major versions.
 
-The default mode installs host dependencies before agent guidance and shell initialization.
+The default mode installs host dependencies before agent dotfiles and the approved Tanaabot SSH key.
+Supply `OP_SERVICE_ACCOUNT_TOKEN` through private Cloud configuration for environment refresh and initial key retrieval;
+the service account needs read access to the manifest's Environment and configured key item. Bootbox installs the key as
+`~/.ssh/id_tanaabot`. A matching existing key is reused without retrieval; a conflicting key is
+preserved and rejected. Agent setup refreshes the selected Environment with 1Password CLI 2.42+ when
+the token is supplied; otherwise it reuses a valid saved file. Values are stored outside the checkout
+in `~/.local/state/tanaabot/environment.json` (mode 600, directory mode 700), replaced atomically and
+exported by Bash initialization without evaluating them as shell code. A failed refresh preserves
+the previous file. Shell startup never fetches from 1Password.
+
+To refresh an existing environment explicitly, run from the prepared checkout with its private token
+available, then open a fresh shell:
+
+```sh
+bun --no-env-file scripts/environment-task.js --refresh
+```
+
 Agent mode requires the host tools first. Keep the prepared checkout while using its linked
 configuration. Existing configuration conflicts fail without forced replacement. Preserve conflicting
 files or local edits, resolve the reported conflict, then retry. Do not remove a setup lock until
@@ -67,14 +82,17 @@ its process has stopped.
 
 `--check` runs offline without installing or requiring a writable home or Homebrew prefix. It checks
 Homebrew, Node, Bun and the Brewfile dependencies on the caller's effective PATH by executable
-discovery and version output, then checks fresh
+discovery and version output, verifies the identity dotfiles and private/public key match, checks the
+saved environment against the actual exported values, then checks fresh
 non-interactive, login and interactive Bash discovery for agent setup. Persistent PATH initialization
 lives in the shell dotpackage; setup appends its loader to the first readable Bash login file
 (`.bash_profile`, `.bash_login`, then `.profile`) and `.bashrc`, preserving their other contents.
 The loader discovers Homebrew on PATH, in `~/.linuxbrew` or at the standard Linux prefix.
 It does not configure other command launchers; verify the actual Cloud shell before adding wiring.
 
-A successful check establishes machine readiness and readable installed guidance. It does not
+A successful check establishes machine readiness and readable installed guidance. Use
+[Tanaabot Startup Check](./skills/startup-check/SKILL.md) for the same six-section card after
+installation and at startup, including the read-only GitHub identity check. Tanaboot's offline check does not
 establish local skill loading, account plugin delivery or automatically supplied instructions.
 When passed through the Cloud wrapper, `--check` and `--dry-run` apply after workspace checkout;
 run Tanaboot directly for an offline check or preview without changing the workspace.
@@ -101,15 +119,15 @@ that work; importing a plugin does not establish that the task received it autom
 
 ## Options
 
-| Option         | Purpose                                          |
-| -------------- | ------------------------------------------------ |
-| `--host`       | Select host dependencies only.                   |
-| `--agent`      | Select guidance and shell initialization only.   |
-| `--check`      | Check installed tools and configuration offline. |
-| `--dry-run`    | Preview without network access or changes.       |
-| `--debug`      | Enable wrapper diagnostics on stderr.            |
-| `--version`    | Print the running script version.                |
-| `-h`, `--help` | Print usage and options.                         |
+| Option         | Purpose                                                |
+| -------------- | ------------------------------------------------------ |
+| `--host`       | Select host dependencies only.                         |
+| `--agent`      | Select dotfiles, environment and the approved SSH key. |
+| `--check`      | Check installed tools and configuration offline.       |
+| `--dry-run`    | Preview without network access or changes.             |
+| `--debug`      | Enable wrapper diagnostics on stderr.                  |
+| `--version`    | Print the running script version.                      |
+| `-h`, `--help` | Print usage and options.                               |
 
 Choose at most one mode and one action. `TANABOOT_DEBUG` supplies the debug default, falling back
 to `DEBUG`, then `RUNNER_DEBUG`. Explicit CLI selection takes precedence.

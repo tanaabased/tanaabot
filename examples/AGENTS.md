@@ -12,6 +12,10 @@ operator authorization.
   revision selection and invocation of that revision's entrypoint.
 - Keep constant fixtures beside their scenario. Add another folder only for a distinct flow or
   incompatible setup, and add its name to the `pr-tanaboot-tests.yml` matrix.
+- Cover bootstrap, readiness, shell loading, key handling, permissions and reruns through the packaged
+  public CLI. Do not source `tanaboot.sh`, replace its functions or commands, or move a standalone
+  shell test runner into an example. Use real tools and observable results; fixtures may supply data
+  or an isolated machine environment, not fake successful `brew`, `curl`, `op` or installer commands.
 
 ## Scenario style
 

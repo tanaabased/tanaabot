@@ -1,0 +1,5 @@
+{
+  "TANABOOT_LITERAL": "single ' double \" dollar $HOME $(touch should-not-exist) `touch should-not-exist` slash \\",
+  "TANABOOT_MULTILINE": "first line\nsecond line\n",
+  "TANABOOT_EMPTY": ""
+}
