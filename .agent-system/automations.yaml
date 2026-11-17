@@ -9,3 +9,12 @@
     timezone: America/New_York
   prompt:
     file: ../prompts/automations/sync.md
+- id: update-cloud-canon
+  display-name: UPDATE CLOUD CANON
+  enabled: false
+  runtimes: [codex]
+  schedule:
+    cron: '0 0 * * *'
+    timezone: America/New_York
+  prompt:
+    file: ../prompts/automations/update-cloud-canon.md

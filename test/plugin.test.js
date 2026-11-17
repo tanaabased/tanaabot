@@ -41,10 +41,6 @@ test('packed plugin retains canonical skills, assets and usable links', async ()
     assert.equal(manifest.version, metadata.version);
     const definitions = await loadManifest({ workspaceDir: payload });
     assert.equal(definitions.status, 'loaded');
-    assert.deepEqual(
-      definitions.manifest.automations.map(({ id, enabled }) => ({ id, enabled })),
-      [{ id: 'sync', enabled: true }],
-    );
     const input = {
       ...(await loadDefinitions(payload)),
       source: { revision: 'a'.repeat(40), dirty: false },
@@ -66,14 +62,41 @@ test('packed plugin retains canonical skills, assets and usable links', async ()
       now: '2026-01-01T00:00:00Z',
     };
     const assembled = planSync(input);
-    assert.deepEqual(
-      assembled.operations.map(({ task }) => task.name),
-      ['🤖 AUTOMATION SYNC'],
-    );
-    const [sync] = assembled.operations;
+    const sync = assembled.operations.find(({ automationId }) => automationId === 'sync');
     assert.equal(sync.task.enabled, true);
     assert.equal(sync.task.schedule.default_timezone, 'America/New_York');
     assert.match(sync.task.schedule.schedule, /FREQ=DAILY;BYHOUR=0;BYMINUTE=0;BYSECOND=0/);
+
+    // New updater schedules must remain paused until the operator handles cutover.
+    const canon = assembled.operations.find(
+      ({ automationId }) => automationId === 'update-cloud-canon',
+    );
+    assert.equal(canon.kind, 'create');
+    assert.equal(canon.task.enabled, false);
+    assert.equal(canon.task.schedule.default_timezone, 'America/New_York');
+    assert.match(canon.task.schedule.schedule, /FREQ=DAILY;BYHOUR=0;BYMINUTE=0;BYSECOND=0/);
+    const existingTasks = [
+      { id: 'legacy-canon', task: { name: '⬇️ UPDATE CLOUD CANON', prompt: 'Legacy updater.' } },
+      ...assembled.operations.map(({ automationId, task }) => ({
+        id: `native-${automationId}`,
+        task,
+      })),
+    ];
+    const saved = structuredClone(existingTasks);
+    const rerun = planSync({ ...input, existingTasks, id: 'update-cloud-canon' });
+    assert.equal(rerun.operations.length, 1);
+    assert.equal(rerun.operations[0].kind, 'unchanged');
+    assert.equal(rerun.operations[0].nativeId, 'native-update-cloud-canon');
+    assert.deepEqual(rerun.operations[0].task, canon.task);
+    const restored = planSync({
+      ...input,
+      id: 'update-cloud-canon',
+      existingTasks: existingTasks.filter(({ id }) => id !== 'native-update-cloud-canon'),
+    });
+    assert.equal(restored.operations.length, 1);
+    assert.equal(restored.operations[0].kind, 'create');
+    assert.equal(restored.operations[0].task.enabled, false);
+    assert.deepEqual(existingTasks, saved);
     assert.equal(skills, join(payload, 'skills'));
     assert.equal(existsSync(join(payload, '.agents/plugins/marketplace.json')), false);
     assert.equal(existsSync(join(payload, '.agents/skills')), false);
