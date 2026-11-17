@@ -1,5 +1,5 @@
 interface:
-  display_name: 'Spaceport Fortune Cookie'
+  display_name: 'Tanaabot Spaceport Fortune Cookie'
   short_description: 'A fortune from the spaceport vending machine'
   icon_small: './assets/composer-icon.svg'
   icon_large: './assets/icon-large.png'

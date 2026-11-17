@@ -74,7 +74,8 @@ remain read-only. A structural check does not prove that a future agent will fol
    for its unprefixed-folder contract. Maintain and package this single tree directly. Keep `tanaabot-`
    machine names and prompts. Explicit Cloud loading does not require plugin installation. For scaffolding, also pass
    `--brand-color '#00ebfd'` and an explicit source homepage matching the skill's repository path.
-   Choose the type, category, display name, emoji and description for the actual skill. Use normal
+   Choose the type, category, emoji and description for the actual skill; apply the skill naming
+   rules below to its display name, heading and inventory label. Use normal
    sentence capitalization in prose.
 3. Use regular-file copies of the repository root's `assets/composer-icon.svg` and
    `assets/icon-large.png` in each skill's `assets/` directory. Set `icon_small` to
@@ -84,7 +85,23 @@ remain read-only. A structural check does not prove that a future agent will fol
    and container. Review warnings and manual checks, then run the target repository's applicable
    checks. Respect the operator's commit, publication and installation boundaries.
 
-## Optimization
+### Skill names
+
+Choose one base title for each skill and use it consistently across its human-facing names.
+
+| Surface                    | Rule                                   | Example                     |
+| -------------------------- | -------------------------------------- | --------------------------- |
+| Repository inventory label | Base title only                        | Instruction Sync            |
+| `SKILL.md` H1              | `Tanaabot ` followed by the base title | Tanaabot Instruction Sync   |
+| `interface.display_name`   | Exactly match the H1 text              | Tanaabot Instruction Sync   |
+| Frontmatter machine name   | Keep the `tanaabot-` namespace         | `tanaabot-instruction-sync` |
+
+Derive inventory labels by removing only the leading `Tanaabot ` from the full title. Do not
+independently abbreviate or rename them. The inventory already supplies the project context;
+headings and display names must identify the skill when viewed alone or in a mixed catalog.
+Keep unprefixed folders and namespaced invocation IDs unchanged during a display-name cleanup.
+
+## Review Criteria
 
 - **Inspect:** Read this customization and the affected skills' identities, voice references,
   display metadata and bundled assets alongside the installed Canon owner.
