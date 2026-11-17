@@ -88,8 +88,17 @@ separate operator-authorized scope. This skill inspects the saved installation o
    unverified. Canon is delivered through the ChatGPT account independently of this repository.
    Do not inspect the container's plugin registry, require a fixed version or inventory, install,
    update, or query npm during this check.
-6. For **Identity**, check effective Git identity, SSH signing settings and public-key trust
-   against the prepared manifest and dotfiles. Tanaboot checks the private/public key match and
+6. For **Identity**, run
+   `bun --no-env-file <prepared-checkout>/skills/startup-check/scripts/git-identity.js <prepared-checkout>`
+   through the same unmodified task launcher, during both post-install review and fresh-chat startup.
+   It compares the committed Git identity with the working configuration and the author/committer Git
+   would use in the prepared checkout. Retain its timestamp, revision and identity origins in context.
+   Exit 1 fails Identity; a changed source file also fails Dotfiles, even when its Stow link matches.
+   Exit 2 leaves this check unverified. Do not reset files or override identity before checking.
+   For a requested lifecycle diagnosis, show these observations in the builder and fresh chat;
+   compare the same revision to locate when drift appeared. This does not identify the writer.
+   Check SSH signing settings and public-key trust against the prepared manifest and dotfiles.
+   Tanaboot checks the private/public key match and
    HTTPS Git configuration offline. It verifies GitHub CLI's protocol, the selected `gh` credential
    helper and both GitHub SSH-to-HTTPS URL rewrites in the actual task and fresh shells.
    Inspect effective settings with read-only commands; do not create a commit, start an agent or
@@ -133,6 +142,7 @@ separate operator-authorized scope. This skill inspects the saved installation o
 ## Bundled Resources
 
 - [Tanaboot](../../tanaboot.sh): Shared host and agent readiness checks.
+- [Git identity diagnostic](./scripts/git-identity.js): Read-only committed-source and effective identity comparison.
 - [Tanaabot Voice](../voice/SKILL.md): Courteous, concise reporting.
 - [Startup report contract](./references/startup-report.md): Section criteria, status rules and cards.
 

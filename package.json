@@ -27,7 +27,7 @@
     "format:write": "bun run --bun prettier . --write --ignore-unknown",
     "lint:eslint": "bun run --bun eslint .",
     "lint:shellcheck": "shellcheck -x tanaboot.sh scripts/cloud-setup.sh",
-    "test": "bun run automations:prepare && bun test test/plugin.test.js skills/automation-sync/test",
+    "test": "bun run automations:prepare && bun test test/plugin.test.js skills/automation-sync/test skills/startup-check/test",
     "leia": "bun ./node_modules/.bin/leia"
   },
   "devDependencies": {
