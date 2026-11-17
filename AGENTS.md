@@ -101,6 +101,28 @@ work around setup failures; report them for a coding task.
   `managedPaths`; ship regular assets rather than symlinks.
 - Keep changes small. Add folders and helpers when they have a concrete owner and use.
 
+## Automation authoring
+
+Before adding or changing an automation, read [Automation Sync](./skills/automation-sync/SKILL.md)
+and its required references, including the shared [execution](./prompts/automations/partials/execution.md)
+and [presentation](./prompts/automations/partials/presentation.md) guidance. Reuse their assembler,
+native scheduling and delivery behavior; keep task-specific instructions in the automation's prompt.
+
+- Keep the definition, prompt and request metadata aligned. Declare the intended schedule,
+  timezone, enabled state and execution settings, preserving intentional native defaults.
+- State the purpose, inputs and source, prerequisites, approved account/actions and resource scope.
+  Keep credentials and private bindings outside repository files. Define safe behavior for no
+  changes, overlapping work, missing access and uncertain writes through the existing owners.
+- Specify both outputs in the prompt: the full worker result with its useful fields and a
+  representative layout, and the compact main-chat summary with outcome, action needed, verified
+  worker link and contextual final status. Report every run, including unchanged, blocked and
+  failed outcomes. Shared presentation owns formatting and delivery; each prompt owns its content.
+- Keep worker initialization and saved-configuration receipts distinct from run results. These
+  coordinator/worker cards are Tanaabot conventions; do not impose them on other runtimes.
+- Validate source loading, assembly and packaged resources through existing checks. Report source
+  validation, saved schedule settings, actual scheduled execution and visible delivery separately;
+  a template or successful manual run does not prove scheduled behavior.
+
 ## Contributor validation
 
 These commands are for developing and changing this repository. They are not the Cloud environment's
