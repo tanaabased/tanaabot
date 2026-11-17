@@ -135,8 +135,9 @@ automatically or switch credentials to recover a failure.
    result card. Report completed actions and actionable limits in the shared card style. Keep private native
    bindings out of public repository files.
 
-Apply each definition's declared state. The repository currently declares only enabled `sync`,
-running at midnight in `America/New_York`. Completed canaries are no longer declared. Leave
+Apply each definition's declared state: enabled `sync` at midnight and enabled
+`update-cloud-canon` at 1 a.m., both in `America/New_York`. Leave the legacy Canon updater's
+cutover to the operator. Completed canaries are no longer declared. Leave
 unselected native tasks untouched; removing a source definition does not authorize deleting,
 rearming or modifying its native task or worker.
 

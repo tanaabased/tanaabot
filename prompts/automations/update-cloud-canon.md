@@ -12,7 +12,8 @@ binding, account evidence, required tools or approved write scope is unavailable
 specific blocker without making a write. Interactive tool availability does not prove scheduled
 write access; distinguish catalog presence, successful reads and an actual guarded update.
 
-This automation does not manage schedules or cutover. The operator owns activation and the old
+The repository schedules this automation daily at 1 a.m. `America/New_York`, after midnight
+Automation Sync. This automation does not manage schedules or cutover. The operator owns the old
 updater. Never run another updater, enable this schedule, pause the old one, change credentials,
 recreate the plugin, republish an environment or update other plugins. If another writer or an
 unresolved update is observed, reconcile it before any new write; report a blocker if that cannot
@@ -91,10 +92,16 @@ readback as incomplete without blindly publishing again.
 
 ## Result and dot summary
 
-Report every invocation, including unchanged, blocked and failed runs. Return one detailed quoted
-card here and its compact summary through the owning coordinator's normal delivery; do not send
-duplicate reports. Use the shared presentation partial's format and contextual status, with one
-of these detailed headings:
+Report every invocation, including unchanged, blocked and failed runs. The shared presentation
+partial owns quoting, spacing, status severity, links and delivery. This prompt owns the Canon
+result fields and wording in both cards below. Return the full result here in the reusable worker
+and the compact summary to the owning coordinator for its normal main-chat delivery. Do not send
+another report yourself. The layouts below are templates, not evidence of a completed run; replace
+every placeholder with verified results.
+
+### Full worker result
+
+Use one of these detailed headings:
 
 - `## ⬇️ UPDATE CLOUD CANON · UPDATED` after a verified update and readback.
 - `## ⬇️ UPDATE CLOUD CANON · UNCHANGED` after an exact version match.
@@ -109,7 +116,43 @@ next step without credentials or raw diagnostics. Distinguish a real release upd
 and saved-package verification from runtime behavior, icon rendering and skill discovery in a
 fresh Cloud chat. Do not claim those separately untested outcomes or close Canon #110.
 
-The compact owning-dot summary uses `⬇️ UPDATE CLOUD CANON`, the verified worker link and the
-useful outcome, including whether the operator needs to act. Respect native delivery and report
-missing delivery capability rather than imitating success. Do not suppress unchanged reports or
-change the schedule after a successful, unchanged, blocked or failed run.
+Use this layout, including the optional lines only when applicable:
+
+> ## ⬇️ UPDATE CLOUD CANON · <OUTCOME>
+>
+> **Release:** <Previous → verified saved version, or unchanged version.>
+> **Package:** <Passed / failed / unverified / not needed, with a brief reason if needed.>
+> **Account update:** <Passed / failed / unverified / not needed.>
+> **Verification:** <Passed / failed / unverified; useful inventory or removal result.>
+>
+> <Brief description of what changed or why no update was needed.>
+>
+> [View Canon](plugin-url)
+> **Saved release:** <Returned release ID; after an update.>
+>
+> **Next step:** <Exactly one action; incomplete/failed runs only.>
+>
+> <Contextual final status: ✅ verified outcome, ⚠️ incomplete outcome, or ❌ failed operation.>
+
+Use a success line such as “✅ Canon updated and read back” or “✅ Canon already current; no
+changes made.” For incomplete or failed results, the final status names the actual unresolved
+outcome and never implies that the update or readback passed. Keep diagnostics in the shared
+optional Debug card; do not repeat them in successful rows.
+
+### Summary for tanaabot's main chat
+
+Use the shared compact-card layout with this automation's title and outcome:
+
+> **⬇️ UPDATE CLOUD CANON**
+>
+> <Canon updated from X to Y, already current at X, or a concise blocker/failure and useful next action.>
+>
+> [Go to chat →](worker-url)
+>
+> <Exactly one contextual final status: ✅ verified outcome, ⚠️ incomplete outcome, or ❌ failed operation.>
+
+The summary must say whether the operator needs to act. Keep detailed inventory and verification
+rows in the worker; do not duplicate its full card in the main chat. Include the verified worker
+link only when available and follow the shared navigation fallback otherwise. Respect native
+delivery and report missing delivery capability rather than imitating success. Do not suppress
+unchanged reports or change the schedule after a successful, unchanged, blocked or failed run.

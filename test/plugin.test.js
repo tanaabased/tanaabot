@@ -67,14 +67,14 @@ test('packed plugin retains canonical skills, assets and usable links', async ()
     assert.equal(sync.task.schedule.default_timezone, 'America/New_York');
     assert.match(sync.task.schedule.schedule, /FREQ=DAILY;BYHOUR=0;BYMINUTE=0;BYSECOND=0/);
 
-    // New updater schedules must remain paused until the operator handles cutover.
+    // The updater follows midnight synchronization at the operator-selected 1 a.m.
     const canon = assembled.operations.find(
       ({ automationId }) => automationId === 'update-cloud-canon',
     );
     assert.equal(canon.kind, 'create');
-    assert.equal(canon.task.enabled, false);
+    assert.equal(canon.task.enabled, true);
     assert.equal(canon.task.schedule.default_timezone, 'America/New_York');
-    assert.match(canon.task.schedule.schedule, /FREQ=DAILY;BYHOUR=0;BYMINUTE=0;BYSECOND=0/);
+    assert.match(canon.task.schedule.schedule, /FREQ=DAILY;BYHOUR=1;BYMINUTE=0;BYSECOND=0/);
     const existingTasks = [
       { id: 'legacy-canon', task: { name: '⬇️ UPDATE CLOUD CANON', prompt: 'Legacy updater.' } },
       ...assembled.operations.map(({ automationId, task }) => ({
@@ -95,7 +95,7 @@ test('packed plugin retains canonical skills, assets and usable links', async ()
     });
     assert.equal(restored.operations.length, 1);
     assert.equal(restored.operations[0].kind, 'create');
-    assert.equal(restored.operations[0].task.enabled, false);
+    assert.equal(restored.operations[0].task.enabled, true);
     assert.deepEqual(existingTasks, saved);
     assert.equal(skills, join(payload, 'skills'));
     assert.equal(existsSync(join(payload, '.agents/plugins/marketplace.json')), false);
