@@ -85,7 +85,8 @@ unresolved creation before creating; do not start a competing replacement. If ex
 cannot be established with the available native controls, leave replacement pending for a serialized
 operator run. The assembler does not provide a lock or guarantee exactly-once native creation.
 
-Create one replacement using the same published Cloud configuration and desired sidebar placement.
+Use the creation and initialization procedure in Resolve workers above for one replacement in
+the same published Cloud configuration and desired sidebar placement.
 Verify initialization, active status and placement, then supply its ordinary worker fields plus
 `replaces: { "id": "retired-worker-id", "status": "archived", "environmentId": "verified-config-id" }`.
 These are current native observations, not an authorization flag or a persisted replacement ledger.
@@ -93,7 +94,8 @@ The retired ID must match the schedule's saved binding. Explicit authored thread
 binding; change that source through operator authorization before replacing an explicitly pinned chat.
 
 Rebind the same native schedule ID using the returned `expectedCurrent` and exact compiled task.
-Preserve cadence and enabled state; the assembler rejects a replacement that also changes either.
+Preserve destination, coordinator settings, cadence and enabled state; the assembler rejects a
+replacement that also changes them.
 Resolve such source/state differences separately before replacement. Before saving, reconcile the
 current native record and use conditional update controls where supported. If another run already
 rebound it, reuse that verified binding and recompute; never overwrite it with a competing replacement.
@@ -101,6 +103,46 @@ For uncertain saves, read the same schedule before retrying. After a successful 
 sync uses the new saved worker ID and needs no `replaces` evidence. Initialization emits `CHAT CREATED`
 in the new worker; deliver the schedule's separate `UPDATED` card there after verified saving.
 No schedule is deleted.
+
+### Recover the synchronizer before dispatch
+
+The owning dot can enter this skill before delegation when the saved `sync` worker is confirmed
+archived. This is the only dispatch-time replacement path. Do not use it for another automation,
+unknown worker status, a failed send or routine worker rotation.
+
+1. Read the current native Sync schedule and its exact worker binding. Confirm archive status,
+   reconcile any prior replacement and check for an in-flight sync using the replacement procedure
+   above. If the schedule already points to a verified active replacement, reuse it. Preserve the
+   occurrence's original selection: normally `all`, or `sync` for an existing bootstrap-only run.
+2. Resolve canonical GitHub `main` to one commit and read this skill and its required references
+   there. Use a clean snapshot at that commit for recovery assembly. Keep source execution in the
+   selected Cloud configuration. If no usable Cloud execution context is available yet, the dot
+   uses the shared creation procedure to initialize the replacement first, with the retired
+   worker's verified published configuration ID and saved supported model/effort. Ask it only to
+   initialize and prepare the sync-only replacement, not run all automations or save schedules.
+   Supply the current native observations needed by the assembler; it must not invent inventories.
+3. Verify startup and the same published configuration using native launch evidence. Check the
+   expected published setup/version when that evidence is available; a configuration ID alone
+   does not prove the published version. Report unavailable version evidence as unverified.
+   A failed or incomplete startup stops recovery. Keep the retired chat archived and intact.
+4. In the clean Cloud snapshot, follow the ordinary dependency preparation and assembly steps
+   with `id: "sync"` for both targets and sync. Supply the verified replacement and `replaces`
+   evidence from the shared replacement procedure. The owning dot applies the exact returned
+   update to the same schedule, reconciling concurrent changes and verifying the saved binding.
+   On failure or uncertainty, stop before applying other definitions or sending the executable
+   request; preserve the created worker for the next attempt. Do not hand-edit the saved payload.
+5. Deliver the verified Sync configuration card and wait for its display-only turn to finish.
+   Then resume the current dispatch once with the newly compiled request and its model/effort.
+   Pass the original selection as separate coordinator context alongside the unchanged request;
+   a newly compiled `dispatchVersion` must not widen a bootstrap-only occurrence. Do not send
+   the old payload or queue another Run now.
+   The worker follows the normal sync workflow; a bootstrap-only occurrence remains sync-only.
+   Report the completed recovery separately from downstream synchronization outcomes.
+
+This path needs no new state store or scheduler. Native history and the saved schedule retain
+the existing recovery evidence. When deploying this change to an older saved dispatcher, invoke
+this skill once with `id: "sync"` to install the new dispatcher before testing archive → Run now.
+Merging source alone cannot change the instructions already saved in a native schedule.
 
 ### Initialization card
 

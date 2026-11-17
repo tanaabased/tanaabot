@@ -189,8 +189,9 @@ export function planSync({
           )
             throw new Error(`reusable-worker-replacement-required:${job.id}`);
           if (
-            task.enabled !== current.task.enabled ||
-            canonical(task.schedule) !== canonical(current.task.schedule)
+            ['enabled', 'schedule', 'destination', 'execution', 'model', 'effort'].some(
+              (key) => canonical(task[key]) !== canonical(current.task[key]),
+            )
           )
             throw new Error(`worker-rebind-settings-changed:${job.id}`);
         }

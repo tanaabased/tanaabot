@@ -1,5 +1,6 @@
 import { describe, test } from 'bun:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 
 import { planSync } from '../lib/sync-plan.js';
 import { readTaskPrompt, taskBody, taskPrompt } from '../utils/task-prompt.js';
@@ -63,6 +64,24 @@ function saved(request = input()) {
 }
 
 describe('skills/automation-sync/lib/sync-plan', () => {
+  test('should render the bounded Sync recovery route with the shared dispatcher', () => {
+    const request = input();
+    request.partials.dispatch = readFileSync(
+      new URL('../../../prompts/automations/partials/dispatch.md', import.meta.url),
+      'utf8',
+    );
+    for (const { task } of planSync(request).operations) {
+      const dispatcher = readTaskPrompt(task.prompt).body.split('## Worker request')[0];
+      // The prompt owns this permission boundary; this does not test native tool execution.
+      assert.match(dispatcher, /Only when this coordinator's `automationId` is `sync`/);
+      assert.match(dispatcher, /exact saved worker is archived/);
+      assert.match(dispatcher, /Recover the synchronizer before dispatch/);
+      assert.match(dispatcher, /For other automations,[\s\S]*stop dispatch without replacement/);
+      assert.match(dispatcher, /An active worker follows normal dispatch/);
+      assert.match(dispatcher, /Stop on missing, inaccessible or unknown status/);
+    }
+  });
+
   test('should carry changed selections into the same worker on every scheduled request', () => {
     const request = input({ id: 'sync' });
     const [initial] = planSync(request).operations;
@@ -552,6 +571,75 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     request.manifest.automations[0].enabled = false;
     request.manifest.automations[0].schedule.seconds = 7200;
     assert.throws(() => planSync(request), /worker-rebind-settings-changed:sync/);
+  });
+
+  test('should preserve destination and coordinator settings during a worker rebind', () => {
+    for (const [field, value] of [
+      ['destination', { kind: 'dot', id: 'other-dot' }],
+      ['execution', { kind: 'other' }],
+      ['model', 'saved-coordinator-model'],
+      ['effort', 'medium'],
+    ]) {
+      const request = input({ id: 'sync', existingTasks: saved() });
+      const worker = request.context.workers[0];
+      worker.replaces = {
+        id: worker.id,
+        status: 'archived',
+        environmentId: worker.environmentId,
+      };
+      worker.id = 'replacement-sync';
+      request.existingTasks[0].task[field] = value;
+      assert.throws(() => planSync(request), /worker-rebind-settings-changed:sync/);
+    }
+  });
+
+  test('should prepare only the Sync rebind before a resumed pass creates Canon and then no-ops', () => {
+    const request = input({ id: 'sync' });
+    request.existingTasks = saved(request);
+    request.manifest.automations = [job('sync'), job('update-cloud-canon')];
+    request.requests['update-cloud-canon'] = { emoji: '📚', request: 'Update Cloud Canon.' };
+    request.context.workers = [request.context.workers[0]];
+    const worker = request.context.workers[0];
+    worker.replaces = {
+      id: worker.id,
+      status: 'archived',
+      environmentId: worker.environmentId,
+    };
+    worker.id = 'replacement-sync';
+    const recovery = planSync(request);
+    assert.deepEqual(
+      recovery.operations.map(({ automationId, kind }) => [automationId, kind]),
+      [['sync', 'update']],
+    );
+    assert.deepEqual(planSync(request), recovery, 'an unapplied rebind remains the same update');
+
+    // Native saving is external: only feed its observed result into the resumed planning pass.
+    const update = recovery.operations[0];
+    request.existingTasks = [{ id: update.nativeId, task: update.task }];
+    delete worker.replaces;
+    assert.equal(planSync(request).operations[0].kind, 'unchanged', 'bootstrap stays sync-only');
+    request.id = 'all';
+    request.context.workers.push({
+      automationId: 'update-cloud-canon',
+      id: 'worker-canon',
+      status: 'active',
+      environmentId: 'test-environment',
+      name: 'Test update-cloud-canon',
+      group: 'REPORTS',
+    });
+    const resumed = planSync(request);
+    assert.deepEqual(
+      resumed.operations.map(({ automationId, kind }) => [automationId, kind]),
+      [
+        ['sync', 'unchanged'],
+        ['update-cloud-canon', 'create'],
+      ],
+    );
+    request.existingTasks = resumed.operations.map(({ automationId, nativeId, task }) => ({
+      id: nativeId ?? `native-${automationId}`,
+      task,
+    }));
+    assert.ok(planSync(request).operations.every(({ kind }) => kind === 'unchanged'));
   });
 
   test('should backfill a missing saved link once and retain the exact task afterward', () => {

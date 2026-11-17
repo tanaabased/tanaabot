@@ -39,6 +39,7 @@ updates; the script itself makes no service writes.
 ## When to Use
 
 - Seed the repository schedules, synchronize all definitions, or update one automation ID.
+- Recover the synchronizer's confirmed archived worker from its owning coordinator before dispatch.
 - Apply changes to shared guidance, task content, metadata or scheduling settings.
 
 ## When Not to Use
@@ -79,6 +80,13 @@ automatically or switch credentials to recover a failure.
 
 ## Workflow
 
+For a saved Sync coordinator whose exact bound worker is confirmed archived, first follow
+[Recover the synchronizer before dispatch](./references/native-tasks.md#recover-the-synchronizer-before-dispatch).
+This enters the same creation and rebinding workflow without contacting the retired worker.
+Recovery prepares and applies only `sync`; after verification, the current occurrence resumes
+its original selection through the newly compiled worker request. Initial seeding remains the
+ordinary workflow below.
+
 1. Verify environment, destination and existing authorization. Resolve fresh GitHub `main` and
    prepare a clean source checkout without discarding task edits. Verify its canonical origin.
    Read this skill and its required references from that revision. Do not provision the machine
@@ -94,7 +102,8 @@ automatically or switch credentials to recover a failure.
 4. For a delegated sync from a saved dispatcher whose incoming metadata lacks `dispatchVersion: 2`,
    perform only the synchronizer upgrade: use `id: "sync"` for both targets and sync below.
    Inspect the incoming occurrence, not newly assembled metadata, when choosing this path.
-   Explicit operator-requested sync-only runs use the same selection. Leave other automation
+   Explicit operator-requested sync-only runs and a coordinator's preserved bootstrap-only
+   recovery selection use the same selection. Leave other automation
    actions for a separate invocation of the updated saved task. Do not run that task automatically.
    Otherwise retain the operator's selected ID or the normal `all` selection.
    Run `bun skills/automation-sync/scripts/sync-task.js` with `mode: "targets"` and JSON on stdin

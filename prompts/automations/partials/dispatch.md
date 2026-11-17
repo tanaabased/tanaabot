@@ -8,9 +8,17 @@ Use the supported native Cloud-chat controls to continue the request's existing 
 its saved Cloud environment. A missing presentation URL does not prevent dispatch by `thread.id`.
 Use its saved native binding and successful launch information; do not compare the published
 configuration ID with an ephemeral machine ID inside the worker. Do not substitute local execution,
-another environment or a fresh chat. Check native archive status before continuing: a confirmed
-archived worker is retired and needs synchronization, not dispatch-time replacement. Report unknown
-status without presenting the worker as ready or linking it. Check for an active turn in
+another environment or a fresh chat during ordinary dispatch. Check native archive status before
+continuing. Only when this coordinator's `automationId` is `sync` and native history confirms its
+exact saved worker is archived, read and follow `skills/automation-sync/SKILL.md` and its
+`references/native-tasks.md` section “Recover the synchronizer before dispatch” from canonical
+`tanaabased/tanaabot` at one resolved `main` commit. Enter that procedure here in the owning dot;
+do not send the old request to the archived worker. It uses the same worker creation and schedule
+rebinding procedure as ordinary synchronization, then returns a newly compiled request for this
+occurrence. Resume below only after its verified rebind, using that new request.
+For other automations, an archived worker needs synchronization; stop dispatch without replacement.
+An active worker follows normal dispatch. Stop on missing, inaccessible or unknown status without
+presenting the worker as ready or linking it. Check for an active turn in
 that worker before sending; if one is running, report the overlap instead of queuing duplicate work.
 Send the complete generated `prompt` unchanged, including its readable header, metadata and
 instructions. Do not reconstruct its JSON or prepend another metadata block. On every continuation,
@@ -29,7 +37,7 @@ owns its separate Debug card; do not echo it into the main-chat summary.
 
 Wait for that turn to finish through the native status controls. An accepted send is not a
 completed run. If the send response is missing or uncertain, reconcile that occurrence in the
-same chat before another send. Never retry a denial or create a replacement worker automatically.
+same chat before another send. Never retry a denial or replace a worker to recover a send failure.
 
 Keep detailed results in the worker chat. Return only its compact purpose-emoji summary card to
 the saved main-chat destination through the scheduler's normal delivery. Deliver each automation's
