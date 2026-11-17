@@ -16,6 +16,9 @@ and a spaced middle dot followed by `CREATED` or `UPDATED`, for example
 - What was created or materially changed, including relevant before → after values.
 - Configured cadence, timezone, next occurrence when useful, and saved enabled/paused state.
 - Whether the schedule and worker were retained, without printing their private IDs.
+- Sidebar placement only when useful: report the observed result separately from saved schedule
+  state. Desired `thread.group` does not prove placement. An unsupported, failed or unverified
+  move does not invalidate a successful rebind; state both outcomes without claiming a move succeeded.
 - A verified worker link when useful and whether a run actually occurred. Configuration alone
   does not establish execution.
 
@@ -52,6 +55,8 @@ After native application finishes, display one separate aggregate card in the sy
 If sync itself was created or updated, show its configuration card first, then this run-results
 card as a separate message. An unchanged sync needs only the run-results card; never invent an
 update to produce two cards. Keep each automation's configuration receipt in its own worker.
+If an unchanged schedule still has a placement limitation, include it in the run-results note
+without inventing a configuration update or blocking other work.
 
 Use one row per automation considered in this invocation. Report verified native outcomes,
 not the assembler's proposed operations: ✅ Created, ✅ Updated, ✅ Unchanged, ⚠️ Skipped or

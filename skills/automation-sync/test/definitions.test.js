@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import definitions from '../lib/definitions.js';
+import automationTargets from '../lib/automation-targets.js';
 import { planSync } from '../lib/sync-plan.js';
 
 test('should load external definitions through the real public Agent System export', async () => {
@@ -35,6 +36,15 @@ test('should load external definitions through the real public Agent System expo
     );
     const loaded = await definitions(root);
     assert.equal(loaded.manifest.automations[0].payload.prompt, 'Fixture smoke marker.');
+    const [target] = automationTargets(loaded.manifest, {
+      timezone: 'America/New_York',
+      environments: [{ id: 'fixture-cloud', name: 'fixture' }],
+      destination: { kind: 'dot', id: 'test-dot' },
+    });
+    // Targets are resolved before any worker exists, including its first-turn settings.
+    assert.equal(target.thread.group, 'CHECKS');
+    assert.equal(target.model, 'fixture-override');
+    assert.equal(target.effort, 'medium');
     const result = planSync({
       ...loaded,
       existingTasks: [],

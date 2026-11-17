@@ -41,17 +41,36 @@ not archive evidence. Unknown and archived workers cannot be assembled as ready 
 For initial seeding, inspect existing native chats before creating one; names alone do not establish
 automation ownership. If a prior create was uncertain, reconcile it before another create.
 
-For a new worker, use the native Cloud-chat creation control with the selected published configuration
-ID, the target's `model` and `effort` (Codex controls use `model` and `thinking`), and an
+For every new worker, including initial seeding and archive recovery, first run targets assembly
+and use its resolved `target`. Pass `model: target.model` and `thinking: target.effort` explicitly
+to native chat creation, along with `target.execution.environmentId` and an
 initialization-only prompt that requests the [initialization card](#initialization-card).
-Wait for that initialization to finish. Use native sidebar
-controls to find or create the desired section and place the chat there. Apply authorized title/group
-changes to an existing worker without replacing its ID. Verify its Cloud configuration from native
+Do not omit these controls for the first turn, inherit native defaults, use the retired worker's
+stale settings or silently fall back to another model. Unsupported settings stop creation.
+Wait for initialization to finish and record its result as `startup: "passed"`, `"failed"` or
+`"unverified"`; failed or incomplete startup blocks binding. Reuse an already initialized, active
+and healthy replacement rather than creating another chat to pick up source changes.
+Apply authorized title changes to an existing worker without replacing its ID. Verify its Cloud configuration from native
 association or the original launch receipt, not a name or repository claim. A missing existing worker
 or a known native configuration mismatch stops the affected action; do not create a replacement automatically.
 Use the saved binding and successful native launch. `environmentId` below is the published
 configuration ID from those controls, never a machine ID reported inside the container.
 Do not require the worker to independently reproduce the configuration ID.
+
+For both new and reused workers, use the assembler's `target.thread.group` as desired placement.
+Do not hard-code a section or parse configuration again. Through supported native sidebar controls,
+find the configured section and inspect the exact worker's current placement. Reuse an already-correct
+placement; otherwise move that chat and verify the result, without another approval prompt within
+the authorized sync. Reconcile an uncertain earlier move before retrying. Never move an ambiguous
+match or use an unsupported endpoint. If the section is absent, create it only when supported.
+Unsupported, failed or unverified placement is a separate reported limitation, not a failed worker
+or a reason to stop rebinding. Continue when the worker's required checks pass.
+
+Supply `context.workers[].group` only as an observed native placement; omit it when unavailable.
+Never fill it with the desired group to make a check pass. The plan's per-operation `placement`
+compares `desiredGroup` with `observedGroup`, using `verified`, `mismatched` or `unverified`.
+Saved `thread.group` remains desired configuration, not proof of a successful move. Placement
+observations do not enter the saved prompt or force a schedule update on an otherwise unchanged run.
 
 Worker model selection uses `overrides.codex.model`, then top-level `model`, then the configured
 `default` profile. Effort independently uses `overrides.codex.effort`, then top-level `effort`, then
@@ -87,7 +106,8 @@ operator run. The assembler does not provide a lock or guarantee exactly-once na
 
 Use the creation and initialization procedure in Resolve workers above for one replacement in
 the same published Cloud configuration and desired sidebar placement.
-Verify initialization, active status and placement, then supply its ordinary worker fields plus
+Verify initialization and active status; attempt sidebar placement separately as described above.
+Supply `startup: "passed"` and the ordinary worker fields plus
 `replaces: { "id": "retired-worker-id", "status": "archived", "environmentId": "verified-config-id" }`.
 These are current native observations, not an authorization flag or a persisted replacement ledger.
 The retired ID must match the schedule's saved binding. Explicit authored thread targets remain
@@ -116,10 +136,13 @@ unknown worker status, a failed send or routine worker rotation.
    occurrence's original selection: normally `all`, or `sync` for an existing bootstrap-only run.
 2. Resolve canonical GitHub `main` to one commit and read this skill and its required references
    there. Use a clean snapshot at that commit for recovery assembly. Keep source execution in the
-   selected Cloud configuration. If no usable Cloud execution context is available yet, the dot
-   uses the shared creation procedure to initialize the replacement first, with the retired
-   worker's verified published configuration ID and saved supported model/effort. Ask it only to
-   initialize and prepare the sync-only replacement, not run all automations or save schedules.
+   selected Cloud configuration. Resolve `id: "sync"` targets through the existing assembler
+   before creating any chat, using available supported Cloud execution. An already initialized,
+   healthy replacement can perform this preparation and be reused. If targets cannot be resolved,
+   report that limitation rather than launching a default-model chat to obtain them. Use the
+   shared creation procedure with the resolved target's model and effort from the first turn;
+   its environment must match the retired worker's verified published configuration ID. Ask a
+   new replacement only to initialize and prepare the sync-only replacement, not run all automations or save schedules.
    Supply the current native observations needed by the assembler; it must not invent inventories.
 3. Verify startup and the same published configuration using native launch evidence. Check the
    expected published setup/version when that evidence is available; a configuration ID alone
@@ -185,6 +208,7 @@ Repeat with `mode: "sync"` (also the default), adding `existingTasks` and `conte
         "automationId": "sync",
         "id": "verified-worker-id",
         "status": "active",
+        "startup": "passed",
         "environmentId": "verified-published-config-id",
         "name": "AUTOMATION SYNC",
         "group": "REPORTS",

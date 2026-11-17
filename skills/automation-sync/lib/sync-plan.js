@@ -43,12 +43,14 @@ function bindWorker(target, workers) {
     throw new Error(`native-worker-id-invalid:${target.automationId}`);
   if (worker.status !== 'active')
     throw new Error(`reusable-worker-not-active:${target.automationId}`);
+  if (worker.startup !== undefined && worker.startup !== 'passed')
+    throw new Error(`reusable-worker-startup-not-passed:${target.automationId}`);
   if (
     worker.environmentId !== target.execution.environmentId ||
     (target.thread.id && worker.id !== target.thread.id)
   )
     throw new Error(`reusable-worker-target-mismatch:${target.automationId}`);
-  if (worker.name !== target.thread.name || worker.group !== target.thread.group)
+  if (worker.name !== target.thread.name)
     throw new Error(`reusable-worker-settings-drift:${target.automationId}`);
   return {
     ...target,
@@ -145,6 +147,18 @@ export function planSync({
         targets.find((target) => target.automationId === job.id),
         context.workers,
       );
+      const observed = context.workers.find((record) => record.automationId === job.id);
+      // Placement is a current observation, not a saved binding or a readiness requirement.
+      const placement = {
+        desiredGroup: worker.thread.group,
+        observedGroup: observed.group ?? null,
+        status:
+          observed.group == null
+            ? 'unverified'
+            : observed.group === worker.thread.group
+              ? 'verified'
+              : 'mismatched',
+      };
       const body = taskBody(partials, job.payload.prompt);
       const header = requestHeader(
         partials.request,
@@ -178,6 +192,8 @@ export function planSync({
       if (current) {
         const previous = current.parsed.metadata;
         if (previous.worker?.id && previous.worker.id !== worker.thread.id) {
+          if (observed.startup !== 'passed')
+            throw new Error(`reusable-worker-startup-not-passed:${job.id}`);
           const retired = context.workers.find(
             (record) => record.automationId === job.id,
           )?.replaces;
@@ -234,12 +250,14 @@ export function planSync({
             automationId: job.id,
             kind: 'unchanged',
             nativeId: current.id,
+            placement,
             task: current.task,
           };
       }
       return {
         automationId: job.id,
         kind: current ? 'update' : 'create',
+        placement,
         ...(current ? { nativeId: current.id, expectedCurrent: current.task } : {}),
         task: compileTask(task, metadata, worker, body, partials.dispatch, canary, header),
       };

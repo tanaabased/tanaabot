@@ -45,6 +45,7 @@ function input(overrides = {}) {
         automationId: id,
         id: `worker-${id}`,
         status: 'active',
+        startup: 'passed',
         environmentId: 'test-environment',
         name: `Test ${id}`,
         group: 'REPORTS',
@@ -591,6 +592,63 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       request.existingTasks[0].task[field] = value;
       assert.throws(() => planSync(request), /worker-rebind-settings-changed:sync/);
     }
+  });
+
+  test('should report observed placement separately without blocking replacement or changing saved prompts', () => {
+    for (const group of ['CHECKS', 'OTHER', undefined]) {
+      const request = input({ id: 'sync' });
+      request.manifest.automations[0].group = 'CHECKS';
+      request.existingTasks = saved(request);
+      const worker = request.context.workers[0];
+      worker.replaces = {
+        id: worker.id,
+        status: 'archived',
+        environmentId: worker.environmentId,
+      };
+      worker.id = 'replacement-sync';
+      worker.group = group;
+      const [update] = planSync(request).operations;
+      assert.equal(update.kind, 'update');
+      assert.deepEqual(update.placement, {
+        desiredGroup: 'CHECKS',
+        observedGroup: group ?? null,
+        status: group === undefined ? 'unverified' : group === 'CHECKS' ? 'verified' : 'mismatched',
+      });
+      assert.equal(workerRequest(update.task).thread.group, 'CHECKS');
+      assert.equal(Object.hasOwn(workerRequest(update.task), 'placement'), false);
+      assert.equal(
+        worker.group,
+        group,
+        'assembly must not replace an observation with desired state',
+      );
+      request.existingTasks = [{ id: update.nativeId, task: update.task }];
+      delete worker.replaces;
+      assert.equal(planSync(request).operations[0].kind, 'unchanged');
+      worker.group = 'CHECKS';
+      const [placed] = planSync(request).operations;
+      assert.equal(placed.kind, 'unchanged', 'a verified move does not rewrite the schedule');
+      assert.equal(placed.placement.status, 'verified');
+      assert.deepEqual(placed.task, update.task);
+    }
+  });
+
+  test('should block replacement on failed or unverified startup and mismatched environments despite optional placement', () => {
+    const request = input({ id: 'sync', existingTasks: saved() });
+    const worker = request.context.workers[0];
+    worker.replaces = {
+      id: worker.id,
+      status: 'archived',
+      environmentId: worker.environmentId,
+    };
+    worker.id = 'replacement-sync';
+    delete worker.group;
+    for (const startup of ['failed', 'unverified', undefined]) {
+      worker.startup = startup;
+      assert.throws(() => planSync(request), /reusable-worker-startup-not-passed:sync/);
+    }
+    worker.startup = 'passed';
+    worker.environmentId = 'wrong-environment';
+    assert.throws(() => planSync(request), /reusable-worker-target-mismatch:sync/);
   });
 
   test('should prepare only the Sync rebind before a resumed pass creates Canon and then no-ops', () => {

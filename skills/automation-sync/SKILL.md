@@ -111,11 +111,14 @@ ordinary workflow below.
    elapsed one-time targets. Resolve only its returned workers through native chat controls.
    Verify native active/archive status. Reuse the saved active worker; for a confirmed archived
    managed worker, follow the reference's [replacement procedure](./references/native-tasks.md#replace-a-confirmed-archived-worker).
-   Unknown or inaccessible workers do not qualify. For a new automation, create one Cloud chat in the selected
-   published environment with the [initialization card instructions](./references/native-tasks.md#initialization-card),
-   then place it in the desired sidebar
-   section. Do not execute the automation during initialization. Preserve its native ID and URL
-   in the schedule prompt, never a separate state file. Apply authorized title/group changes through
+   Unknown or inaccessible workers do not qualify. For every new chat, including bootstrap and
+   recovery, pass the resolved `target.model` and `target.effort` to native creation as `model`
+   and `thinking`, with the [initialization card instructions](./references/native-tasks.md#initialization-card).
+   Do not execute the automation during initialization. Verify startup before binding and retain
+   a healthy initialized replacement on retry. For new and reused chats, follow the reference's
+   best-effort placement procedure using `target.thread.group`; report placement limitations
+   separately and continue when required worker checks pass. Preserve its native ID and URL
+   in the schedule prompt, never a separate state file. Apply authorized title changes through
    native controls. An unknown or differently bound existing worker requires intervention,
    not an automatic replacement or local fallback.
 5. Run the script with `mode: "sync"`, current tasks and verified worker records. It reads the
