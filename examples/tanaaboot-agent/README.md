@@ -28,6 +28,33 @@ tanaboot.sh --agent
 # should satisfy agent readiness
 bash -lc 'bash "$TANABOOT_PACKAGE_ROOT/tanaboot.sh" --agent --check'
 
+# should use user configuration without disabling host-key verification
+bash -l <<'SH'
+set -euo pipefail
+test ! -L "$HOME/.local/bin"
+for client in ssh scp sftp; do
+  wrapper="$HOME/.local/bin/$client"
+  test -L "$wrapper"
+  test -x "$wrapper"
+  test "$(readlink -f "$wrapper")" = "$TANABOOT_PACKAGE_ROOT/dotfiles/shell/.local/bin/$client"
+  test "$(command -v "$client")" = "$wrapper"
+done
+configuration=$(ssh -G github.com)
+grep -Fx 'identitiesonly yes' <<< "$configuration"
+grep -Fx -e 'identityfile ~/.ssh/id_tanaabot' -e "identityfile $HOME/.ssh/id_tanaabot" <<< "$configuration"
+grep -Fx 'stricthostkeychecking ask' <<< "$configuration"
+SH
+
+# should reject a task launcher that bypasses the installed wrappers
+bash -l <<'SH'
+set -euo pipefail
+status=0
+launcher_path=$(printf '%s' "$PATH" | tr ':' '\n' | grep -Fxv "$HOME/.local/bin" | paste -sd ':' -)
+output=$(PATH="$launcher_path" bash "$TANABOOT_PACKAGE_ROOT/tanaboot.sh" --agent --check 2>&1) || status=$?
+test "$status" -eq 1
+grep -F 'select SSH clients from ~/.local/bin first' <<< "$output"
+SH
+
 # should keep the private key outside the source checkout
 test -f "$HOME/.ssh/id_tanaabot"
 test ! -L "$HOME/.ssh"

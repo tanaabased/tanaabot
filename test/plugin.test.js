@@ -1,7 +1,7 @@
 import { test } from 'bun:test';
 import assert from 'node:assert/strict';
 import { execFileSync } from 'node:child_process';
-import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, readdirSync, rmSync, statSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -39,6 +39,10 @@ test('packed plugin retains canonical skills, assets and usable links', async ()
     const skills = resolve(payload, manifest.skills);
 
     assert.equal(manifest.version, metadata.version);
+    for (const client of ['ssh', 'scp', 'sftp']) {
+      const wrapper = join(payload, 'dotfiles/shell/.local/bin', client);
+      assert.ok(statSync(wrapper).mode & 0o111, `${client} wrapper must remain executable`);
+    }
     const definitions = await loadManifest({ workspaceDir: payload });
     assert.equal(definitions.status, 'loaded');
     assert.deepEqual(
