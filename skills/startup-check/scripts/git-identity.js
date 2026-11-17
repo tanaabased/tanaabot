@@ -30,30 +30,19 @@ try {
   const revision = git(['rev-parse', '--verify', 'HEAD']);
   const expected = identity(['--blob', `${revision}:${source}`]);
   if (!expected.name || !expected.email) throw new Error('Committed Git identity is missing.');
-  const working = identity(['--file', source]);
-  const configured = identity([]);
   const author = commitIdentity('GIT_AUTHOR_IDENT');
   const committer = commitIdentity('GIT_COMMITTER_IDENT');
   const sourceChanged =
     git(['diff', '--quiet', '--no-ext-diff', '--no-textconv', revision, '--', source], true) ===
     null;
   const matches = (value) => value.name === expected.name && value.email === expected.email;
-  const status =
-    !sourceChanged && [working, configured, author, committer].every(matches) ? 'passed' : 'failed';
+  const status = [author, committer].every(matches) ? 'passed' : 'failed';
   const report = {
-    observedAt: new Date().toISOString(),
-    revision,
     status,
     sourceChanged,
     expected,
-    working,
-    configured,
     author,
     committer,
-    origins: {
-      name: git(['config', '--show-origin', '--show-scope', '--get-all', 'user.name'], true),
-      email: git(['config', '--show-origin', '--show-scope', '--get-all', 'user.email'], true),
-    },
   };
   process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
   process.exitCode = status === 'passed' ? 0 : 1;

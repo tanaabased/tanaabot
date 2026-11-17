@@ -46,15 +46,36 @@ test('detects a global identity write through a Stow link without repairing the 
   fixture(({ git, check, source }) => {
     assert.equal(check().code, 0);
     git('config', '--global', 'user.name', 'fixture-operator');
+    const names = { GIT_AUTHOR_NAME: bot.name, GIT_COMMITTER_NAME: bot.name };
+    const nameOverride = check(names);
+    assert.equal(nameOverride.code, 0);
+    assert.equal(nameOverride.report.sourceChanged, true);
+    assert.deepEqual(nameOverride.report.author, bot);
+    assert.deepEqual(nameOverride.report.committer, bot);
     git('config', '--global', 'user.email', 'operator@example.test');
     const before = readFileSync(source, 'utf8');
     const { code, report } = check();
     assert.equal(code, 1);
     assert.equal(report.sourceChanged, true);
     assert.deepEqual(report.expected, bot);
-    assert.equal(report.working.name, 'fixture-operator');
     assert.equal(report.author.name, 'fixture-operator');
-    assert.match(report.origins.name, /global\s+file:.*\.gitconfig/);
+    assert.equal(readFileSync(source, 'utf8'), before);
+
+    const namesOnly = check(names);
+    assert.equal(namesOnly.code, 1);
+    assert.equal(namesOnly.report.author.name, bot.name);
+    assert.equal(namesOnly.report.author.email, 'operator@example.test');
+
+    const overridden = check({
+      ...names,
+      GIT_AUTHOR_EMAIL: bot.email,
+      GIT_COMMITTER_EMAIL: bot.email,
+    });
+    assert.equal(overridden.code, 0);
+    assert.equal(overridden.report.status, 'passed');
+    assert.equal(overridden.report.sourceChanged, true);
+    assert.deepEqual(overridden.report.author, bot);
+    assert.deepEqual(overridden.report.committer, bot);
     assert.equal(readFileSync(source, 'utf8'), before);
   });
 });
@@ -65,7 +86,6 @@ test('checks author and committer overrides even when source and configuration m
       const { code, report } = check({ [`GIT_${role}_EMAIL`]: 'other@example.test' });
       assert.equal(code, 1);
       assert.equal(report.sourceChanged, false);
-      assert.deepEqual(report.configured, bot);
       assert.equal(report[role.toLowerCase()].email, 'other@example.test');
     }
   });

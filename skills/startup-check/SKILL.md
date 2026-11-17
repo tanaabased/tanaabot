@@ -88,15 +88,17 @@ separate operator-authorized scope. This skill inspects the saved installation o
    unverified. Canon is delivered through the ChatGPT account independently of this repository.
    Do not inspect the container's plugin registry, require a fixed version or inventory, install,
    update, or query npm during this check.
-6. For **Identity**, run
+6. For **Identity**, first establish that the saved environment values are exported in the actual
+   task launcher using step 3. Reuse its successful environment check; if loading failed or remains
+   unverified, leave commit identity unverified and continue independent identity checks. Do not
+   manually source the loader or set overrides to make verification pass. Once loading is verified, run
    `bun --no-env-file <prepared-checkout>/skills/startup-check/scripts/git-identity.js <prepared-checkout>`
    through the same unmodified task launcher, during both post-install review and fresh-chat startup.
-   It compares the committed Git identity with the working configuration and the author/committer Git
-   would use in the prepared checkout. Retain its timestamp, revision and identity origins in context.
-   Exit 1 fails Identity; a changed source file also fails Dotfiles, even when its Stow link matches.
-   Exit 2 leaves this check unverified. Do not reset files or override identity before checking.
-   For a requested lifecycle diagnosis, show these observations in the builder and fresh chat;
-   compare the same revision to locate when drift appeared. This does not identify the writer.
+   It uses `git var GIT_AUTHOR_IDENT` and `git var GIT_COMMITTER_IDENT` to compare actual commit
+   names and emails with the committed Tanaabot identity, honoring Git's environment overrides.
+   Exit 0 passes this commit-identity check; exit 1 fails it; exit 2 leaves it unverified.
+   Separately, `sourceChanged: true` fails Dotfiles, even when the installed Stow link matches.
+   Correct overrides can pass commit identity without repairing source drift. Do not reset files.
    Check SSH signing settings and public-key trust against the prepared manifest and dotfiles.
    Tanaboot checks the private/public key match and
    HTTPS Git configuration offline. It verifies GitHub CLI's protocol, the selected `gh` credential
@@ -124,7 +126,7 @@ separate operator-authorized scope. This skill inspects the saved installation o
    network, rate limits or missing prerequisites leave the affected check unverified. Preserve the
    API command's exit status so an incomplete listing cannot pass. Keep raw service errors private.
    Do not register keys, change credentials or inspect connector credentials.
-   Retain the verified GitHub login, effective Git name/email, agent email resolved from its manifest
+   Retain the verified GitHub login, actual Git author/committer identities, agent email resolved from its manifest
    binding, HTTPS configuration and local signing identity for the identity card. API identity,
    repository permissions, live HTTPS access and local signing are distinct results. A public read
    may be anonymous or use platform authentication; it does not prove `GH_TOKEN` write access.
@@ -142,7 +144,7 @@ separate operator-authorized scope. This skill inspects the saved installation o
 ## Bundled Resources
 
 - [Tanaboot](../../tanaboot.sh): Shared host and agent readiness checks.
-- [Git identity diagnostic](./scripts/git-identity.js): Read-only committed-source and effective identity comparison.
+- [Git identity check](./scripts/git-identity.js): Actual commit identity and separate source-drift results.
 - [Tanaabot Voice](../voice/SKILL.md): Courteous, concise reporting.
 - [Startup report contract](./references/startup-report.md): Section criteria, status rules and cards.
 
