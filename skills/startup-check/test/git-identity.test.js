@@ -9,6 +9,12 @@ import { test } from 'bun:test';
 
 const script = fileURLToPath(new URL('../scripts/git-identity.js', import.meta.url));
 const bot = { name: 'fixture-bot', email: 'bot@example.test' };
+const overrides = {
+  GIT_AUTHOR_NAME: bot.name,
+  GIT_AUTHOR_EMAIL: bot.email,
+  GIT_COMMITTER_NAME: bot.name,
+  GIT_COMMITTER_EMAIL: bot.email,
+};
 
 function fixture(run) {
   const directory = mkdtempSync(join(tmpdir(), 'tanaabot-git-identity-'));
@@ -33,6 +39,10 @@ function fixture(run) {
     mkdirSync(join(directory, 'dotfiles/git'), { recursive: true });
     writeFileSync(source, `[user]\nname = ${bot.name}\nemail = ${bot.email}\n`);
     symlinkSync(source, env.GIT_CONFIG_GLOBAL);
+    git('config', '--global', 'user.signingkey', '~/.ssh/fixture.pub');
+    git('config', '--global', 'gpg.format', 'ssh');
+    git('config', '--global', 'commit.gpgsign', 'true');
+    git('config', '--global', 'gpg.ssh.allowedSignersFile', '~/.config/git/allowed_signers');
     git('init', '--quiet');
     git('add', 'dotfiles/git/.gitconfig');
     git('-c', 'commit.gpgsign=false', 'commit', '--quiet', '-m', 'fixture');
@@ -50,6 +60,7 @@ test('detects a global identity write through a Stow link without repairing the 
     const nameOverride = check(names);
     assert.equal(nameOverride.code, 0);
     assert.equal(nameOverride.report.sourceChanged, true);
+    assert.equal(nameOverride.report.sourceDrift, 'identity-only');
     assert.deepEqual(nameOverride.report.author, bot);
     assert.deepEqual(nameOverride.report.committer, bot);
     git('config', '--global', 'user.email', 'operator@example.test');
@@ -74,9 +85,46 @@ test('detects a global identity write through a Stow link without repairing the 
     assert.equal(overridden.code, 0);
     assert.equal(overridden.report.status, 'passed');
     assert.equal(overridden.report.sourceChanged, true);
+    assert.equal(overridden.report.sourceDrift, 'identity-only');
     assert.deepEqual(overridden.report.author, bot);
     assert.deepEqual(overridden.report.committer, bot);
     assert.equal(readFileSync(source, 'utf8'), before);
+  });
+});
+
+test('rejects material signing changes despite correct identity overrides', () => {
+  fixture(({ git, check, source }) => {
+    git('config', '--global', 'user.name', 'fixture-operator');
+    git('config', '--global', 'commit.gpgsign', 'false');
+    const before = readFileSync(source, 'utf8');
+    const { code, report } = check(overrides);
+    assert.equal(code, 1);
+    assert.equal(report.status, 'failed');
+    assert.equal(report.sourceDrift, 'other');
+    assert.equal(report.signingStatus, 'failed');
+    assert.deepEqual(report.author, bot);
+    assert.deepEqual(report.committer, bot);
+    assert.equal(readFileSync(source, 'utf8'), before);
+  });
+});
+
+test('assesses unrelated configuration differences without failing correct identities', () => {
+  fixture(({ git, check }) => {
+    git('config', '--global', 'color.ui', 'auto');
+    const { code, report } = check();
+    assert.equal(code, 0);
+    assert.equal(report.sourceDrift, 'other');
+    assert.equal(report.signingStatus, 'passed');
+  });
+});
+
+test('does not describe comment-only edits as changed identity values', () => {
+  fixture(({ check, source }) => {
+    writeFileSync(source, `${readFileSync(source, 'utf8')}\n# Local note\n`);
+    const { code, report } = check();
+    assert.equal(code, 0);
+    assert.equal(report.sourceChanged, true);
+    assert.equal(report.sourceDrift, 'other');
   });
 });
 
@@ -86,6 +134,7 @@ test('checks author and committer overrides even when source and configuration m
       const { code, report } = check({ [`GIT_${role}_EMAIL`]: 'other@example.test' });
       assert.equal(code, 1);
       assert.equal(report.sourceChanged, false);
+      assert.equal(report.sourceDrift, 'none');
       assert.equal(report[role.toLowerCase()].email, 'other@example.test');
     }
   });

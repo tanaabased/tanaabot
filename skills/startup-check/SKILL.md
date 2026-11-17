@@ -96,9 +96,13 @@ separate operator-authorized scope. This skill inspects the saved installation o
    through the same unmodified task launcher, during both post-install review and fresh-chat startup.
    It uses `git var GIT_AUTHOR_IDENT` and `git var GIT_COMMITTER_IDENT` to compare actual commit
    names and emails with the committed Tanaabot identity, honoring Git's environment overrides.
-   Exit 0 passes this commit-identity check; exit 1 fails it; exit 2 leaves it unverified.
-   Separately, `sourceChanged: true` fails Dotfiles, even when the installed Stow link matches.
-   Correct overrides can pass commit identity without repairing source drift. Do not reset files.
+   It also compares effective signing settings with the committed configuration. Exit 0 passes these
+   identity and signing-setting checks; exit 1 fails the affected check; exit 2 leaves it unverified.
+   `sourceDrift` classifies source changes as `none`, `identity-only` (only `user.name` and `user.email`
+   values differ), or `other`. `sourceChanged: true` alone does not fail Dotfiles. Apply the report
+   contract's drift rules after all required checks; correct overrides do not excuse signing,
+   trust, credential-helper, HTTPS transport or Stow-link failures. Do not reset files or use the
+   changed working file as the expected baseline.
    Check SSH signing settings and public-key trust against the prepared manifest and dotfiles.
    Tanaboot checks the private/public key match and
    HTTPS Git configuration offline. It verifies GitHub CLI's protocol, the selected `gh` credential
@@ -134,7 +138,8 @@ separate operator-authorized scope. This skill inspects the saved installation o
    Email configuration is identity, not proof of Google authentication; connected-account selection
    remains [#11](https://github.com/tanaabased/tanaabot/issues/11).
 7. Compose the startup card using the report contract. Keep successful and not-applicable rows terse;
-   show explanatory details only for failed or unverified rows. Append the success-only identity
+   show explanatory details only for failed or unverified rows, with the report contract's optional
+   informational note for harmless Git drift. Append the success-only identity
    card only when Environment and Identity both pass. Otherwise omit it and keep the affected
    check's explanation in the startup card, without another warning card. Retain revision and diagnostic
    evidence in the working context without creating a receipt or printing routine success details. A script
@@ -144,14 +149,14 @@ separate operator-authorized scope. This skill inspects the saved installation o
 ## Bundled Resources
 
 - [Tanaboot](../../tanaboot.sh): Shared host and agent readiness checks.
-- [Git identity check](./scripts/git-identity.js): Actual commit identity and separate source-drift results.
+- [Git identity check](./scripts/git-identity.js): Actual commit identity, signing settings and source-drift classification.
 - [Tanaabot Voice](../voice/SKILL.md): Courteous, concise reporting.
 - [Startup report contract](./references/startup-report.md): Section criteria, status rules and cards.
 
 ## Validation
 
 Confirm that no provisioning, SSH connection or state change was attempted, that all six startup
-rows appear in order, and that only failed or unverified startup rows carry details. Check that the
+rows appear in order, and that successful rows carry only the permitted informational drift note. Check that the
 signing-key lookup used the verified expected account, consumed all pages and reused the established local
 key match. Show the identity card only when Environment and Identity pass; use actual verified
 identity fields and never passwords, tokens or private-key contents. Apply the overall failure/uncertainty

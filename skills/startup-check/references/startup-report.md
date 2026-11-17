@@ -1,8 +1,9 @@
 # Startup report
 
 Return the quoted startup card with these six rows, in this order. Use normal sentence
-capitalization. Successful and not-applicable rows contain only the section name and status.
-Keep the evidence in working context; include details only for failed or unverified checks, unless
+capitalization. Successful and not-applicable rows contain only the section name and status, except
+for the optional Dotfiles informational note below.
+Keep the evidence in working context; include details only for failed or unverified checks or that note, unless
 the operator explicitly requests diagnostic evidence. Append the success-only identity card below
 only when its conditions are met.
 
@@ -12,7 +13,7 @@ only when its conditions are met.
 | --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Environment     | Prepared Tanaabot checkout, canonical origin and source revision identified; supported Linux and actual task command launcher established. The saved environment selects the manifest's 1Password Environment, contains valid variables and all its values match the actual exported environment. Derive the variables from the file; never print secret values.                                                                                                                                                                                                                                                                                                       |
 | Dependencies    | Brewfile executables discoverable on the task's effective PATH, usable version output, and declared Node/Bun major versions satisfied. Homebrew maintenance permissions are not required.                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| Dotfiles        | The `ai`, `shell`, `git`, `gh` and `ssh` dotpackages link to the prepared sources and match them. The source Git configuration matches its committed revision. Shell initialization supplies tools and saved variables in fresh shells. The private environment file is outside the checkout, owned by this user with mode 600 in a real mode-700 directory; private storage and key paths are not symlinks.                                                                                                                                                                                                                                                           |
+| Dotfiles        | The `ai`, `shell`, `git`, `gh` and `ssh` dotpackages link to the prepared sources and match them. Git source drift meets the assessment rules below; identity-only drift with verified overrides may pass. Shell initialization supplies tools and saved variables in fresh shells. The private environment file is outside the checkout, owned by this user with mode 600 in a real mode-700 directory; private storage and key paths are not symlinks.                                                                                                                                                                                                               |
 | Tanaabot skills | All local `SKILL.md` files beneath the prepared checkout's `skills/` are readable, have nonempty instructions and valid frontmatter with unique names and nonempty descriptions. Their names, descriptions and absolute paths are retained in chat context. This is explicit local loading; native catalog registration is not required or implied.                                                                                                                                                                                                                                                                                                                    |
 | Canon skills    | The task catalog contains machine names starting with `tanaab-`, allowing host qualification. Use ownership metadata when available to exclude unrelated matches. This establishes basic availability, not a complete release inventory or ownership from names alone. Installation and updates belong to the ChatGPT account.                                                                                                                                                                                                                                                                                                                                         |
 | Identity        | After saved environment loading is verified, actual Git author/committer names and emails match the committed Git configuration, including environment overrides. Source drift is assessed separately under Dotfiles. Agent email binding, SSH signing configuration, public key and allowed signers match the prepared configuration; the private key matches the approved public key. GitHub CLI and Git select HTTPS with the intended credential helper and URL rewrites; inspect platform authentication separately. The GitHub CLI credential returns the manifest's username, and that account's complete public signing-key listing contains the matching key. |
@@ -27,6 +28,21 @@ environment automatically ran its saved Start skill or that a later request sele
 local skill; verify those behaviors in the fresh pilot.
 
 ## Status rules
+
+Assess Git source drift against the committed revision, never the changed working file. When
+`sourceDrift` is `identity-only`, Dotfiles may pass if saved environment loading was verified through
+the actual unmodified task launcher, both effective commit identities match the committed defaults,
+and all other required Dotfiles checks pass. Add this concise note beneath its passed row:
+
+> **Info:** Git config identity values differ from the committed defaults; environment overrides resolve both author and committer correctly.
+
+For `other` drift, inspect the differences privately and assess effective signing, trusted-key,
+credential-helper, HTTPS transport and Stow-link requirements. A difference alone is neither a
+failure nor evidence of safety. Required violations still fail; incomplete evidence stays unverified.
+The helper's `signingStatus` covers effective signing settings only; reuse Tanaboot's transport checks
+and the remaining skill checks. Never print raw configuration differences or attribute changes to
+the platform without evidence. The informational note adds no warning and does not prevent an overall
+pass when every section passes. The identity-card conditions remain unchanged.
 
 - **passed:** All required evidence for the section is established.
 - **failed:** A required condition is demonstrably unmet. Preserve other completed checks.
