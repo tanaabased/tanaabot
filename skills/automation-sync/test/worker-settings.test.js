@@ -13,7 +13,8 @@ const job = (settings = {}, codex = {}) => ({ ...settings, overrides: { codex } 
 
 test('should resolve each worker setting independently before projecting to native values', () => {
   const cases = [
-    [job(), { model: 'fixture-medium', effort: 'xhigh' }],
+    [job(), { model: 'fixture-default', effort: 'high' }],
+    [job({ model: 'medium' }), { model: 'fixture-medium', effort: 'xhigh' }],
     [job({ model: 'low' }), { model: 'fixture-low', effort: 'medium' }],
     [job({ model: 'low', effort: 'high' }), { model: 'fixture-low', effort: 'high' }],
     [

@@ -6,7 +6,7 @@ import { planSync } from '../lib/sync-plan.js';
 
 const manifest = {
   agent: { id: 'tanaabot' },
-  models: { medium: { model: 'openai/fixture-medium', effort: 'high' } },
+  models: { default: { model: 'openai/fixture-default', effort: 'high' } },
   automations: [
     {
       id: 'review',

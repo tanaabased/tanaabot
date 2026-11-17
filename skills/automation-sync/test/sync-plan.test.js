@@ -23,7 +23,7 @@ function input(overrides = {}) {
   return {
     manifest: {
       agent: { id: 'tanaabot' },
-      models: { medium: { model: 'openai/fixture-medium', effort: 'high' } },
+      models: { default: { model: 'openai/fixture-default', effort: 'high' } },
       automations: [job('sync'), job('smoke')],
     },
     partials: {
@@ -66,7 +66,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
   test('should carry changed selections into the same worker on every scheduled request', () => {
     const request = input({ id: 'sync' });
     const [initial] = planSync(request).operations;
-    assert.equal(workerRequest(initial.task).model, 'fixture-medium');
+    assert.equal(workerRequest(initial.task).model, 'fixture-default');
     assert.equal(workerRequest(initial.task).effort, 'high');
     request.existingTasks = [{ id: 'native-sync', task: initial.task }];
     const selected = request.manifest.automations[0];
@@ -86,7 +86,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     const [repeated] = planSync({ ...request, now: later }).operations;
     assert.equal(repeated.kind, 'unchanged');
     assert.deepEqual(workerRequest(repeated.task), worker);
-    request.manifest.models.medium.model = 'openai/fixture-revised';
+    request.manifest.models.default.model = 'openai/fixture-revised';
     assert.equal(planSync(request).operations[0].kind, 'unchanged');
     delete selected.overrides.codex.model;
     delete selected.model;

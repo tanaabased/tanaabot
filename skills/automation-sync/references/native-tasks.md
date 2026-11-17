@@ -54,7 +54,7 @@ configuration ID from those controls, never a machine ID reported inside the con
 Do not require the worker to independently reproduce the configuration ID.
 
 Worker model selection uses `overrides.codex.model`, then top-level `model`, then the configured
-`medium` profile. Effort independently uses `overrides.codex.effort`, then top-level `effort`, then
+`default` profile. Effort independently uses `overrides.codex.effort`, then top-level `effort`, then
 the selected profile's effort or the effort configured for that model, then `high`. If the same
 literal model has conflicting configured efforts, select a named profile or supply explicit effort.
 Missing profiles and unsupported settings stop preparation. Native controls validate availability;

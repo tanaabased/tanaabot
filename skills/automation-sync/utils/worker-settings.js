@@ -4,7 +4,7 @@ const efforts = ['none', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max', 'ul
 /** Resolve desired worker settings; native controls still validate availability. */
 export default function workerSettings(job, models) {
   const override = job.overrides.codex;
-  const selector = override?.model ?? job.model ?? 'medium';
+  const selector = override?.model ?? job.model ?? 'default';
   const namedProfile = profiles.includes(selector);
   const profile = namedProfile ? models?.[selector] : undefined;
   if (namedProfile && !profile) throw new Error('automation-model-profile-missing');
