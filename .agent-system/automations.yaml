@@ -10,13 +10,7 @@ automations:
     schedule: '0 0 * * *'
     prompt:
       file: ../prompts/automation-sync.md
-  - <<: *defaults
-    id: update-cloud-canon
-    group: TANAABOT
-    thread: UPDATE CLOUD CANON
-    schedule: '0 1 * * *'
-    prompt:
-      file: ../prompts/update-cloud-canon.md
+
   - <<: *defaults
     id: instruction-sync
     group: TANAABOT
@@ -24,3 +18,11 @@ automations:
     schedule: '0 1 * * *'
     prompt:
       file: ../prompts/instruction-sync.md
+
+  - <<: *defaults
+    id: update-cloud-canon
+    group: TANAABOT
+    thread: UPDATE CLOUD CANON
+    schedule: '0 1 * * *'
+    prompt:
+      file: ../prompts/update-cloud-canon.md
