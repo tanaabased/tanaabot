@@ -33,6 +33,7 @@ Verification never provisions, upgrades, switches revisions, binds Agent System 
 
 - Starting a fresh task in a prepared Tanaabot Cloud environment through its Start skill.
 - An explicit request to verify an existing Tanaabot Cloud installation.
+- A request for the startup status report, including “show details.”
 
 ## When Not to Use
 
@@ -47,6 +48,10 @@ separate operator-authorized scope. This skill inspects the saved installation o
    `dotfiles/ai/.codex/AGENTS.md`. Verify the source belongs to `tanaabased/tanaabot` and record its
    full commit. Do not assume the task's working directory or an optional plugin cache is the prepared
    checkout. If no source can be established, report that check as unverified; do not fetch a replacement.
+   Select the optional status report from the operator's request and the prepared checkout's
+   top-level `debug` boolean in `.agent-system/agent.yaml`. An explicit request always selects
+   the ℹ️ report. Otherwise only literal `true` selects the 🔬 report. Default to the startup
+   card alone if the setting is missing or unavailable.
 2. Record the task tool's actual shell and command-launch flags. Run
    `bash <prepared-checkout>/tanaboot.sh --check` through that same launcher, without first sourcing
    shell initialization or changing PATH. The command checks declared tools, fresh shells and readable
@@ -64,8 +69,9 @@ separate operator-authorized scope. This skill inspects the saved installation o
    read-only inspection. A check prevented by missing prerequisites is unverified, not another failure.
    The independent environment check is
    `bun --no-env-file <prepared-checkout>/scripts/environment-task.js --check`, through the same unmodified launcher.
-   Never print the environment file, secret values, hashes, tokens or command environment. Only the
-   verified public identity fields named in the report contract may appear in the identity card.
+   When producing a status report, use `--check-names` in place of that independent `--check`.
+   Its successful output lists only verified variable names. Never print the environment file,
+   secret values, hashes, tokens or command environment.
    Do not source the loader to turn a failed visibility check into a pass.
 4. For **Tanaabot skills**, enumerate `SKILL.md` files beneath the prepared checkout's `skills/`
    directory. Verify each instruction file is readable and has a nonempty body and valid YAML
@@ -132,7 +138,7 @@ separate operator-authorized scope. This skill inspects the saved installation o
    API command's exit status so an incomplete listing cannot pass. Keep raw service errors private.
    Do not register keys, change credentials or inspect connector credentials.
    Retain the verified GitHub login, actual Git author/committer identities, agent email resolved from its manifest
-   binding, HTTPS configuration and local signing identity for the identity card. API identity,
+   binding, HTTPS configuration and local signing identity for the optional status report. API identity,
    repository permissions, live HTTPS access and local signing are distinct results. A public read
    may be anonymous or use platform authentication; it does not prove `GH_TOKEN` write access.
    Live transport and signing tests belong to the authorized Cloud pilot, not read-only startup.
@@ -140,9 +146,9 @@ separate operator-authorized scope. This skill inspects the saved installation o
    remains [#11](https://github.com/tanaabased/tanaabot/issues/11).
 7. Compose the startup card using the report contract. Show all six status rows together.
    Below them, list any notes by section, with ❌ errors first, then ⚠️ warnings, then ℹ️ information
-   such as verified identity-only Git drift. Omit **Notes** when empty. Append the success-only identity
-   card only when Environment and Identity both pass. Otherwise omit it and keep the affected
-   check's explanation in the startup card, without another warning card. Retain revision and diagnostic
+   such as verified identity-only Git drift. Omit **Notes** when empty. Append at most one selected
+   status report using the contract’s six H3 sections, including on partial or failed runs.
+   Retain revision and diagnostic
    evidence in the working context without creating a receipt or printing routine success details. A script
    returns an exit code; this skill reports the overall result in its response. Do not turn missing
    evidence into a pass or expose private configuration and credentials.
@@ -159,8 +165,9 @@ separate operator-authorized scope. This skill inspects the saved installation o
 Confirm that no provisioning, SSH connection or state change was attempted, that all six startup
 rows appear together in order, and that any notes follow the rows in severity order. Check that the
 signing-key lookup used the verified expected account, consumed all pages and reused the established local
-key match. Show the identity card only when Environment and Identity pass; use actual verified
-identity fields and never passwords, tokens or private-key contents. Apply the overall failure/uncertainty
+key match. Check ordinary and explicitly requested output with debug on and off. Explicit requests
+always produce one ℹ️ status report. Use verified identity fields and never passwords, tokens or
+private-key contents. Apply the overall failure/uncertainty
 rules; deferred instruction delivery does not prevent a pass. Distinguish machine checks, explicit local Tanaabot loading and Canon catalog availability. Confirm the retained local
 inventory contains each skill's name, description and absolute path. This does not alter the native
 catalog. Maintenance validation checks structure and packaged references; a fresh Cloud trial must

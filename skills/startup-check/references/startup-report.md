@@ -5,7 +5,7 @@ Each row contains only the bold section name and status. Use normal sentence cap
 After the last row, include **Notes** only when there is something to explain. Keep the heading
 and its bullet list inside the quote. Order notes by severity: ❌ errors, ⚠️ warnings, then ℹ️
 information. Within a severity, follow the order of the checks. Start each bullet with its
-emoji and bold section name. Append the identity card only when its conditions are met.
+emoji and bold section name. Use the optional status report below for detailed results.
 
 ## Sections
 
@@ -42,7 +42,7 @@ failure nor evidence of safety. Required violations still fail; incomplete evide
 The helper's `signingStatus` covers effective signing settings only; reuse Tanaboot's transport checks
 and the remaining skill checks. Never print raw configuration differences or attribute changes to
 the platform without evidence. The informational note adds no warning and does not prevent an overall
-pass when every section passes. The identity-card conditions remain unchanged.
+pass when every section passes.
 
 - **passed:** All required evidence for the section is established.
 - **failed:** A required condition is demonstrably unmet. Preserve other completed checks.
@@ -51,9 +51,9 @@ pass when every section passes. The identity-card conditions remain unchanged.
 - **not applicable:** The section has no requirements in the current scope. Do not use this to
   excuse a missing required check.
 
-Any failed required check makes the overall result **❌ Startup check failed**. Otherwise, any
-unverified required check makes it **⚠️ Startup check incomplete**. Otherwise use
-**✅ Startup check passed**. A section with both failure and uncertainty is failed; mention the
+Any failed required check makes the overall result **❌ STARTUP CHECK · FAILED**. Otherwise, any
+unverified required check makes it **⚠️ STARTUP CHECK · INCOMPLETE**. Otherwise use
+**✅ STARTUP CHECK · PASSED**. A section with both failure and uncertainty is failed; mention the
 unverified remainder briefly when it affects recovery. A script exit code is evidence for the
 operation it ran, not an exit code returned by the skill or proof of unrelated sections.
 
@@ -61,45 +61,101 @@ For each failed check, give the observed failure in an error note. For an unveri
 give the missing evidence in a warning note. Include a concise next step in the relevant bullet.
 Keep routine evidence in working context. Include a safe error code, path or command only when
 it helps recovery or the operator requests diagnostics. Never include tokens, secret values or credential dumps.
-Do not append raw logs, duplicate status summaries, separate warning cards, or routine successful
-revisions and tool paths. The identity card below is the only additional success card. Do not repair
-anything during verification.
+Keep raw logs out of both cards and routine version and path details in the optional status report.
 
-## Identity card
+## Optional status report
 
-Append this card after the startup card only when **Environment** and **Identity** both passed.
-Otherwise omit it and explain the affected checks in the startup card’s **Notes**.
+Always show the startup card first. Select at most one additional heading in this order:
 
-Use the verified GitHub login, actual Git author/committer names and emails, resolved agent email and configured SSH
-private-key path. Show HTTPS as configured and the signing-key registration result separately.
-Report 1Password as loaded and available only from the passed Environment check; do not refresh it
-or print passwords, tokens, Environment contents or private-key material. Signing-key registration and a matching local private key do not prove a successful commit signature.
-HTTPS configuration and API identity do not prove live Git access or repository write permission.
-Keep those pilot results separate; outbound SSH is not required.
+1. An operator request for the status report or details selects **ℹ️ STATUS REPORT**, regardless
+   of the debug setting. A mention in the skill instructions or a template is not an operator request.
+2. Otherwise, top-level `debug: true` in the prepared checkout’s `.agent-system/agent.yaml`
+   selects **🔬 DEBUG · STATUS REPORT**.
+3. Otherwise finish after the startup card.
 
-The example below assumes all checks passed and the displayed identity values were observed:
+Both headings use the same body. Quote the H2, six H3s and bulleted fields together. Keep
+field labels bold and variable names, paths, versions and identities in backticks.
+Use the observations from this run. If a check failed or could not run, retain its section,
+state the failure or mark missing fields **Unverified**, and keep independently verified facts.
 
-> ## 🤖 Identity
+- **Environment:** Use the native environment name, observed OS, actual task shell and verified
+  checkout path. Report saved 1Password loading and the names returned by a successful
+  `--check-names` in that launcher. Render each name in its own backticks. On failure, mark
+  loading and names accordingly. Never dump the process environment or print variable values.
+- **Dependencies:** Use one bullet per Brewfile executable, with its observed version from
+  Tanaboot’s host check. If the check stopped early, use the remaining executables’ read-only
+  `--version` output on the same PATH. Derive the list from the prepared Brewfile.
+- **Dotfiles:** List the packages whose expected links and contents were verified. Identify
+  incomplete packages separately when applicable.
+- **Tanaabot skills:** Run `git -C <prepared-checkout> describe --tags --always --dirty`.
+  Report its exact tag, tag plus commit distance and hash, or fallback commit, including the
+  dirty suffix when present. Use the verified local inventory count and its actual directory.
+- **Canon skills:** Report catalog availability. Use version metadata exposed by the current host
+  for the loaded Canon plugin, listing distinct versions if applicable. Label an operator-supplied
+  version **reported**; absent evidence, show **Unverified**. Version visibility is independent of
+  catalog readiness. Never infer a loaded version from npm, a different install or a skill name.
+- **Identity:** Show the verified GitHub login, Git author and committer (combine when equal),
+  manifest-bound agent email, configured transport, signing mode, configured key path and key
+  verification. Distinguish local key matching and account registration when they differ. Neither
+  configured transport nor a registered key proves a live push or signed commit. Keep key material,
+  credentials and private service bindings out of the report.
+
+Illustrative requested report (debug uses the same body with the 🔬 heading):
+
+> ## ℹ️ STATUS REPORT
 >
-> - **GitHub:** `tanaabot` — authenticated
-> - **Git author:** `tanaabot <tanaabot@tanaab.dev>`
-> - **Git committer:** `tanaabot <tanaabot@tanaab.dev>`
-> - **Agent email:** `tanaabot@tanaab.dev`
-> - **Signing key:** `~/.ssh/id_tanaabot`
-> - **Signing ownership:** Registered to `tanaabot`; private/public keys match
-> - **Git transport:** HTTPS configured
-> - **Git signing:** Local SSH signing configured
-> - **1Password environment:** Loaded and available
+> ### Environment
+>
+> - **Cloud environment** `tanaabot`
+> - **Operating system** Linux
+> - **Task shell** Bash
+> - **Prepared checkout** `/workspace/tanaabot`
+> - **1Password environment** Loaded and verified in the task shell
+> - **Loaded variables** `EMAIL` `GH_TOKEN`
+>
+> ### Dependencies
+>
+> - **Bun** `1.4.4`
+> - **curl** `8.12.1`
+> - **Git** `2.48.1`
+> - **GitHub CLI** `2.67.0`
+> - **jq** `1.7.1`
+> - **Node.js** `26.12.1`
+> - **Stow** `2.4.1`
+>
+> ### Dotfiles
+>
+> - **Verified packages** `ai` `gh` `git` `shell` `ssh`
+>
+> ### Tanaabot skills
+>
+> - **Source revision** `v0.1.0-3-gabc1234`
+> - **Local skills loaded** 7
+> - **Skill directory** `/workspace/tanaabot/skills`
+>
+> ### Canon skills
+>
+> - **Task catalog** Canon skills available
+> - **Plugin version** `0.14.1`
+>
+> ### Identity
+>
+> - **GitHub account** `tanaabot` · authenticated
+> - **Git author and committer** `tanaabot <tanaabot@tanaab.dev>`
+> - **Agent email** `tanaabot@tanaab.dev`
+> - **Git transport** HTTPS
+> - **Git signing** Local SSH signing configured
+> - **Signing key** `~/.ssh/id_tanaabot`
+> - **Key verification** Private key matches the public key registered to `tanaabot`
 
 ## Examples
 
-These illustrate the startup card's formatting; they are not observed results. Append the identity
-card when its conditions are met. Replace failure details and next steps with actual evidence.
+These examples illustrate the startup card. Replace their findings with actual evidence.
 Preserve the quoted H2 heading and blank quoted line before the rows.
 
 ### Passed
 
-> ## ✅ Startup check passed
+> ## ✅ STARTUP CHECK · PASSED
 >
 > - **Environment — passed**
 > - **Dependencies — passed**
@@ -110,7 +166,7 @@ Preserve the quoted H2 heading and blank quoted line before the rows.
 
 ### Incomplete
 
-> ## ⚠️ Startup check incomplete
+> ## ⚠️ STARTUP CHECK · INCOMPLETE
 >
 > - **Environment — passed**
 > - **Dependencies — passed**
@@ -125,7 +181,7 @@ Preserve the quoted H2 heading and blank quoted line before the rows.
 
 ### Failed
 
-> ## ❌ Startup check failed
+> ## ❌ STARTUP CHECK · FAILED
 >
 > - **Environment — passed**
 > - **Dependencies — passed**
