@@ -28,7 +28,7 @@ in a later operator message; scheduled execution cannot supply that approval.
   and, before proposing a save, `custom_rules.update_instructions`. Use their actual supported
   inputs and target scope; never invent an API or attempt an unapproved write to test enforcement.
 - **Before reporting:** Read [instruction results](./references/results.md), the shared
-  [presentation rules](../../prompts/automations/partials/presentation.md), and
+  [presentation rules](../../prompts/presentation-partial.md), and
   [Tanaabot Voice](../voice/SKILL.md), including its required samples.
 
 Resolve repository resources from the same selected revision. Use supported repository reads

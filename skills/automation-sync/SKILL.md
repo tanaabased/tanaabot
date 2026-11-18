@@ -28,10 +28,10 @@ updates; the script itself makes no service writes.
 
 - **Always:** Read [native task inputs and application](./references/native-tasks.md),
   [configuration receipts](./references/configuration-receipts.md),
-  the shared [metadata](../../prompts/automations/partials/metadata.md),
-  [execution](../../prompts/automations/partials/execution.md) and
-  [presentation](../../prompts/automations/partials/presentation.md) partials, the coordinator's
-  [dispatch](../../prompts/automations/partials/dispatch.md) partial, and the selected revision's
+  the shared [metadata](../../prompts/metadata-partial.md),
+  [execution](../../prompts/execution-partial.md) and
+  [presentation](../../prompts/presentation-partial.md) partials, the coordinator's
+  [dispatch](../../prompts/dispatch-partial.md) partial, and the selected revision's
   [account guidance](../../dotfiles/ai/.codex/AGENTS.md#accounts-and-authority).
 - **Before writing the result:** Read [Tanaabot Voice](../voice/SKILL.md) and its required samples,
   unless another voice was requested. Apply the presentation partial's result and summary rules.

@@ -12,7 +12,7 @@ test('should load external definitions through the real public Agent System expo
   const root = await mkdtemp(join(tmpdir(), 'tanaabot-definitions-'));
   try {
     await mkdir(join(root, '.agent-system'));
-    await mkdir(join(root, 'prompts/automations/partials'), { recursive: true });
+    await mkdir(join(root, 'prompts'));
     await writeFile(
       join(root, '.agent-system/agent.yaml'),
       'schema-version: 1\nagent:\n  id: tanaabot\nmodels:\n  default: {model: openai/fixture-default, effort: high}\n  low: {model: openai/fixture-low, effort: medium}\n  medium: {model: openai/fixture-medium, effort: xhigh}\n  high: {model: openai/fixture-high, effort: high}\nautomations:\n  file: ./automations.yaml\n',
@@ -37,16 +37,16 @@ automations:
         model: fixture-override
         environment: {type: cloud, name: fixture}
     prompt:
-      file: ../prompts/automations/smoke.md
+      file: ../prompts/smoke.md
   - <<: *defaults
     id: inherited
     thread: Inherited settings
     schedule: "0 1 * * *"
     prompt:
-      file: ../prompts/automations/smoke.md
+      file: ../prompts/smoke.md
 `,
     );
-    await writeFile(join(root, 'prompts/automations/smoke.md'), 'Fixture smoke marker.');
+    await writeFile(join(root, 'prompts/smoke.md'), 'Fixture smoke marker.');
     for (const [name, content] of Object.entries({
       metadata: '{{metadata}}\n\nFixture metadata guidance.',
       execution: 'Fixture execution guidance.',
@@ -54,9 +54,9 @@ automations:
       dispatch: 'Fixture coordinator guidance.',
       request: '> ## {{emoji}} {{title}} · REQUEST\n>\n> {{request}}',
     }))
-      await writeFile(join(root, `prompts/automations/partials/${name}.md`), content);
+      await writeFile(join(root, `prompts/${name}-partial.md`), content);
     await writeFile(
-      join(root, 'prompts/automations/requests.json'),
+      join(root, 'prompts/requests.json'),
       JSON.stringify({ smoke: { emoji: '🧪', request: 'Run the fixture smoke.' } }),
     );
     const loaded = await definitions(root);
@@ -119,7 +119,7 @@ automations:
       type: 'cloud',
       name: 'fixture',
     });
-    await rm(join(root, 'prompts/automations/smoke.md'));
+    await rm(join(root, 'prompts/smoke.md'));
     await assert.rejects(() => definitions(root), /manifest-invalid/);
   } finally {
     await rm(root, { recursive: true, force: true });

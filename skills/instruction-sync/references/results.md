@@ -1,6 +1,6 @@
 # Instruction sync results
 
-Use the shared [presentation](../../../prompts/automations/partials/presentation.md) rules for
+Use the shared [presentation](../../../prompts/presentation-partial.md) rules for
 quoting, spacing, severity and delivery. These layouts own instruction-specific content. Replace
 placeholders with observed facts; never use a template as evidence that an operation happened.
 

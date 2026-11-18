@@ -74,7 +74,7 @@ In the main tanaabot Dot, ask it to read and follow
 repository revision for a read-only inventory, or
 [`skills/instruction-sync/SKILL.md`](./skills/instruction-sync/SKILL.md) to propose a refresh.
 Use supported repository reads if these skills are absent from the host catalog.
-The separate [Instruction Sync automation](./prompts/automations/instruction-sync.md) runs the
+The separate [Instruction Sync automation](./prompts/instruction-sync.md) runs the
 read-only comparison. To save a change, approve the exact proposal in a later main-chat reply.
 Unchanged checks need no approval.
 

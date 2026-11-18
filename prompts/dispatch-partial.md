@@ -57,8 +57,9 @@ Only for `automationId` `sync`, the worker may return prepared schedule actions 
 are available only here. Follow the current automation-sync skill and its native-task reference
 to apply those actions in their returned order under the existing authorization. Apply and verify
 a changed synchronizer first. Keep any bootstrap-only selection; do not expand it to other jobs.
-Follow the skill's final sidebar placement pass before returning verified configuration results
-to the workers using its display-only procedure.
+Request the skill’s final sidebar placement pass on the attached Mac, including creation of
+missing configured groups, moves and readback in that same handoff. Then return verified
+configuration results to the workers using the skill’s display-only procedure.
 Also return all considered outcomes to the sync worker for its separate run-results card, without
 rerunning synchronization. Keep the aggregate out of the main-chat summaries.
 Preparation output is machine handoff data, not a result card. Keep it in tool output or a private

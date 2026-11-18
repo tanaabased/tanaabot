@@ -161,7 +161,7 @@ Run now for a full sync.
 ### Initialization card
 
 In the creation prompt, identify the worker's automation and supply its emoji from
-`prompts/automations/requests.json` and its resolved chat title. Instruct the worker to complete
+`prompts/requests.json` and its resolved chat title. Instruct the worker to complete
 required Cloud startup checks, then finish initialization with one small quoted card in its own
 chat. Do not run the automation, change schedules or send a separate main-chat summary.
 
@@ -224,8 +224,8 @@ Copy saved native settings into `existingTasks` records with `id` and `task`:
 
 The worker uses the published Cloud environment and receives its own metadata, all shared worker
 guidance and the authored automation prompt. Its opening is rendered from the shared
-`prompts/automations/partials/request.md` template, the resolved schedule title, and its emoji
-and short request in `prompts/automations/requests.json`. Each selected automation needs an entry.
+`prompts/request-partial.md` template, the resolved schedule title, and its emoji
+and short request in `prompts/requests.json`. Each selected automation needs an entry.
 Saved schedule ownership remains metadata-first, with only the supported optional canary preceding it.
 The client owns preview length and collapse behavior; the template does not create an accordion.
 The coordinator continues that worker, waits for its
@@ -302,7 +302,8 @@ worker recreation or a schedule update.
 If this optional pass itself fails, report placement as unverified and retain the sync results.
 
 1. Use an authorized connected Mac with native Codex sidebar controls. For a Cloud or scheduled
-   coordinator, use a supported handoff to that Mac under the existing operator scope. If the Mac
+   coordinator, request the whole placement pass in one handoff to that Mac: list sections,
+   create missing configured groups, move the selected workers and verify membership. If the Mac
    or handoff is unavailable, record that reason and finish the sync report. Do not invent a remote
    endpoint, start a helper chat without authorization, or substitute Cloud sidebar controls.
 2. On that Mac, obtain the native chat and sidebar listing. Resolve exact bound chat IDs, following
@@ -317,11 +318,16 @@ If this optional pass itself fails, report placement as unverified and retain th
    This read-only pass loads the public Agent System manifest and resolves only its effective job
    `group`, including YAML-merged defaults from the declarations. No configured
    group means no placement request. There is no hard-coded section fallback or second parser.
-4. For each `move` result, use native `move_thread_to_sidebar_section` with its exact arguments.
-   Only an existing, unambiguously resolved section qualifies. Skip `verified` placements. Never
-   create sections or move unrelated chats. Before retrying an uncertain earlier move, inspect its
-   current membership; do not repeat a denial.
-5. Read back the sidebar after moves and run the same placement planner against that listing to
+4. On that same Mac, use the complete section listing. Match the manifest’s uppercase group
+   name exactly and case-sensitively. For each name in `sectionsToCreate`, use
+   `create_sidebar_section` with that exact name once. Read back the sidebar and rerun the
+   planner before moving workers. If creation was uncertain, reconcile from the listing.
+   If the group is still absent or multiple IDs have the exact name, report affected placements
+   as unverified. Do not retry a denial, create a second section or rename a case variant.
+5. For each `move` result, use native `move_thread_to_sidebar_section` with its exact arguments.
+   Skip verified placements and unrelated chats. Before retrying an uncertain earlier move,
+   inspect its current membership.
+6. Read back the sidebar after moves and run the same placement planner against that listing to
    check membership. A successful move response alone is insufficient. Make at most one move
    attempt per worker in this pass; a remaining `move` result means placement was not verified,
    not an instruction to loop. Record a failed move or unavailable readback with its specific

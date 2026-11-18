@@ -68,7 +68,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
   test('should render the bounded Sync recovery route with the shared dispatcher', () => {
     const request = input();
     request.partials.dispatch = readFileSync(
-      new URL('../../../prompts/automations/partials/dispatch.md', import.meta.url),
+      new URL('../../../prompts/dispatch-partial.md', import.meta.url),
       'utf8',
     );
     for (const { task } of planSync(request).operations) {

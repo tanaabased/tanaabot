@@ -6,6 +6,7 @@ export default function placementPlan({ manifest, context = {}, id = 'all' }) {
   const workers = (context.workers ?? []).filter((worker) =>
     jobs.some((job) => job.id === worker.automationId),
   );
+  const sectionsToCreate = new Set();
   const placements = workers.map((worker) => {
     const job = jobs.find((job) => job.id === worker.automationId);
     const result = { automationId: job.id, threadId: worker.id, desiredGroup: job.group ?? null };
@@ -18,9 +19,14 @@ export default function placementPlan({ manifest, context = {}, id = 'all' }) {
     );
     if (threads.length !== 1 || !threads[0].hostId)
       return unavailable('desktop-chat-missing-or-ambiguous');
-    const sections = (sidebar.sections ?? []).filter((section) => section.name === job.group);
+    if (!Array.isArray(sidebar.sections)) return unavailable('sidebar-sections-unavailable');
+    const sections = sidebar.sections.filter((section) => section.name === job.group);
+    if (sections.length === 0) {
+      sectionsToCreate.add(job.group);
+      return { ...result, status: 'awaiting-section' };
+    }
     if (sections.length !== 1 || !sections[0].sectionId)
-      return unavailable('sidebar-section-missing-or-ambiguous');
+      return unavailable('sidebar-section-id-missing-or-ambiguous');
     const section = sections[0];
     // Sidebar keys may say local for durable chats. Use them only for membership, never routing.
     const placed = (section.itemKeys ?? []).some(
@@ -42,5 +48,9 @@ export default function placementPlan({ manifest, context = {}, id = 'all' }) {
           }),
     };
   });
-  return { schema: 'tanaabot.automation-placement/v1', placements };
+  return {
+    schema: 'tanaabot.automation-placement/v1',
+    sectionsToCreate: [...sectionsToCreate],
+    placements,
+  };
 }

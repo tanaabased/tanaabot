@@ -103,8 +103,8 @@ work around setup failures; report them for a coding task.
 ## Automation authoring
 
 Before adding or changing an automation, read [Automation Sync](./skills/automation-sync/SKILL.md)
-and its required references, including the shared [execution](./prompts/automations/partials/execution.md)
-and [presentation](./prompts/automations/partials/presentation.md) guidance. Reuse their assembler,
+and its required references, including the shared [execution](./prompts/execution-partial.md)
+and [presentation](./prompts/presentation-partial.md) guidance. Reuse their assembler,
 native scheduling and delivery behavior; keep task-specific instructions in the automation's prompt.
 
 - Limit Automation Sync to synchronizing and repairing its own schedule and the other
@@ -113,7 +113,7 @@ native scheduling and delivery behavior; keep task-specific instructions in the 
   ID, prompt and run report. Only that job performs its task, including any main-Dot actions.
 - Choose each worker’s sidebar group by what the operator opens it for. Use `REPORTS` for
   results the operator routinely reviews, and `TANAABOT` for bot maintenance the operator
-  checks when something fails or needs approval. Set `group` on each definition.
+  checks when something fails or needs approval. Keep `REPORTS` as the manifest default and override `group` for maintenance jobs.
 - Keep the definition, prompt and request metadata aligned. Declare the intended schedule,
   timezone, enabled state and execution settings, preserving intentional native defaults.
 - State the purpose, inputs and source, prerequisites, approved account/actions and resource scope.
