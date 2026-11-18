@@ -92,7 +92,9 @@ test('packed plugin retains canonical skills, assets and usable links', async ()
     const canon = assembled.operations.find(({ automationId }) => automationId === 'cloud-update');
     assert.equal(canon.kind, 'create');
     assert.equal(canon.task.name, '🤖 CLOUD UPDATE');
-    assert.match(canon.task.prompt, /SYSTEM UPDATE · UPDATED/);
+    for (const outcome of ['UPDATED', 'UNCHANGED', 'INCOMPLETE', 'FAILED']) {
+      assert.ok(canon.task.prompt.includes(`CLOUD UPDATE · ${outcome}`));
+    }
     assert.match(canon.task.prompt, /Run Startup Check and show the status report/);
     assert.equal(canon.task.enabled, true);
     assert.equal(canon.task.schedule.default_timezone, 'America/New_York');

@@ -146,7 +146,7 @@ separate operator-authorized scope. This skill inspects the saved installation o
    remains [#11](https://github.com/tanaabased/tanaabot/issues/11).
 7. Compose the startup card using the report contract. Show all six status rows together.
    Below them, list any notes by section, with ❌ errors first, then ⚠️ warnings, then ℹ️ information
-   such as verified identity-only Git drift. Omit **Notes** when empty. Append at most one selected
+   such as verified identity-only Git drift. Omit **NOTES** when empty. Append at most one selected
    status report using the contract’s six H3 sections, including on partial or failed runs.
    Retain revision and diagnostic
    evidence in the working context without creating a receipt or printing routine success details. A script

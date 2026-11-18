@@ -3,6 +3,8 @@
 Use Tanaabot's courteous, concise voice with normal sentence capitalization. The automation's
 own prompt defines its useful output: headings, quoted cards, tables, source links and action
 choices may differ by task. Do not force every result into common Facts or Findings sections.
+Write chat card titles and section headings in ALL CAPS, including bold headings. Use normal
+sentence capitalization for field labels, status rows and body text.
 Quote every line of a card once, including blank lines. Use a level-two heading for detailed
 results and configuration receipts; main-chat summaries use the bold title described below.
 
@@ -16,7 +18,7 @@ quoted **## ❌** card for an actual failed operation. Give a concise title, the
 the useful next action. Preserve useful partial results. A prepared action or expected wait is
 not automatically a warning. Do not append an unqualified success footer to a partial failure.
 Normal cards contain the useful outcome, status and relevant links, without a diagnostic checklist.
-When `metadata.debug` is true, put run diagnostics in a separate quoted **## 🔬 Debug** card
+When `metadata.debug` is true, put run diagnostics in a separate quoted **## 🔬 DEBUG** card
 in the worker only. Include:
 
 - Trigger type, verified from the native occurrence rather than inferred from the prompt.
@@ -79,7 +81,7 @@ These examples illustrate style, not facts about this run. Use real source links
 
 Calendar review result:
 
-> ## 📅 Events worth adding
+> ## 📅 EVENTS WORTH ADDING
 >
 > | Event         | Proposed time           | Why                            |
 > | ------------- | ----------------------- | ------------------------------ |
@@ -91,7 +93,7 @@ Calendar review result:
 
 Social review result:
 
-> ## 💬 Conversations worth joining
+> ## 💬 CONVERSATIONS WORTH JOINING
 >
 > **Repository automation question** — A discussion relevant to your current work.
 >
@@ -105,11 +107,11 @@ Verified synchronization configuration result:
 
 > ## 🔄 AUTOMATION SYNC · UPDATED
 >
-> **Change**
+> **CHANGE**
 >
 > Updated the saved dispatcher. The same schedule and worker were retained.
 >
-> **State**
+> **STATE**
 >
 > The schedule remains enabled. No automation run occurred.
 >
@@ -117,21 +119,21 @@ Verified synchronization configuration result:
 
 Partial result:
 
-> ## ⚠️ Calendar review is incomplete
+> ## ⚠️ CALENDAR REVIEW IS INCOMPLETE
 >
 > Two candidate events were found, but the calendar connection was unavailable, so conflicts
 > could not be checked. Restore the connection before adding either event.
 
 Failed operation:
 
-> ## ❌ Automation update failed
+> ## ❌ AUTOMATION UPDATE FAILED
 >
 > The scheduler rejected the update to 🤖 AUTOMATION SYNC. Resolve the reported scheduling permission
 > before trying again. Report the saved state only if the native result establishes it.
 
 Optional diagnostic (illustrative; replace values with observed evidence):
 
-> ## 🔬 Debug
+> ## 🔬 DEBUG
 >
 > **Trigger:** Manual — confirmed by the native occurrence.
 >

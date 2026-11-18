@@ -8,7 +8,7 @@ export default function syncReport(result, debug = false) {
   if (!debug) return '';
   const rows = result.operations;
   const lines = [
-    '## 🔬 Debug · Synchronization preparation',
+    '## 🔬 DEBUG · SYNCHRONIZATION PREPARATION',
     '',
     'Prepared actions for native controls; no schedules have been saved.',
     '',

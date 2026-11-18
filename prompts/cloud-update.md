@@ -105,10 +105,10 @@ every placeholder with verified results.
 
 Use one of these detailed headings:
 
-- `## ⬇️ SYSTEM UPDATE · UPDATED` after a verified update and readback.
-- `## ⬇️ SYSTEM UPDATE · UNCHANGED` after an exact version match.
-- `## ⚠️ SYSTEM UPDATE · INCOMPLETE` for a blocker or unverified outcome.
-- `## ❌ SYSTEM UPDATE · FAILED` for an observed failed operation.
+- `## ⬇️ CLOUD UPDATE · UPDATED` after a verified update and readback.
+- `## ⬇️ CLOUD UPDATE · UNCHANGED` after an exact version match.
+- `## ⚠️ CLOUD UPDATE · INCOMPLETE` for a blocker or unverified outcome.
+- `## ❌ CLOUD UPDATE · FAILED` for an observed failed operation.
 
 Include Release (previous → saved version, or unchanged version), Package, Account update and
 Verification rows. Use passed, failed, unverified or not needed accurately. For an unchanged run,
@@ -120,7 +120,7 @@ fresh Cloud chat. Do not claim those separately untested outcomes or close Canon
 
 Use this layout, including the optional lines only when applicable:
 
-> ## ⬇️ SYSTEM UPDATE · <OUTCOME>
+> ## ⬇️ CLOUD UPDATE · <OUTCOME>
 >
 > **Component:** Tanaab Canon Cloud plugin
 > **Release:** <Previous → verified saved version, or unchanged version.>

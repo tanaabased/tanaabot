@@ -7,6 +7,8 @@ identity and accounts; editing this repository does not select tanaabot's person
 
 Use [Tanaabot Voice](./skills/voice/SKILL.md) for repository prose: courteous, precise and concise,
 with normal sentence capitalization. Read the skill before writing; a requested voice takes precedence.
+When authoring a chat card, follow the [shared presentation rules and examples](./prompts/presentation-partial.md)
+for headings, quoting, and spacing.
 
 ## Cloud environment onboarding
 

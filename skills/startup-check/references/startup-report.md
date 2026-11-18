@@ -2,7 +2,7 @@
 
 Start the quoted card with its overall result, followed by all six rows in the order below.
 Each row contains only the bold section name and status. Use normal sentence capitalization.
-After the last row, include **Notes** only when there is something to explain. Keep the heading
+After the last row, include **NOTES** only when there is something to explain. Keep the heading
 and its bullet list inside the quote. Order notes by severity: ❌ errors, ⚠️ warnings, then ℹ️
 information. Within a severity, follow the order of the checks. Start each bullet with its
 emoji and bold section name. Use the optional status report below for detailed results.
@@ -32,7 +32,7 @@ local skill; verify those behaviors in the fresh pilot.
 Assess Git source drift against the committed revision, never the changed working file. When
 `sourceDrift` is `identity-only`, Dotfiles may pass if saved environment loading was verified through
 the actual unmodified task launcher, both effective commit identities match the committed defaults,
-and all other required Dotfiles checks pass. Include this bullet in **Notes**:
+and all other required Dotfiles checks pass. Include this bullet in **NOTES**:
 
 > - ℹ️ **Dotfiles** — Git’s configured identity differs from the committed defaults. Environment overrides supply the expected author and committer.
 
@@ -74,7 +74,7 @@ Always show the startup card first. Select at most one additional heading in thi
    selects **🔬 DEBUG · STATUS REPORT**.
 3. Otherwise finish after the startup card.
 
-Both headings use the same body. Quote the H2, six H3s and bulleted fields together. Keep
+Both headings use the same body. Use uppercase titles for the H2 and six H3s. Quote them together with the bulleted fields. Keep
 field labels bold and variable names, paths, versions and identities in backticks.
 Use the observations from this run. If a check failed or could not run, retain its section,
 state the failure or mark missing fields **Unverified**, and keep independently verified facts.
@@ -105,7 +105,7 @@ Illustrative requested report (debug uses the same body with the 🔬 heading):
 
 > ## ℹ️ STATUS REPORT
 >
-> ### Environment
+> ### ENVIRONMENT
 >
 > - **Cloud environment** `tanaabot`
 > - **Operating system** Linux
@@ -114,7 +114,7 @@ Illustrative requested report (debug uses the same body with the 🔬 heading):
 > - **1Password environment** Loaded and verified in the task shell
 > - **Loaded variables** `EMAIL` `GH_TOKEN`
 >
-> ### Dependencies
+> ### DEPENDENCIES
 >
 > - **Bun** `1.4.4`
 > - **curl** `8.12.1`
@@ -124,22 +124,22 @@ Illustrative requested report (debug uses the same body with the 🔬 heading):
 > - **Node.js** `26.12.1`
 > - **Stow** `2.4.1`
 >
-> ### Dotfiles
+> ### DOTFILES
 >
 > - **Verified packages** `ai` `gh` `git` `shell` `ssh`
 >
-> ### Tanaabot skills
+> ### TANAABOT SKILLS
 >
 > - **Source revision** `v0.1.0-3-gabc1234`
 > - **Local skills loaded** 7
 > - **Skill directory** `/workspace/tanaabot/skills`
 >
-> ### Canon skills
+> ### CANON SKILLS
 >
 > - **Task catalog** Canon skills available
 > - **Plugin version** `0.14.1`
 >
-> ### Identity
+> ### IDENTITY
 >
 > - **GitHub account** `tanaabot` · authenticated
 > - **Git author and committer** `tanaabot <tanaabot@tanaab.dev>`
@@ -176,7 +176,7 @@ Preserve the quoted H2 heading and blank quoted line before the rows.
 > - **Canon skills — unverified**
 > - **Identity — passed**
 >
-> **Notes**
+> **NOTES**
 >
 > - ⚠️ **Canon skills** — This task couldn’t inspect the skill catalog. Check Canon availability in a fresh task with catalog access.
 
@@ -191,7 +191,7 @@ Preserve the quoted H2 heading and blank quoted line before the rows.
 > - **Canon skills — unverified**
 > - **Identity — failed**
 >
-> **Notes**
+> **NOTES**
 >
 > - ❌ **Identity** — The approved signing key is missing from the verified GitHub account. Check its signing-key registration before rerunning startup.
 > - ⚠️ **Canon skills** — This task couldn’t inspect the skill catalog. Check Canon availability in a fresh task with catalog access.
