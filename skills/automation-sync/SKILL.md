@@ -80,12 +80,13 @@ automatically or switch credentials to recover a failure.
 
 ## Workflow
 
-For a saved Sync coordinator whose exact bound worker is confirmed archived, first follow
+When native history confirms that Sync's exact bound worker is archived, follow
 [Recover the synchronizer before dispatch](./references/native-tasks.md#recover-the-synchronizer-before-dispatch).
-This enters the same creation and rebinding workflow without contacting the retired worker.
-Recovery prepares and applies only `sync`; after verification, the current occurrence resumes
-its original selection through the newly compiled worker request. Initial seeding remains the
-ordinary workflow below.
+During archive recovery, the owning dot can run the read-only assembler on its own cloud computer
+before any worker is running. Launch the replacement in the same published Cloud configuration.
+A manual `sync`-only update ends with the verified Sync configuration and its report. Only a
+scheduled occurrence or Run now resumes dispatch, once, with its original selection.
+Use the ordinary workflow below for an active binding or initial seeding.
 
 1. Verify environment, destination and existing authorization. Resolve fresh GitHub `main` and
    prepare a clean source checkout without discarding task edits. Verify its canonical origin.

@@ -2,6 +2,7 @@ import { describe, test } from 'bun:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
+import automationTargets from '../lib/automation-targets.js';
 import { planSync } from '../lib/sync-plan.js';
 import { readTaskPrompt, taskBody, taskPrompt } from '../utils/task-prompt.js';
 
@@ -643,6 +644,73 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     worker.startup = 'passed';
     worker.environmentId = 'wrong-environment';
     assert.throws(() => planSync(request), /reusable-worker-target-mismatch:sync/);
+  });
+
+  test('should preflight a manual Sync rebind with no running worker and stop at the verified update', () => {
+    const request = input({ id: 'sync', existingTasks: saved() });
+    const [sync, other] = request.existingTasks;
+    const retired = workerRequest(sync.task);
+    request.context = {
+      environments: request.context.environments,
+      destination: sync.task.destination,
+      timezone: sync.task.schedule.default_timezone,
+    };
+    request.manifest.automations[0].overrides.codex = { model: 'fixture-new', effort: 'medium' };
+    const targets = automationTargets(request.manifest, request.context, request.id, now);
+    assert.equal(targets.length, 1);
+    const [target] = targets;
+    assert.equal(target.execution.environmentId, retired.execution.environmentId);
+    assert.deepEqual([target.model, target.effort], ['fixture-new', 'medium']);
+
+    // Native startup and save results are fixtures. Only the dot has a computer at preflight.
+    request.context.workers = [
+      {
+        automationId: target.automationId,
+        id: 'initialized-replacement',
+        name: target.thread.name,
+        status: 'active',
+        startup: 'passed',
+        environmentId: target.execution.environmentId,
+        replaces: {
+          id: retired.thread.id,
+          status: 'archived',
+          environmentId: retired.execution.environmentId,
+        },
+      },
+    ];
+    const plan = planSync(request);
+    assert.equal(plan.operations.length, 1);
+    const [update] = plan.operations;
+    assert.equal(update.kind, 'update');
+    assert.equal(update.nativeId, sync.id);
+    assert.deepEqual(update.expectedCurrent, sync.task);
+    const binding = workerRequest(update.task);
+    assert.equal(binding.thread.id, 'initialized-replacement');
+    assert.deepEqual([binding.model, binding.effort], [target.model, target.effort]);
+    request.existingTasks = [{ id: update.nativeId, task: update.task }, other];
+    delete request.context.workers[0].replaces;
+    assert.deepEqual(
+      planSync(request).operations.map(({ automationId, kind }) => [automationId, kind]),
+      [['sync', 'unchanged']],
+    );
+
+    // The native dispatch decision belongs to the skill, outside the read-only planner.
+    const guidance = readFileSync(
+      new URL('../references/native-tasks.md', import.meta.url),
+      'utf8',
+    );
+    const recovery = guidance
+      .split('### Recover the synchronizer before dispatch')[1]
+      .split('### Initialization card')[0];
+    assert.match(recovery, /owning dot's own cloud computer[\s\S]*?`mode: "targets"`/);
+    assert.match(
+      recovery,
+      /Manual `sync`-only update\.[^\n]*report it and stop\.\s+Do not dispatch/,
+    );
+    assert.match(
+      recovery,
+      /Scheduled occurrence or Run now\.[^\n]*Resume that same occurrence once/,
+    );
   });
 
   test('should prepare only the Sync rebind before a resumed pass creates Canon and then no-ops', () => {

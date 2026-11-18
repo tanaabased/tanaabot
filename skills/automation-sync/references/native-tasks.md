@@ -112,48 +112,51 @@ No schedule is deleted.
 
 ### Recover the synchronizer before dispatch
 
-The owning dot can enter this skill before delegation when the saved `sync` worker is confirmed
-archived. This is the only dispatch-time replacement path. Do not use it for another automation,
-unknown worker status, a failed send or routine worker rotation.
+The owning dot handles Sync's archived binding for a manual `sync`-only update, a scheduled
+occurrence or Run now. For an occurrence, retain its original selection before recovery
+(normally `all`, or `sync` for a bootstrap-only occurrence).
 
-1. Read the current native Sync schedule and its exact worker binding. Confirm archive status,
-   reconcile any prior replacement and check for an in-flight sync using the replacement procedure
-   above. If the schedule already points to a verified active replacement, reuse it. Preserve the
-   occurrence's original selection: normally `all`, or `sync` for an existing bootstrap-only run.
-2. Resolve canonical GitHub `main` to one commit and read this skill and its required references
-   there. Use a clean snapshot at that commit for recovery assembly. Keep source execution in the
-   selected Cloud configuration. Resolve `id: "sync"` targets through the existing assembler
-   before creating any chat, using available supported Cloud execution. An already initialized,
-   healthy replacement can perform this preparation and be reused. If targets cannot be resolved,
-   report that limitation rather than launching a default-model chat to obtain them. Use the
-   shared creation procedure with the resolved target's model and effort from the first turn;
-   its environment must match the retired worker's verified published configuration ID. Ask a
-   new replacement only to initialize and prepare the sync-only replacement, not run all automations or save schedules.
-   Supply the current native observations needed by the assembler; it must not invent inventories.
-3. Verify startup and the same published configuration using native launch evidence. Check the
-   expected published setup/version when that evidence is available; a configuration ID alone
-   does not prove the published version. Report unavailable version evidence as unverified.
-   A failed or incomplete startup stops recovery. Keep the retired chat archived and intact.
-4. In the clean Cloud snapshot, follow the ordinary dependency preparation and assembly steps
-   with `id: "sync"` for both targets and sync. Supply the verified replacement and `replaces`
-   evidence from the shared replacement procedure. The owning dot applies the exact returned
-   update to the same schedule, reconciling concurrent changes and verifying the saved binding.
-   On failure or uncertainty, stop before applying other definitions or sending the executable
-   request; preserve the created worker for the next attempt. Do not hand-edit the saved payload.
-5. Resume the current dispatch once with the newly compiled request and its model/effort.
-   Leave placement and configuration receipts to the resumed workflow's final steps. Carry the
-   verified recovery update into those results even if subsequent assembly reports Sync unchanged;
-   do not perform a separate recovery move or repeat the schedule write.
-   Pass the original selection as separate coordinator context alongside the unchanged request;
-   a newly compiled `dispatchVersion` must not widen a bootstrap-only occurrence. Do not send
-   the old payload or queue another Run now.
-   The worker follows the normal sync workflow; a bootstrap-only occurrence remains sync-only.
-   Report the completed recovery separately from downstream synchronization outcomes.
+1. Read the current native Sync schedule and confirm its exact bound worker is archived in native
+   history. Follow [the replacement procedure](#replace-a-confirmed-archived-worker) to reconcile
+   prior attempts and check for in-flight recovery. Reuse a healthy replacement when available.
+   If another run already saved the rebind, verify the saved dispatcher and binding, then finish
+   according to the entry point below. Unknown status or a failed send does not qualify for replacement.
+2. On the owning dot's own cloud computer, prepare a clean checkout pinned to one canonical
+   `tanaabased/tanaabot` GitHub `main` commit. Read that revision's skill and required references.
+   Run `bun install --frozen-lockfile --ignore-scripts` and `bun run automations:prepare` there.
+   Run the read-only assembler with `mode: "targets"` and `id: "sync"` using the verified
+   published configuration listing, native scheduler timezone and saved dot destination.
+   Check that the resolved environment ID matches the retired worker's published `tanaabot`
+   configuration. This preflight requires no running instance of that configuration. If it fails,
+   report the preflight error and stop before requesting a model. Do not launch a helper chat or
+   guess first-turn settings.
+3. If a replacement is needed, create one in that published configuration using the resolved
+   `model: target.model` and `thinking: target.effort` on its first turn. Request initialization
+   only, following [Resolve workers](#resolve-workers). A rejected combination stops recovery.
+   Report the requested model and effort separately from native turn observations. Mark missing
+   observations unverified. Before binding, verify passed startup, active status and the published
+   configuration through native launch or association evidence. Check the published setup/version
+   when available and report unavailable version evidence as unverified. Leave the old chat archived.
+4. From the same clean checkout, run `mode: "sync"` with `id: "sync"`, current native tasks and
+   the verified replacement and `replaces` evidence. Follow the shared rebind procedure to apply
+   the exact prepared update to the existing schedule. Verify its saved dispatcher and worker ID,
+   preserving schedule ID, cadence, enabled state, coordinator settings and destination. Reconcile
+   an uncertain save before continuing and retain the healthy worker on retry. Desktop sidebar
+   placement is best-effort after verification and never gates recovery.
 
-This path needs no new state store or scheduler. Native history and the saved schedule retain
-the existing recovery evidence. When deploying this change to an older saved dispatcher, invoke
-this skill once with `id: "sync"` to install the new dispatcher before testing archive → Run now.
-Merging source alone cannot change the instructions already saved in a native schedule.
+The entry point determines what happens after verification.
+
+- **Manual `sync`-only update.** After verifying the saved Sync configuration, report it and stop.
+  Do not dispatch the worker request, queue Run now or touch other automations.
+- **Scheduled occurrence or Run now.** Resume that same occurrence once with the newly saved worker
+  request and its model and effort. Pass the original selection as separate coordinator context
+  alongside the unchanged request. A new `dispatchVersion` does not widen a bootstrap-only run.
+  Carry the verified rebind into final placement and reporting even if the resumed pass finds
+  Sync unchanged. Do not send the old payload, repeat the save or queue another occurrence.
+
+For rollout, manually load this skill from canonical `main` in the main Tanaabot dot and update
+only `sync`. Verify the replacement binding and saved dispatcher before separately selecting
+Run now for a full sync.
 
 ### Initialization card
 
