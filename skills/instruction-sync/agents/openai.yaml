@@ -1,7 +1,7 @@
 interface:
   display_name: 'Tanaabot Instruction Sync'
-  short_description: 'Propose instruction changes and verify approved saves'
+  short_description: 'Propose a full instruction replacement and verify approved saves'
   icon_small: './assets/composer-icon.svg'
   icon_large: './assets/icon-large.png'
   brand_color: '#00ebfd'
-  default_prompt: 'Use $tanaabot-instruction-sync to compare repository guidance with my saved Dot instructions and propose any changes without saving.'
+  default_prompt: 'Use $tanaabot-instruction-sync to compare repository guidance with my saved Dot instructions. Review any first-time migration with me or show the full replacement for later approval.'

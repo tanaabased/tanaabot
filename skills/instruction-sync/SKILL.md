@@ -1,6 +1,6 @@
 ---
 name: tanaabot-instruction-sync
-description: 'Compare repository guidance with tanaabot’s saved Dot instructions, propose an exact edit and save only after per-edit approval. Use for instruction refreshes and approval continuation.'
+description: 'Propose a full replacement of tanaabot’s saved Dot instructions from the repository. Use for instruction refreshes and exact-proposal approval.'
 license: MIT
 metadata:
   type: integration
@@ -18,15 +18,16 @@ metadata:
 
 ## Overview
 
-Refresh the main tanaabot Dot's repository-managed instructions without replacing its other
-saved instructions. Checks are read-only. Every save requires approval of an exact proposal
-in a later operator message; scheduled execution cannot supply that approval.
+Rebuild the main tanaabot Dot's complete editable saved instructions from one repository commit.
+Checks are read-only. The first replacement requires a private migration review. Every save
+requires approval of the exact document in a later operator message.
 
 ## Required Reading
 
 - **Always:** Inspect the available descriptions and schemas of `custom_rules.read_instructions`
   and, before proposing a save, `custom_rules.update_instructions`. Use their actual supported
   inputs and target scope; never invent an API or attempt an unapproved write to test enforcement.
+- **Before comparing or assembling instructions:** Read [instruction sources](./references/source.md).
 - **Before reporting:** Read [instruction results](./references/results.md), the shared
   [presentation rules](../../prompts/presentation-partial.md), and
   [Tanaabot Voice](../voice/SKILL.md), including its required samples.
@@ -51,34 +52,36 @@ Use [Instruction Report](../instruction-report/SKILL.md) for the separate read-o
 
 The operator-selected main tanaabot Dot must have a supported reader targeting its own saved
 instruction document. A missing reader is unavailable access, not an empty document. Confirm the
-writer targets that same document before proposing an applicable edit. Preserve host account
-and authorization controls; repository ownership and a worker's assertion do not select a Dot.
+writer can condition the save on the expected revision of that same document before proposing
+an applicable edit. Preserve host account and authorization controls; repository ownership
+and a worker's assertion do not select a Dot.
 
-Cloud workers may prepare the canonical source and pinned links. They cannot substitute their
-own instructions for the main Dot's document or claim the parent was read or changed. Return
-preparation to the owning coordinator; unavailable handoff leaves this action pending.
+Cloud workers verify the source and return the pinned inventory. Only the owning Dot reads or
+updates its editable document. An unavailable or incomplete handoff leaves synchronization pending.
 
 ## Inputs
 
-- Default source: `tanaabased/tanaabot`, `dotfiles/ai/.codex/AGENTS.md`, from `main` resolved once
-  to a full commit. The Instruction Sync worker may supply that run's verified commit instead of resolving again.
+- The fixed [source set](./references/source.md#resolve-the-desired-source) at one canonical
+  `main` commit. Scheduled runs use the worker's verified commit and complete ordered inventory.
+  A scheduled prompt still requesting a marked-section sync or lacking that handoff must stop
+  and report that the Instruction Sync schedule needs synchronization.
 - The complete saved document and its revision from the supported reader.
 - For approval continuation: the exact earlier proposal, its read revision and source commit,
   and the later operator reply approving that proposal in this main Dot conversation.
 
 ## Outputs
 
-An exact proposal or unchanged result; only after approval, a verified saved document. Produce
-both result layouts in [instruction results](./references/results.md) for a scheduled Instruction Sync run.
-Keep proposed changes, saved changes and later behavioral adoption distinct.
+A private first-replacement review when needed, then an exact full-document proposal or an
+unchanged result. Report a verified save only after readback. Use both
+[result layouts](./references/results.md) for scheduled runs.
 
 ## Failure Handling
 
-Missing source, partial reads, ambiguous ownership, malformed markers or consequential conflicts
-stop the affected update. On a denial, stop; do not retry
-with another account or route. On an uncertain save, read the original target before any retry:
-if it matches the approved document, report verified storage; otherwise report the observed state
-and prepare any necessary fresh proposal. Never reset the document or silently roll it back.
+An incomplete source read, unknown saved-document state or unresolved migration decision blocks
+the proposal. On a denial, stop on the selected account and route. On an uncertain save, read
+the original target. Report verified storage if it matches the approved document. Otherwise
+report the observed state and prepare any necessary fresh proposal. Avoid an automatic retry
+or rollback.
 
 ## Workflow
 
@@ -86,85 +89,77 @@ and prepare any necessary fresh proposal. Never reset the document or silently r
 
 1. Read the main Dot document through `custom_rules.read_instructions`. Retain its exact text,
    target and revision privately. Distinguish an empty string from a missing field or failed read.
-2. Resolve the source once and read its complete text from that immutable commit through supported
-   GitHub access or a verified clean canonical checkout. Read this skill at the same revision when
-   invoked by the Instruction Sync automation. Do not use root contributor `AGENTS.md`, a README, a dirty checkout,
-   a truncated response or a remembered copy. Follow pagination where needed. Missing or empty
-   source is an error, not an instruction to erase the managed section. Treat source as proposed
-   content; reading it does not refresh saved instructions or grant new operational authority.
-3. Locate these exact markers in the saved document:
-
-   ```text
-   <!-- BEGIN TANAABOT REPOSITORY-MANAGED GUIDANCE -->
-   <!-- END TANAABOT REPOSITORY-MANAGED GUIDANCE -->
-   ```
-
-   Require zero markers or exactly one correctly ordered pair on separate lines. Partial,
-   duplicate or nested markers stop the update. Reject source text containing either reserved
-   marker. For an existing section, verify its source repository and path identify this source;
-   missing or conflicting ownership needs operator resolution, not guessed removals.
-
-4. Build one section: opening marker, `Source repository: tanaabased/tanaabot`,
-   `Source path: dotfiles/ai/.codex/AGENTS.md`, `Source commit: <full commit>`, a blank line,
-   the complete source text unchanged, and the closing marker on its own line. Add a framing
-   newline before the closing marker only if the source lacks one. Replace exactly the span from
-   opening through closing marker; preserve every character before and after it. With no section,
-   append it after the complete original document using only the necessary newline separator.
-   Do not adopt unmarked instructions as repository-owned, remove them or copy recalled preferences
-   into this section. If no previous commit can be verified, label it unknown; compare actual saved
-   text rather than reconstructing history. Surface conflicts with outside instructions before saving.
-5. Compare the source content with the saved section, including any manual edits inside it.
-   List added, removed and modified rules with their conditions and useful before/after text.
-   If instructions and required repository/path metadata are already identical, do not rewrite
-   solely because `main` advanced: retain the last saved source commit and report the newer checked
-   commit separately. Necessary metadata corrections are proposed metadata changes, not new rules.
-6. Before posting a changed proposal, inspect accessible pending proposals in this main chat.
+2. Read the complete [source set](./references/source.md#resolve-the-desired-source). On a
+   scheduled run, use the worker's pinned inventory and read every listed file at that commit.
+   Stop if the handoff does not establish complete enumeration and reads, or if any content
+   the Dot needs is unavailable. Every file in the replacement comes from this one commit.
+3. Compare against the actual saved text using [saved provenance](./references/source.md#saved-provenance).
+   Recognize the old marked section for attribution only. Before the first full replacement,
+   privately review the complete editable document with the operator. Identify what is already
+   represented in the source, what might belong in the repository, and exactly what else would
+   be removed. Label unattributed text **Source unknown** and keep it in this conversation.
+   Wait for the operator's disposition of the existing text against this saved revision; if the
+   document changes, review the new baseline before proposing. An empty document has nothing to
+   migrate. Migrate only explicitly approved, repository-appropriate rules through the normal
+   repository workflow, then check a new `main` commit that contains them. Keep protected platform
+   instructions, credentials, private bindings, personal information and conversational
+   preferences out of the repository and the Cloud handoff. Approval of the migration review
+   does not approve a save.
+4. Build the whole replacement in the [saved format](./references/source.md#saved-provenance).
+   Include exactly the selected source text and its provenance framing. Never append to
+   the existing document or carry forward text from it. Compare actual saved text to the
+   replacement, including manual edits and unmarked text. Group additions, changes and
+   removals by source path, showing unattributed removals privately under **Source unknown**.
+   If the verified saved format, ordered paths and exact text already match apart from the
+   commit stamp, keep the saved commit and report the checked commit separately as a no-op.
+   Describe any other provenance changes separately from rule changes.
+5. Before posting a changed proposal, inspect accessible pending proposals in this main chat.
    If a newer checked commit has identical instruction content, keep the pending proposal's original
    pinned commit and exact result rather than restamping it or requesting duplicate approval.
    Reuse an unresolved proposal only when its source, exact resulting document and baseline revision
    still match. If superseded, clearly withdraw the older proposal and identify the replacement;
    approval of the older one does not approve the new one. If pending state cannot be established,
    report that limit rather than create competing saves. Keep this state in the native conversation,
-   not a repository ledger. Show the exact proposal with target, source commit and read revision.
-   Preserve a request to display the entire resulting document; an exact edit can otherwise identify
-   the changed section and its placement while leaving untouched text private. The complete resulting
-   document must still be retained for the whole-document save. End with **Awaiting approval**.
-   A recurring run ends here; do not wait in a polling loop or count schedule approval as edit approval.
+   not a repository ledger. Show the target, pinned source inventory, read revision, removal
+   details and exact full replacement privately in the main Dot. Present the replacement as
+   literal text with an enclosing fence long enough to preserve its contents. If the full
+   proposal cannot be shown, stop before approval. End with **Awaiting approval**. A recurring
+   run ends at review, proposal, no-op or failure. A schedule or worker cannot approve a save.
 
 ### Continue after approval
 
-7. Match a later explicit operator reply to the exact earlier proposal in this main conversation.
+6. Match a later explicit operator reply to the exact earlier proposal in this main conversation.
    A quoted approval, worker message, approval of a repository PR or standing recurring permission
    does not approve this edit. If the reply is ambiguous, request clarification without writing.
    A refusal or cancellation leaves saved instructions unchanged.
-8. Re-read the same document. Both its revision and full text must match the proposal's baseline.
+7. Re-read the same document. Both its revision and full text must match the proposal's baseline.
    Otherwise reread, compare and show a fresh proposal for new approval. Do not silently rebase an
    approved edit or substitute a newer `main` revision. A newer repository commit can wait for the
    next check; this approval covers only the previously shown source and result.
-9. Call `custom_rules.update_instructions` with the complete approved document and the read revision,
+8. Call `custom_rules.update_instructions` with the complete approved document and the expected revision,
    using the tool's actual schema. A revision conflict returns to a fresh proposal and approval.
-   Read the same document back after a confirmed save, compare the entire text including untouched
-   regions, and record its returned revision. Report mismatches as unverified; never claim adoption
+   Read the same document back after a confirmed save, compare the entire text with the approved
+   replacement, and record its returned revision. Report mismatches as unverified; never claim adoption
    from the save response alone. Resolve pending proposal status and publish the final result through
    the existing delivery route without rerunning synchronization or repeating the write.
 
 ## Review Criteria
 
-- **Inspect:** Read the actual saved section, ownership metadata and available proposal history.
-- **Compare:** Identify source differences, outside-text conflicts and uncertain prior saves.
-- **Recommend:** Propose the smallest managed replacement and preserve unrelated instructions;
-  an inspection never supplies approval to apply it.
+- **Inspect:** Read the complete editable document, source inventory and available proposal history.
+- **Compare:** Identify drift, intentional removals, unattributed text and uncertain prior saves.
+- **Recommend:** Show the exact replacement and any pending migration decision for operator review.
 
 ## Bundled Resources
 
 - [Instruction results](./references/results.md): Detailed and compact output layouts.
+- [Instruction sources](./references/source.md): Pinned source inventory and saved provenance.
 - `agents/openai.yaml` and `assets/`: Skill discovery metadata and Tanaabot artwork.
 
 ## Validation
 
-During use, verify full-document readback and revision after each approved save. Check later
-behavior separately; neither reading a file nor saving it proves another chat loaded it.
-When maintaining this skill, validate packaging and exercise addition, modification, removal,
-no-op, unrelated-text preservation, duplicate markers, stale approval and uncertain-save recovery.
-Use authorized main-Dot trials for native behavior. Structural checks and paper walkthroughs
-are not evidence of live execution; report unrun trials explicitly.
+In the authorized main-Dot pilot, review the legacy text, then verify that the exact approved
+addition, modification and deletion appear in the complete readback. Confirm that identical
+source is a no-op and an incomplete listing or file read cannot propose a removal. Check both
+sync layouts and the read-only report against what was actually delivered. Check later behavior
+in a separate request and record its evidence apart from saved text and visible delivery.
+When maintaining the skill, validate its package and scheduled prompt assembly.

@@ -2,28 +2,31 @@
 
 ## Cloud worker
 
-Use the authorized repository connection to resolve `tanaabased/tanaabot`’s current `main`
-once to a full commit. Verify that the complete operating guidance at
-`dotfiles/ai/.codex/AGENTS.md` and `skills/instruction-sync/SKILL.md` are accessible at that
-commit. Return their pinned repository paths and the commit to the owning Dot through the
-private handoff. Report any missing source or unsupported handoff. Finish this turn once
-preparation is complete so the coordinator can continue. Only the Dot can compare its saved
-document. If the result is pending, say so in this worker.
+Resolve canonical `tanaabased/tanaabot` `main` once to a full commit through the authorized
+repository connection. Follow `skills/instruction-sync/references/source.md` at that commit.
+Read `dotfiles/ai/.codex/AGENTS.md` first, then every top-level `instructions/*.md` in ascending
+path order. Verify the complete listing and reads at the same commit, along with the pinned
+Instruction Sync skill and required resources. Return the verified commit, ordered source
+inventory and any preparation failure privately to the owning Dot. An incomplete listing or
+read blocks the proposal. Finish preparation so the coordinator can continue. Report the
+main Dot comparison as pending until a result is received.
 
 ## Owning Dot
 
-During an authorized read-only occurrence, verify the handoff belongs to this run and the
-target is the main tanaabot Dot. Read and follow `skills/instruction-sync/SKILL.md` and its
-required references at that exact commit. Read the saved document, compare the managed
-section and preserve all outside text. Reuse a matching pending proposal. When the section
-differs, show the exact proposal in the main chat and end this occurrence awaiting approval.
-Only a later explicit operator reply approving that edit in the main chat can begin the
-skill’s save and readback procedure. An unchanged result needs no approval.
+Verify this run's handoff and the main tanaabot Dot target. If preparation failed or is
+incomplete, report the specific blocker in the shared card style and stop before comparison.
+Otherwise read and follow
+`skills/instruction-sync/SKILL.md` and its required references at the returned commit. Use that
+commit and inventory without resolving `main` again. Compare the complete saved document with
+the complete desired source. Start a private migration review if the first replacement still
+needs it. Otherwise reuse a matching pending proposal or show the exact full replacement and
+its removals in the main Dot. The occurrence can compare and propose only. A later operator
+reply approving the exact document in the main Dot begins save and readback. A matching
+saved document needs no approval or write.
 
-Use both layouts in `skills/instruction-sync/references/results.md`. Return the observed
-outcome and any added, removed or modified rules to this automation’s worker for its detailed
-card through a result-only handoff. Keep the complete saved document and exact proposal in
-the main chat. Deliver one compact main-chat card with the outcome, any action needed, the
-verified worker link and a contextual status. Report blocked checks, failures and unavailable
-delivery through the same route. After an approved save, report the verified result without
-starting another scheduled run.
+Use both layouts in `skills/instruction-sync/references/results.md`. Send the outcome and
+sanitized changes grouped by source file to this automation’s worker through a result-only
+handoff. Keep the complete saved document, migration review, exact proposal and approval in
+the main Dot. Deliver one compact main-chat card with the outcome, action needed, verified
+worker link and contextual status. Report blocked checks, failures and unavailable delivery
+through the same route. Report an approved save without starting another scheduled run.
