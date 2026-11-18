@@ -734,8 +734,8 @@ describe('skills/automation-sync/lib/sync-plan', () => {
   test('should prepare only the Sync rebind before a resumed pass creates Canon and then no-ops', () => {
     const request = input({ id: 'automation-sync' });
     request.existingTasks = saved(request);
-    request.manifest.automations = [job('automation-sync'), job('update-cloud-canon')];
-    request.requests['update-cloud-canon'] = { emoji: '📚', request: 'Update Cloud Canon.' };
+    request.manifest.automations = [job('automation-sync'), job('cloud-update')];
+    request.requests['cloud-update'] = { emoji: '📚', request: 'Update Cloud Canon.' };
     request.context.workers = [request.context.workers[0]];
     const worker = request.context.workers[0];
     worker.replaces = {
@@ -758,18 +758,18 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     assert.equal(planSync(request).operations[0].kind, 'unchanged', 'bootstrap stays sync-only');
     request.id = 'all';
     request.context.workers.push({
-      automationId: 'update-cloud-canon',
+      automationId: 'cloud-update',
       id: 'worker-canon',
       status: 'active',
       environmentId: 'test-environment',
-      name: 'Test update-cloud-canon',
+      name: 'Test cloud-update',
     });
     const resumed = planSync(request);
     assert.deepEqual(
       resumed.operations.map(({ automationId, kind }) => [automationId, kind]),
       [
         ['automation-sync', 'unchanged'],
-        ['update-cloud-canon', 'create'],
+        ['cloud-update', 'create'],
       ],
     );
     request.existingTasks = resumed.operations.map(({ automationId, nativeId, task }) => ({

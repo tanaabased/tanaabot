@@ -7,8 +7,8 @@
     "emoji": "🔄",
     "request": "Prepare the pinned repository guidance for the main tanaabot Dot’s instruction check."
   },
-  "update-cloud-canon": {
+  "cloud-update": {
     "emoji": "⬇️",
-    "request": "Check the existing private Canon plugin against npm latest and report the result."
+    "request": "Check the private Canon plugin for an update, then run Startup Check and show the Cloud status report."
   }
 }

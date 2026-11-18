@@ -1,4 +1,7 @@
-# Update the Cloud Canon plugin
+# Cloud update
+
+Run the Canon update check, report its outcome, then run the read-only Cloud status check below.
+The only component this automation may update is Canon.
 
 Check and, when appropriate, update only the operator's existing private personal Canon plugin
 from stable npm `latest` for `@tanaab/canon`. Use the native **Update Plugin** skill and its required
@@ -103,10 +106,10 @@ every placeholder with verified results.
 
 Use one of these detailed headings:
 
-- `## ⬇️ UPDATE CLOUD CANON · UPDATED` after a verified update and readback.
-- `## ⬇️ UPDATE CLOUD CANON · UNCHANGED` after an exact version match.
-- `## ⚠️ UPDATE CLOUD CANON · INCOMPLETE` for a blocker or unverified outcome.
-- `## ❌ UPDATE CLOUD CANON · FAILED` for an observed failed operation.
+- `## ⬇️ SYSTEM UPDATE · UPDATED` after a verified update and readback.
+- `## ⬇️ SYSTEM UPDATE · UNCHANGED` after an exact version match.
+- `## ⚠️ SYSTEM UPDATE · INCOMPLETE` for a blocker or unverified outcome.
+- `## ❌ SYSTEM UPDATE · FAILED` for an observed failed operation.
 
 Include Release (previous → saved version, or unchanged version), Package, Account update and
 Verification rows. Use passed, failed, unverified or not needed accurately. For an unchanged run,
@@ -118,8 +121,9 @@ fresh Cloud chat. Do not claim those separately untested outcomes or close Canon
 
 Use this layout, including the optional lines only when applicable:
 
-> ## ⬇️ UPDATE CLOUD CANON · <OUTCOME>
+> ## ⬇️ SYSTEM UPDATE · <OUTCOME>
 >
+> **Component:** Tanaab Canon Cloud plugin
 > **Release:** <Previous → verified saved version, or unchanged version.>
 > **Package:** <Passed / failed / unverified / not needed, with a brief reason if needed.>
 > **Account update:** <Passed / failed / unverified / not needed.>
@@ -139,11 +143,30 @@ changes made.” For incomplete or failed results, the final status names the ac
 outcome and never implies that the update or readback passed. Keep diagnostics in the shared
 optional Debug card; do not repeat them in successful rows.
 
+### Final worker step: Startup Check and status report
+
+After recording the update outcome in its own card, run Startup Check once in this same worker
+for **every outcome**, including unchanged, blocked or failed updates. This scheduled task
+explicitly requests: **Run Startup Check and show the status report.** Read and follow
+`skills/startup-check/SKILL.md` and its required references from the verified prepared Tanaabot
+checkout. Use fresh observations after the update attempt. Leave the Cloud image, packages,
+dotfiles and credentials as they are.
+
+Display Startup Check’s normal verdict and then exactly one separate **ℹ️ STATUS REPORT** in
+the worker, regardless of debug. Startup Check owns both layouts. Compare the Canon version
+visible in this worker with the saved account release when both are available. If they differ,
+identify both with their sources. If the host cannot verify a loaded version, keep it
+**Unverified**. Never substitute the npm version or account readback for a runtime observation.
+
+If Startup Check is unavailable, fails or returns partial evidence, report that limitation
+alongside the existing update outcome. Keep a confirmed save verified and an uncertain update
+unverified. A reporting failure never triggers a second update or a new worker.
+
 ### Summary for tanaabot's main chat
 
 Use the shared compact-card layout with this automation's title and outcome:
 
-> **⬇️ UPDATE CLOUD CANON**
+> **⬇️ CLOUD UPDATE**
 >
 > <Canon updated from X to Y, already current at X, or a concise blocker/failure and useful next action.>
 >
@@ -151,7 +174,7 @@ Use the shared compact-card layout with this automation's title and outcome:
 >
 > <Exactly one contextual final status: ✅ verified outcome, ⚠️ incomplete outcome, or ❌ failed operation.>
 
-The summary must say whether the operator needs to act. Keep detailed inventory and verification
+Summarize the Canon outcome and any actionable startup issue in one card. Say whether the operator needs to act. Keep detailed inventory and verification
 rows in the worker; do not duplicate its full card in the main chat. Include the verified worker
 link only when available and follow the shared navigation fallback otherwise. Respect native
 delivery and report missing delivery capability rather than imitating success. Do not suppress

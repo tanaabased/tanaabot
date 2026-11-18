@@ -48,7 +48,7 @@ separate operator-authorized scope. This skill inspects the saved installation o
    `dotfiles/ai/.codex/AGENTS.md`. Verify the source belongs to `tanaabased/tanaabot` and record its
    full commit. Do not assume the task's working directory or an optional plugin cache is the prepared
    checkout. If no source can be established, report that check as unverified; do not fetch a replacement.
-   Select the optional status report from the operator's request and the prepared checkout's
+   Select the optional status report from the operator's or invoking approved automation's request and the prepared checkout's
    top-level `debug` boolean in `.agent-system/agent.yaml`. An explicit request always selects
    the ℹ️ report. Otherwise only literal `true` selects the 🔬 report. Default to the startup
    card alone if the setting is missing or unavailable.

@@ -4,11 +4,11 @@ defaults: &defaults
 
 automations:
   - <<: *defaults
-    id: update-cloud-canon
-    thread: UPDATE CLOUD CANON
+    id: cloud-update
+    thread: CLOUD UPDATE
     schedule: '0 1 * * *'
     prompt:
-      file: ../prompts/update-cloud-canon.md
+      file: ../prompts/cloud-update.md
 
   - <<: *defaults
     id: automation-sync

@@ -150,8 +150,10 @@ Use the ordinary workflow below for an active binding or initial seeding.
    bindings out of public repository files.
 
 Apply the selected definitions' declared schedule and enabled state, using saved timezones
-or the native scheduler’s timezone for new tasks. Leave the legacy Canon updater's
-cutover to the operator. Completed canaries are no longer declared. Leave
+or the native scheduler’s timezone for new tasks. Before enabling `cloud-update`, check
+the native listing for the previous `update-cloud-canon` schedule and any legacy Canon updater.
+If either still runs against the same plugin, leave Cloud Update activation pending for operator
+cutover. Continue independent schedule work. Completed canaries are no longer declared. Leave
 unselected native tasks untouched; removing a source definition does not authorize deleting,
 rearming or modifying its native task or worker.
 

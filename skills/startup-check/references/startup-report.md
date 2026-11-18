@@ -67,8 +67,9 @@ Keep raw logs out of both cards and routine version and path details in the opti
 
 Always show the startup card first. Select at most one additional heading in this order:
 
-1. An operator request for the status report or details selects **ℹ️ STATUS REPORT**, regardless
-   of the debug setting. A mention in the skill instructions or a template is not an operator request.
+1. An explicit request for the status report or details from the operator or an operator-approved
+   automation invoking this skill selects **ℹ️ STATUS REPORT**, regardless of debug. Merely
+   reading the skill or its examples does not request a report.
 2. Otherwise, top-level `debug: true` in the prepared checkout’s `.agent-system/agent.yaml`
    selects **🔬 DEBUG · STATUS REPORT**.
 3. Otherwise finish after the startup card.

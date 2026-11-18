@@ -69,10 +69,11 @@ test('packed plugin retains canonical skills, assets and usable links', async ()
     assert.match(sync.task.schedule.schedule, /FREQ=DAILY;BYHOUR=0;BYMINUTE=0;BYSECOND=0/);
 
     // The updater follows midnight synchronization at the operator-selected 1 a.m.
-    const canon = assembled.operations.find(
-      ({ automationId }) => automationId === 'update-cloud-canon',
-    );
+    const canon = assembled.operations.find(({ automationId }) => automationId === 'cloud-update');
     assert.equal(canon.kind, 'create');
+    assert.equal(canon.task.name, '🤖 CLOUD UPDATE');
+    assert.match(canon.task.prompt, /SYSTEM UPDATE · UPDATED/);
+    assert.match(canon.task.prompt, /Run Startup Check and show the status report/);
     assert.equal(canon.task.enabled, true);
     assert.equal(canon.task.schedule.default_timezone, 'America/New_York');
     assert.match(canon.task.schedule.schedule, /FREQ=DAILY;BYHOUR=1;BYMINUTE=0;BYSECOND=0/);
@@ -97,15 +98,15 @@ test('packed plugin retains canonical skills, assets and usable links', async ()
       })),
     ];
     const saved = structuredClone(existingTasks);
-    const rerun = planSync({ ...input, existingTasks, id: 'update-cloud-canon' });
+    const rerun = planSync({ ...input, existingTasks, id: 'cloud-update' });
     assert.equal(rerun.operations.length, 1);
     assert.equal(rerun.operations[0].kind, 'unchanged');
-    assert.equal(rerun.operations[0].nativeId, 'native-update-cloud-canon');
+    assert.equal(rerun.operations[0].nativeId, 'native-cloud-update');
     assert.deepEqual(rerun.operations[0].task, canon.task);
     const restored = planSync({
       ...input,
-      id: 'update-cloud-canon',
-      existingTasks: existingTasks.filter(({ id }) => id !== 'native-update-cloud-canon'),
+      id: 'cloud-update',
+      existingTasks: existingTasks.filter(({ id }) => id !== 'native-cloud-update'),
     });
     assert.equal(restored.operations.length, 1);
     assert.equal(restored.operations[0].kind, 'create');
