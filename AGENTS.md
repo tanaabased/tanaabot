@@ -75,9 +75,8 @@ Tanaabot onboarding.
    follow the [fresh-pilot checklist](./TANABOOT.md#cloud-verification). Verify startup runs without a
    manual bootstrap prompt and a subsequent request selects and reads the appropriate local skill.
    Record machine readiness, explicit Tanaabot loading and Canon availability separately.
-   Guidance readability does not prove automatic loading;
-   persistent instruction delivery is a post-pilot follow-up in
-   [#16](https://github.com/tanaabased/tanaabot/issues/16).
+   Guidance readability does not prove automatic loading. Main-Dot saved-instruction sync in
+   [#16](https://github.com/tanaabased/tanaabot/issues/16) does not establish Cloud instruction delivery.
 
 Use only the configured Tanaabot SSH key through Bootbox; do not generate a new identity or add inbound
 SSH access. Do not add accounts, Agent System binding or schedules during onboarding.
@@ -100,14 +99,25 @@ work around setup failures; report them for a coding task.
 - Keep package and Codex plugin versions aligned. Maintain explicit npm `files` and Codex Tools
   `managedPaths`; ship regular assets rather than symlinks.
 - Keep changes small. Add folders and helpers when they have a concrete owner and use.
+- Maintain [the inventory](./INVENTORY.md) when adding, renaming or removing an entry. Put the
+  identifying name or ID in the first column and sort rows alphabetically by its visible text,
+  ignoring case. List every repository skill once by its linked base title and every automation
+  once by its manifest ID.
 
 ## Automation authoring
 
 Before adding or changing an automation, read [Automation Sync](./skills/automation-sync/SKILL.md)
-and its required references, including the shared [execution](./prompts/automations/partials/execution.md)
-and [presentation](./prompts/automations/partials/presentation.md) guidance. Reuse their assembler,
+and its required references, including the shared [execution](./prompts/execution-partial.md)
+and [presentation](./prompts/presentation-partial.md) guidance. Reuse their assembler,
 native scheduling and delivery behavior; keep task-specific instructions in the automation's prompt.
 
+- Limit Automation Sync to synchronizing and repairing its own schedule and the other
+  repository-defined automations. It owns schedule configuration, worker bindings, sidebar
+  placement and reporting those results. Give every other recurring operation its own automation
+  ID, prompt and run report. Only that job performs its task, including any main-Dot actions.
+- Choose each worker’s sidebar group by what the operator opens it for. Use `REPORTS` for
+  results the operator routinely reviews, and `TANAABOT` for bot maintenance the operator
+  checks when something fails or needs approval. Keep `REPORTS` as the manifest default and override `group` for maintenance jobs.
 - Keep the definition, prompt and request metadata aligned. Declare the intended schedule,
   timezone, enabled state and execution settings, preserving intentional native defaults.
 - State the purpose, inputs and source, prerequisites, approved account/actions and resource scope.

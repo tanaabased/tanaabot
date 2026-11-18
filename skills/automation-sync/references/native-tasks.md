@@ -112,9 +112,9 @@ No schedule is deleted.
 
 ### Recover the synchronizer before dispatch
 
-The owning dot handles Sync's archived binding for a manual `sync`-only update, a scheduled
+The owning dot handles Sync's archived binding for a manual `automation-sync`-only update, a scheduled
 occurrence or Run now. For an occurrence, retain its original selection before recovery
-(normally `all`, or `sync` for a bootstrap-only occurrence).
+(normally `all`, or `automation-sync` for a bootstrap-only occurrence).
 
 1. Read the current native Sync schedule and confirm its exact bound worker is archived in native
    history. Follow [the replacement procedure](#replace-a-confirmed-archived-worker) to reconcile
@@ -124,7 +124,7 @@ occurrence or Run now. For an occurrence, retain its original selection before r
 2. On the owning dot's own cloud computer, prepare a clean checkout pinned to one canonical
    `tanaabased/tanaabot` GitHub `main` commit. Read that revision's skill and required references.
    Run `bun install --frozen-lockfile --ignore-scripts` and `bun run automations:prepare` there.
-   Run the read-only assembler with `mode: "targets"` and `id: "sync"` using the verified
+   Run the read-only assembler with `mode: "targets"` and `id: "automation-sync"` using the verified
    published configuration listing, native scheduler timezone and saved dot destination.
    Check that the resolved environment ID matches the retired worker's published `tanaabot`
    configuration. This preflight requires no running instance of that configuration. If it fails,
@@ -137,7 +137,7 @@ occurrence or Run now. For an occurrence, retain its original selection before r
    observations unverified. Before binding, verify passed startup, active status and the published
    configuration through native launch or association evidence. Check the published setup/version
    when available and report unavailable version evidence as unverified. Leave the old chat archived.
-4. From the same clean checkout, run `mode: "sync"` with `id: "sync"`, current native tasks and
+4. From the same clean checkout, run `mode: "sync"` with `id: "automation-sync"`, current native tasks and
    the verified replacement and `replaces` evidence. Follow the shared rebind procedure to apply
    the exact prepared update to the existing schedule. Verify its saved dispatcher and worker ID,
    preserving schedule ID, cadence, enabled state, coordinator settings and destination. Reconcile
@@ -146,7 +146,7 @@ occurrence or Run now. For an occurrence, retain its original selection before r
 
 The entry point determines what happens after verification.
 
-- **Manual `sync`-only update.** After verifying the saved Sync configuration, report it and stop.
+- **Manual `automation-sync`-only update.** After verifying the saved Sync configuration, report it and stop.
   Do not dispatch the worker request, queue Run now or touch other automations.
 - **Scheduled occurrence or Run now.** Resume that same occurrence once with the newly saved worker
   request and its model and effort. Pass the original selection as separate coordinator context
@@ -155,13 +155,13 @@ The entry point determines what happens after verification.
   Sync unchanged. Do not send the old payload, repeat the save or queue another occurrence.
 
 For rollout, manually load this skill from canonical `main` in the main Tanaabot dot and update
-only `sync`. Verify the replacement binding and saved dispatcher before separately selecting
+only `automation-sync`. Verify the replacement binding and saved dispatcher before separately selecting
 Run now for a full sync.
 
 ### Initialization card
 
 In the creation prompt, identify the worker's automation and supply its emoji from
-`prompts/automations/requests.json` and its resolved chat title. Instruct the worker to complete
+`prompts/requests.json` and its resolved chat title. Instruct the worker to complete
 required Cloud startup checks, then finish initialization with one small quoted card in its own
 chat. Do not run the automation, change schedules or send a separate main-chat summary.
 
@@ -189,14 +189,14 @@ Repeat with `mode: "sync"` (also the default), adding `existingTasks` and `conte
 ```json
 {
   "mode": "sync",
-  "id": "sync",
+  "id": "automation-sync",
   "context": {
     "timezone": "America/New_York",
     "environments": [{ "id": "verified-published-config-id", "name": "tanaabot" }],
     "destination": { "kind": "dot", "id": "verified-main-chat-id" },
     "workers": [
       {
-        "automationId": "sync",
+        "automationId": "automation-sync",
         "id": "verified-worker-id",
         "status": "active",
         "startup": "passed",
@@ -224,8 +224,8 @@ Copy saved native settings into `existingTasks` records with `id` and `task`:
 
 The worker uses the published Cloud environment and receives its own metadata, all shared worker
 guidance and the authored automation prompt. Its opening is rendered from the shared
-`prompts/automations/partials/request.md` template, the resolved schedule title, and its emoji
-and short request in `prompts/automations/requests.json`. Each selected automation needs an entry.
+`prompts/request-partial.md` template, the resolved schedule title, and its emoji
+and short request in `prompts/requests.json`. Each selected automation needs an entry.
 Saved schedule ownership remains metadata-first, with only the supported optional canary preceding it.
 The client owns preview length and collapse behavior; the template does not create an accordion.
 The coordinator continues that worker, waits for its
@@ -254,7 +254,7 @@ schedule fields directly; do not reconstruct them from a description or convert 
 
 Apply exact compiled prompts and settings through the owning dot's native schedule controls.
 Apply returned operations in order: the synchronizer comes first when selected. For a sync-only
-bootstrap use `id: "sync"` in both targets and sync requests, resolving only its worker. Verify
+bootstrap use `id: "automation-sync"` in both targets and sync requests, resolving only its worker. Verify
 its saved prompt before a distinct Run now; an update cannot replace the already-running dispatcher.
 Newly compiled metadata carries `dispatchVersion: 2` to distinguish that next invocation.
 Never use the contributor's local scheduler as a substitute or write scheduler files. Supply the
@@ -302,7 +302,8 @@ worker recreation or a schedule update.
 If this optional pass itself fails, report placement as unverified and retain the sync results.
 
 1. Use an authorized connected Mac with native Codex sidebar controls. For a Cloud or scheduled
-   coordinator, use a supported handoff to that Mac under the existing operator scope. If the Mac
+   coordinator, request the whole placement pass in one handoff to that Mac: list sections,
+   create missing configured groups, move the selected workers and verify membership. If the Mac
    or handoff is unavailable, record that reason and finish the sync report. Do not invent a remote
    endpoint, start a helper chat without authorization, or substitute Cloud sidebar controls.
 2. On that Mac, obtain the native chat and sidebar listing. Resolve exact bound chat IDs, following
@@ -317,11 +318,16 @@ If this optional pass itself fails, report placement as unverified and retain th
    This read-only pass loads the public Agent System manifest and resolves only its effective job
    `group`, including YAML-merged defaults from the declarations. No configured
    group means no placement request. There is no hard-coded section fallback or second parser.
-4. For each `move` result, use native `move_thread_to_sidebar_section` with its exact arguments.
-   Only an existing, unambiguously resolved section qualifies. Skip `verified` placements. Never
-   create sections or move unrelated chats. Before retrying an uncertain earlier move, inspect its
-   current membership; do not repeat a denial.
-5. Read back the sidebar after moves and run the same placement planner against that listing to
+4. On that same Mac, use the complete section listing. Match the manifest’s uppercase group
+   name exactly and case-sensitively. For each name in `sectionsToCreate`, use
+   `create_sidebar_section` with that exact name once. Read back the sidebar and rerun the
+   planner before moving workers. If creation was uncertain, reconcile from the listing.
+   If the group is still absent or multiple IDs have the exact name, report affected placements
+   as unverified. Do not retry a denial, create a second section or rename a case variant.
+5. For each `move` result, use native `move_thread_to_sidebar_section` with its exact arguments.
+   Skip verified placements and unrelated chats. Before retrying an uncertain earlier move,
+   inspect its current membership.
+6. Read back the sidebar after moves and run the same placement planner against that listing to
    check membership. A successful move response alone is insufficient. Make at most one move
    attempt per worker in this pass; a remaining `move` result means placement was not verified,
    not an instruction to loop. Record a failed move or unavailable readback with its specific

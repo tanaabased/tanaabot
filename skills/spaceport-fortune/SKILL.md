@@ -14,7 +14,7 @@ metadata:
     homepage: https://github.com/tanaabased/tanaabot/tree/main/skills/spaceport-fortune
 ---
 
-# Spaceport Fortune Cookie
+# Tanaabot Spaceport Fortune Cookie
 
 ## Overview
 

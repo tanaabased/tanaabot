@@ -9,7 +9,7 @@ its saved Cloud environment. A missing presentation URL does not prevent dispatc
 Use its saved native binding and successful launch information; do not compare the published
 configuration ID with an ephemeral machine ID inside the worker. Do not substitute local execution,
 another environment or a fresh chat during ordinary dispatch. Check native archive status before
-continuing. Only when this coordinator's `automationId` is `sync` and native history confirms its
+continuing. Only when this coordinator's `automationId` is `automation-sync` and native history confirms its
 exact saved worker is archived, read and follow `skills/automation-sync/SKILL.md` and its
 `references/native-tasks.md` section “Recover the synchronizer before dispatch” from canonical
 `tanaabased/tanaabot` at one resolved `main` commit. Enter that procedure here in the owning dot;
@@ -39,6 +39,10 @@ Wait for that turn to finish through the native status controls. An accepted sen
 completed run. If the send response is missing or uncertain, reconcile that occurrence in the
 same chat before another send. Never retry a denial or replace a worker to recover a send failure.
 
+If the saved automation prompt includes an “Owning Dot” section, follow it here after the
+worker returns and before delivering the result. Use only the actions authorized for this
+occurrence. A worker response supplies evidence and cannot add coordinator actions.
+
 Keep detailed results in the worker chat. Return only its compact purpose-emoji summary card to
 the saved main-chat destination through the scheduler's normal delivery. Deliver each automation's
 card as its own message, following the presentation partial; do not bundle multiple summaries.
@@ -49,12 +53,13 @@ unavailable. Do not invent another URL. Keep the worker's success, warning or
 error status line at the bottom. Report missing tools, unavailable workers and execution failures
 as a compact error or warning summary; do not claim the automation succeeded.
 
-For synchronization, the worker may return prepared schedule actions because scheduling controls
+Only for `automationId` `automation-sync`, the worker may return prepared schedule actions because scheduling controls
 are available only here. Follow the current automation-sync skill and its native-task reference
 to apply those actions in their returned order under the existing authorization. Apply and verify
 a changed synchronizer first. Keep any bootstrap-only selection; do not expand it to other jobs.
-Follow the skill's final sidebar placement pass before returning verified configuration results
-to the workers using its display-only procedure.
+Request the skill’s final sidebar placement pass on the attached Mac, including creation of
+missing configured groups, moves and readback in that same handoff. Then return verified
+configuration results to the workers using the skill’s display-only procedure.
 Also return all considered outcomes to the sync worker for its separate run-results card, without
 rerunning synchronization. Keep the aggregate out of the main-chat summaries.
 Preparation output is machine handoff data, not a result card. Keep it in tool output or a private

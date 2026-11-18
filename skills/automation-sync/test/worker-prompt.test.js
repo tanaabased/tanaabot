@@ -6,14 +6,14 @@ import requestHeader from '../utils/request-header.js';
 import { taskPrompt } from '../utils/task-prompt.js';
 
 const template = readFileSync(
-  new URL('../../../prompts/automations/partials/request.md', import.meta.url),
+  new URL('../../../prompts/request-partial.md', import.meta.url),
   'utf8',
 );
 const metadata = {
   schema: 'tanaabot.automation/v1',
   repository: 'tanaabased/tanaabot',
   agentId: 'tanaabot',
-  automationId: 'sync',
+  automationId: 'automation-sync',
   contentHash: 'a'.repeat(64),
   updatedAt: '2026-01-01T00:00:00Z',
   role: 'worker',

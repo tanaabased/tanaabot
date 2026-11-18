@@ -6,7 +6,7 @@ import syncReport from '../utils/sync-report.js';
 test('should keep preparation silent by default and label optional debug as unsaved', () => {
   const plan = {
     source: { revision: 'a'.repeat(40), dirty: false },
-    operations: [{ automationId: 'sync', kind: 'update' }],
+    operations: [{ automationId: 'automation-sync', kind: 'update' }],
   };
   assert.equal(syncReport(plan), '');
   const preview = syncReport(plan, true);

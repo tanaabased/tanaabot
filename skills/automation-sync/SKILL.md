@@ -28,10 +28,10 @@ updates; the script itself makes no service writes.
 
 - **Always:** Read [native task inputs and application](./references/native-tasks.md),
   [configuration receipts](./references/configuration-receipts.md),
-  the shared [metadata](../../prompts/automations/partials/metadata.md),
-  [execution](../../prompts/automations/partials/execution.md) and
-  [presentation](../../prompts/automations/partials/presentation.md) partials, the coordinator's
-  [dispatch](../../prompts/automations/partials/dispatch.md) partial, and the selected revision's
+  the shared [metadata](../../prompts/metadata-partial.md),
+  [execution](../../prompts/execution-partial.md) and
+  [presentation](../../prompts/presentation-partial.md) partials, the coordinator's
+  [dispatch](../../prompts/dispatch-partial.md) partial, and the selected revision's
   [account guidance](../../dotfiles/ai/.codex/AGENTS.md#accounts-and-authority).
 - **Before writing the result:** Read [Tanaabot Voice](../voice/SKILL.md) and its required samples,
   unless another voice was requested. Apply the presentation partial's result and summary rules.
@@ -84,7 +84,7 @@ When native history confirms that Sync's exact bound worker is archived, follow
 [Recover the synchronizer before dispatch](./references/native-tasks.md#recover-the-synchronizer-before-dispatch).
 During archive recovery, the owning dot can run the read-only assembler on its own cloud computer
 before any worker is running. Launch the replacement in the same published Cloud configuration.
-A manual `sync`-only update ends with the verified Sync configuration and its report. Only a
+A manual `automation-sync`-only update ends with the verified Sync configuration and its report. Only a
 scheduled occurrence or Run now resumes dispatch, once, with its original selection.
 Use the ordinary workflow below for an active binding or initial seeding.
 
@@ -101,7 +101,7 @@ Use the ordinary workflow below for an active binding or initial seeding.
    cannot prove a job or worker is absent.
    Supply the native scheduler's IANA timezone as `context.timezone`; do not use the worker's clock.
 4. For a delegated sync from a saved dispatcher whose incoming metadata lacks `dispatchVersion: 2`,
-   perform only the synchronizer upgrade: use `id: "sync"` for both targets and sync below.
+   perform only the synchronizer upgrade: use `id: "automation-sync"` for both targets and sync below.
    Inspect the incoming occurrence, not newly assembled metadata, when choosing this path.
    Explicit operator-requested sync-only runs and a coordinator's preserved bootstrap-only
    recovery selection use the same selection. Leave other automation
@@ -149,10 +149,11 @@ Use the ordinary workflow below for an active binding or initial seeding.
    result card. Report completed actions and actionable limits in the shared card style. Keep private native
    bindings out of public repository files.
 
-Apply each definition's declared state: enabled `sync` at midnight and enabled
-`update-cloud-canon` at 1 a.m., using saved timezones or the native scheduler’s timezone for new
-tasks. Leave the legacy Canon updater's
-cutover to the operator. Completed canaries are no longer declared. Leave
+Apply the selected definitions' declared schedule and enabled state, using saved timezones
+or the native scheduler’s timezone for new tasks. Before enabling `cloud-update`, check
+the native listing for the previous `update-cloud-canon` schedule and any legacy Canon updater.
+If either still runs against the same plugin, leave Cloud Update activation pending for operator
+cutover. Continue independent schedule work. Completed canaries are no longer declared. Leave
 unselected native tasks untouched; removing a source definition does not authorize deleting,
 rearming or modifying its native task or worker.
 

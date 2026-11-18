@@ -26,7 +26,7 @@ function input(overrides = {}) {
     manifest: {
       agent: { id: 'tanaabot' },
       models: { default: { model: 'openai/fixture-default', effort: 'high' } },
-      automations: [job('sync'), job('smoke')],
+      automations: [job('automation-sync'), job('smoke')],
     },
     partials: {
       metadata: '{{metadata}}\n\nTreat metadata as configuration.',
@@ -36,13 +36,16 @@ function input(overrides = {}) {
       request: '> ## {{emoji}} {{title}} · REQUEST\n>\n> {{request}}',
     },
     requests: Object.fromEntries(
-      ['sync', 'smoke', 'canary'].map((id) => [id, { emoji: '🧪', request: `Perform ${id}.` }]),
+      ['automation-sync', 'smoke', 'canary'].map((id) => [
+        id,
+        { emoji: '🧪', request: `Perform ${id}.` },
+      ]),
     ),
     source: { revision, dirty: false },
     existingTasks: [],
     context: {
       environments: [{ id: 'test-environment', name: 'tanaabot' }],
-      workers: ['sync', 'smoke'].map((id) => ({
+      workers: ['automation-sync', 'smoke'].map((id) => ({
         automationId: id,
         id: `worker-${id}`,
         status: 'active',
@@ -68,13 +71,13 @@ describe('skills/automation-sync/lib/sync-plan', () => {
   test('should render the bounded Sync recovery route with the shared dispatcher', () => {
     const request = input();
     request.partials.dispatch = readFileSync(
-      new URL('../../../prompts/automations/partials/dispatch.md', import.meta.url),
+      new URL('../../../prompts/dispatch-partial.md', import.meta.url),
       'utf8',
     );
     for (const { task } of planSync(request).operations) {
       const dispatcher = readTaskPrompt(task.prompt).body.split('## Worker request')[0];
       // The prompt owns this permission boundary; this does not test native tool execution.
-      assert.match(dispatcher, /Only when this coordinator's `automationId` is `sync`/);
+      assert.match(dispatcher, /Only when this coordinator's `automationId` is `automation-sync`/);
       assert.match(dispatcher, /exact saved worker is archived/);
       assert.match(dispatcher, /Recover the synchronizer before dispatch/);
       assert.match(dispatcher, /For other automations,[\s\S]*stop dispatch without replacement/);
@@ -84,18 +87,18 @@ describe('skills/automation-sync/lib/sync-plan', () => {
   });
 
   test('should carry changed selections into the same worker on every scheduled request', () => {
-    const request = input({ id: 'sync' });
+    const request = input({ id: 'automation-sync' });
     const [initial] = planSync(request).operations;
     assert.equal(workerRequest(initial.task).model, 'fixture-default');
     assert.equal(workerRequest(initial.task).effort, 'high');
-    request.existingTasks = [{ id: 'native-sync', task: initial.task }];
+    request.existingTasks = [{ id: 'native-automation-sync', task: initial.task }];
     const selected = request.manifest.automations[0];
     selected.model = 'openai/fixture-top';
     selected.effort = 'medium';
     selected.overrides.codex = { model: 'fixture-override' };
     const [changed] = planSync({ ...request, now: later }).operations;
     assert.equal(changed.kind, 'update');
-    assert.equal(changed.nativeId, 'native-sync');
+    assert.equal(changed.nativeId, 'native-automation-sync');
     const worker = workerRequest(changed.task);
     assert.equal(worker.model, 'fixture-override');
     assert.equal(worker.effort, 'medium');
@@ -113,7 +116,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     delete selected.effort;
     const [profileChange] = planSync(request).operations;
     assert.equal(profileChange.kind, 'update');
-    assert.equal(profileChange.nativeId, 'native-sync');
+    assert.equal(profileChange.nativeId, 'native-automation-sync');
     assert.equal(workerRequest(profileChange.task).model, 'fixture-revised');
     assert.equal(workerRequest(profileChange.task).effort, 'high');
   });
@@ -172,7 +175,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     request.manifest.automations.push({ ...job('canary'), enabled: true });
     const bootstrap = planSync({
       ...request,
-      id: 'sync',
+      id: 'automation-sync',
       context: { ...request.context, workers: [request.context.workers[0]] },
     });
     assert.deepEqual(
@@ -181,11 +184,14 @@ describe('skills/automation-sync/lib/sync-plan', () => {
         kind,
         nativeId,
       })),
-      [{ automationId: 'sync', kind: 'update', nativeId: 'native-sync' }],
+      [{ automationId: 'automation-sync', kind: 'update', nativeId: 'native-automation-sync' }],
     );
     assert.deepEqual(bootstrap.operations[0].expectedCurrent, old[0].task);
     assert.equal(readTaskPrompt(bootstrap.operations[0].task.prompt).metadata.dispatchVersion, 2);
-    request.existingTasks = [{ id: 'native-sync', task: bootstrap.operations[0].task }, old[1]];
+    request.existingTasks = [
+      { id: 'native-automation-sync', task: bootstrap.operations[0].task },
+      old[1],
+    ];
     request.context.workers.push({
       automationId: 'canary',
       id: 'worker-canary',
@@ -197,7 +203,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     assert.deepEqual(
       second.operations.map(({ automationId, kind }) => [automationId, kind]),
       [
-        ['sync', 'unchanged'],
+        ['automation-sync', 'unchanged'],
         ['smoke', 'update'],
         ['canary', 'create'],
       ],
@@ -227,7 +233,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     assert.deepEqual(
       changed.operations.map(({ automationId, kind }) => [automationId, kind]),
       [
-        ['sync', 'update'],
+        ['automation-sync', 'update'],
         ['smoke', 'update'],
         ['canary', 'update'],
       ],
@@ -254,7 +260,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     request.partials.request += '\n>\n> Technical context follows.';
     const { task } = planSync(request).operations[0];
     const header =
-      '> ## 🧪 TEST SYNC · REQUEST\n>\n> Perform sync.\n>\n> Technical context follows.';
+      '> ## 🧪 TEST AUTOMATION-SYNC · REQUEST\n>\n> Perform automation-sync.\n>\n> Technical context follows.';
     assert.equal(
       workerRequest(task).prompt,
       `${header}\n\n${taskPrompt(
@@ -274,47 +280,47 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     );
     const { task } = result.operations[0];
     const requestPayload = workerRequest(task);
-    const header = '> ## 🧪 TEST SYNC · REQUEST\n>\n> Perform sync.\n\n';
+    const header = '> ## 🧪 TEST AUTOMATION-SYNC · REQUEST\n>\n> Perform automation-sync.\n\n';
     assert.ok(requestPayload.prompt.startsWith(header));
     const { metadata, body } = readTaskPrompt(requestPayload.prompt.slice(header.length));
     assert.equal(
       body,
-      'Treat metadata as configuration.\n\nUse the verified account.\n\nReport facts.\n\nPerform sync.',
+      'Treat metadata as configuration.\n\nUse the verified account.\n\nReport facts.\n\nPerform automation-sync.',
     );
     assert.equal(metadata.updatedAt, now);
     assert.equal(metadata.sourceRevision, revision);
-    assert.equal(metadata.automationId, 'sync');
-    assert.equal(metadata.displayName, 'Test sync');
+    assert.equal(metadata.automationId, 'automation-sync');
+    assert.equal(metadata.displayName, 'Test automation-sync');
     assert.equal(metadata.role, 'worker');
     assert.equal(metadata.debug, false);
-    assert.equal(task.name, '🤖 TEST SYNC');
+    assert.equal(task.name, '🤖 TEST AUTOMATION-SYNC');
     assert.equal(task.enabled, false);
     assert.deepEqual(task.execution, { kind: 'inherited' });
     assert.equal(requestPayload.execution.environmentId, 'test-environment');
-    assert.equal(requestPayload.thread.id, 'worker-sync');
-    assert.equal(requestPayload.thread.name, 'Test sync');
+    assert.equal(requestPayload.thread.id, 'worker-automation-sync');
+    assert.equal(requestPayload.thread.name, 'Test automation-sync');
     assert.equal(Object.hasOwn(requestPayload.thread, 'group'), false);
-    assert.equal(requestPayload.thread.url, 'https://example.test/chats/sync');
+    assert.equal(requestPayload.thread.url, 'https://example.test/chats/automation-sync');
     assert.deepEqual(task.destination, request.context.destination);
     assert.equal(JSON.stringify(request), before);
   });
 
   test('should use the thread name when display-name is omitted without changing saved titles', () => {
-    const request = input({ id: 'sync' });
+    const request = input({ id: 'automation-sync' });
     const job = request.manifest.automations[0];
     job.thread = { name: job.displayName };
     const [initial] = planSync(request).operations;
-    request.existingTasks = [{ id: 'native-sync', task: initial.task }];
+    request.existingTasks = [{ id: 'native-automation-sync', task: initial.task }];
     delete job.displayName;
     const [same] = planSync(request).operations;
     assert.equal(same.kind, 'unchanged');
     assert.deepEqual(same.task, initial.task);
-    assert.equal(readTaskPrompt(same.task.prompt).metadata.displayName, 'Test sync');
-    assert.match(workerRequest(same.task).prompt, /TEST SYNC · REQUEST/);
+    assert.equal(readTaskPrompt(same.task.prompt).metadata.displayName, 'Test automation-sync');
+    assert.match(workerRequest(same.task).prompt, /TEST AUTOMATION-SYNC · REQUEST/);
     job.displayName = 'Separate schedule title';
     const [changed] = planSync(request).operations;
     assert.equal(changed.task.name, '🤖 SEPARATE SCHEDULE TITLE');
-    assert.equal(workerRequest(changed.task).thread.name, 'Test sync');
+    assert.equal(workerRequest(changed.task).thread.name, 'Test automation-sync');
     assert.equal(readTaskPrompt(changed.task.prompt).metadata.displayName, job.displayName);
   });
 
@@ -327,21 +333,21 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       result.operations.map(({ kind }) => kind),
       ['unchanged', 'unchanged'],
     );
-    assert.equal(result.operations[0].nativeId, 'native-sync');
+    assert.equal(result.operations[0].nativeId, 'native-automation-sync');
     assert.equal(result.operations[0].task.prompt, existingTasks[0].task.prompt);
     assert.equal(readTaskPrompt(result.operations[0].task.prompt).metadata.updatedAt, now);
   });
 
   test('should preserve a native deep link through assembly and an unchanged rerun', () => {
     const request = input();
-    request.context.workers[0].url = 'codex://threads/worker-sync';
+    request.context.workers[0].url = 'codex://threads/worker-automation-sync';
     const initial = saved(request);
     const worker = workerRequest(initial[0].task);
-    assert.equal(worker.thread.url, 'codex://threads/worker-sync');
-    assert.equal(worker.thread.id, 'worker-sync');
+    assert.equal(worker.thread.url, 'codex://threads/worker-automation-sync');
+    assert.equal(worker.thread.id, 'worker-automation-sync');
     const result = planSync({ ...request, existingTasks: initial, now: later });
     assert.equal(result.operations[0].kind, 'unchanged');
-    assert.equal(result.operations[0].nativeId, 'native-sync');
+    assert.equal(result.operations[0].nativeId, 'native-automation-sync');
     assert.equal(result.operations[0].task.prompt, initial[0].task.prompt);
   });
 
@@ -349,9 +355,9 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     const request = input();
     delete request.context.workers[0].url;
     const worker = workerRequest(planSync(request).operations[0].task);
-    assert.equal(worker.thread.id, 'worker-sync');
+    assert.equal(worker.thread.id, 'worker-automation-sync');
     assert.equal(worker.execution.environmentId, 'test-environment');
-    assert.equal(worker.thread.url, 'codex://threads/worker-sync');
+    assert.equal(worker.thread.url, 'codex://threads/worker-automation-sync');
     request.context.workers[0].environmentId = 'wrong-environment';
     assert.throws(() => planSync(request), /reusable-worker-target-mismatch/);
   });
@@ -365,8 +371,8 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       'https://example.test/chat\n',
       'https://user:password@example.test/chat',
       'codex://threads/another-worker',
-      'codex://settings/worker-sync',
-      'codex://threads/worker-sync?redirect=elsewhere',
+      'codex://settings/worker-automation-sync',
+      'codex://threads/worker-automation-sync?redirect=elsewhere',
     ]) {
       const request = input();
       request.context.workers[0].url = url;
@@ -417,7 +423,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     request.context.workers[0].name = 'Automation sync';
     const result = planSync(request);
     assert.equal(result.operations[0].kind, 'update');
-    assert.equal(result.operations[0].nativeId, 'native-sync');
+    assert.equal(result.operations[0].nativeId, 'native-automation-sync');
     assert.equal(result.operations[0].task.name, '🤖 AUTOMATION SYNC');
   });
 
@@ -502,19 +508,19 @@ describe('skills/automation-sync/lib/sync-plan', () => {
   test('should retain the saved worker identity rather than silently bind a replacement', () => {
     const request = input({ existingTasks: saved() });
     request.context.workers[0].id = 'replacement-worker';
-    assert.throws(() => planSync(request), /reusable-worker-replacement-required:sync/);
+    assert.throws(() => planSync(request), /reusable-worker-replacement-required:automation-sync/);
   });
 
   test('should refuse archived, unknown and malformed worker identities', () => {
     for (const status of ['archived', 'unknown', 'offline', undefined]) {
       const request = input();
       request.context.workers[0].status = status;
-      assert.throws(() => planSync(request), /reusable-worker-not-active:sync/);
+      assert.throws(() => planSync(request), /reusable-worker-not-active:automation-sync/);
     }
     for (const id of ['worker/id', 'worker?query', 'worker#fragment', ' worker', 'worker%2Fid']) {
       const request = input();
       request.context.workers[0].id = id;
-      assert.throws(() => planSync(request), /native-worker-id-invalid:sync/);
+      assert.throws(() => planSync(request), /native-worker-id-invalid:automation-sync/);
     }
   });
 
@@ -552,12 +558,15 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       assert.equal(planSync(request).operations[0].kind, 'unchanged');
 
       replacement.replaces = {
-        id: 'worker-sync',
+        id: 'worker-automation-sync',
         status: 'archived',
         environmentId: 'test-environment',
       };
       replacement.id = 'competing-worker';
-      assert.throws(() => planSync(request), /reusable-worker-replacement-required:sync/);
+      assert.throws(
+        () => planSync(request),
+        /reusable-worker-replacement-required:automation-sync/,
+      );
     }
   });
 
@@ -566,7 +575,11 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     const replacement = request.context.workers[0];
     replacement.id = 'replacement-worker';
     delete replacement.url;
-    const archived = { id: 'worker-sync', status: 'archived', environmentId: 'test-environment' };
+    const archived = {
+      id: 'worker-automation-sync',
+      status: 'archived',
+      environmentId: 'test-environment',
+    };
     for (const evidence of [
       undefined,
       { ...archived, status: 'active' },
@@ -575,20 +588,25 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       { ...archived, environmentId: 'other-environment' },
     ]) {
       replacement.replaces = evidence;
-      assert.throws(() => planSync(request), /reusable-worker-replacement-required:sync/);
+      assert.throws(
+        () => planSync(request),
+        /reusable-worker-replacement-required:automation-sync/,
+      );
     }
     replacement.replaces = archived;
     replacement.status = 'unknown';
-    assert.throws(() => planSync(request), /reusable-worker-not-active:sync/);
+    assert.throws(() => planSync(request), /reusable-worker-not-active:automation-sync/);
     replacement.status = 'active';
-    request.manifest.automations[0].overrides.codex = { target: { thread: 'worker-sync' } };
-    assert.throws(() => planSync(request), /reusable-worker-target-mismatch:sync/);
+    request.manifest.automations[0].overrides.codex = {
+      target: { thread: 'worker-automation-sync' },
+    };
+    assert.throws(() => planSync(request), /reusable-worker-target-mismatch:automation-sync/);
     delete request.manifest.automations[0].overrides.codex;
     request.manifest.automations[0].enabled = true;
-    assert.throws(() => planSync(request), /worker-rebind-settings-changed:sync/);
+    assert.throws(() => planSync(request), /worker-rebind-settings-changed:automation-sync/);
     request.manifest.automations[0].enabled = false;
     request.manifest.automations[0].schedule.seconds = 7200;
-    assert.throws(() => planSync(request), /worker-rebind-settings-changed:sync/);
+    assert.throws(() => planSync(request), /worker-rebind-settings-changed:automation-sync/);
   });
 
   test('should preserve destination and coordinator settings during a worker rebind', () => {
@@ -598,7 +616,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       ['model', 'saved-coordinator-model'],
       ['effort', 'medium'],
     ]) {
-      const request = input({ id: 'sync', existingTasks: saved() });
+      const request = input({ id: 'automation-sync', existingTasks: saved() });
       const worker = request.context.workers[0];
       worker.replaces = {
         id: worker.id,
@@ -607,15 +625,15 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       };
       worker.id = 'replacement-sync';
       request.existingTasks[0].task[field] = value;
-      assert.throws(() => planSync(request), /worker-rebind-settings-changed:sync/);
+      assert.throws(() => planSync(request), /worker-rebind-settings-changed:automation-sync/);
     }
   });
 
   test('should keep group-only changes out of worker payloads and schedule comparison', () => {
-    const request = input({ id: 'sync' });
+    const request = input({ id: 'automation-sync' });
     request.manifest.automations[0].group = 'REPORTS';
     const [initial] = planSync(request).operations;
-    request.existingTasks = [{ id: 'native-sync', task: initial.task }];
+    request.existingTasks = [{ id: 'native-automation-sync', task: initial.task }];
     request.manifest.automations[0].group = 'CHECKS';
     request.context.workers[0].group = 'WRONG';
     const [unchanged] = planSync(request).operations;
@@ -628,7 +646,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
   });
 
   test('should block replacement on failed or unverified startup and mismatched environments despite optional placement', () => {
-    const request = input({ id: 'sync', existingTasks: saved() });
+    const request = input({ id: 'automation-sync', existingTasks: saved() });
     const worker = request.context.workers[0];
     worker.replaces = {
       id: worker.id,
@@ -639,15 +657,15 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     delete worker.group;
     for (const startup of ['failed', 'unverified', undefined]) {
       worker.startup = startup;
-      assert.throws(() => planSync(request), /reusable-worker-startup-not-passed:sync/);
+      assert.throws(() => planSync(request), /reusable-worker-startup-not-passed:automation-sync/);
     }
     worker.startup = 'passed';
     worker.environmentId = 'wrong-environment';
-    assert.throws(() => planSync(request), /reusable-worker-target-mismatch:sync/);
+    assert.throws(() => planSync(request), /reusable-worker-target-mismatch:automation-sync/);
   });
 
   test('should preflight a manual Sync rebind with no running worker and stop at the verified update', () => {
-    const request = input({ id: 'sync', existingTasks: saved() });
+    const request = input({ id: 'automation-sync', existingTasks: saved() });
     const [sync, other] = request.existingTasks;
     const retired = workerRequest(sync.task);
     request.context = {
@@ -691,7 +709,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     delete request.context.workers[0].replaces;
     assert.deepEqual(
       planSync(request).operations.map(({ automationId, kind }) => [automationId, kind]),
-      [['sync', 'unchanged']],
+      [['automation-sync', 'unchanged']],
     );
 
     // The native dispatch decision belongs to the skill, outside the read-only planner.
@@ -705,7 +723,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     assert.match(recovery, /owning dot's own cloud computer[\s\S]*?`mode: "targets"`/);
     assert.match(
       recovery,
-      /Manual `sync`-only update\.[^\n]*report it and stop\.\s+Do not dispatch/,
+      /Manual `automation-sync`-only update\.[^\n]*report it and stop\.\s+Do not dispatch/,
     );
     assert.match(
       recovery,
@@ -714,10 +732,10 @@ describe('skills/automation-sync/lib/sync-plan', () => {
   });
 
   test('should prepare only the Sync rebind before a resumed pass creates Canon and then no-ops', () => {
-    const request = input({ id: 'sync' });
+    const request = input({ id: 'automation-sync' });
     request.existingTasks = saved(request);
-    request.manifest.automations = [job('sync'), job('update-cloud-canon')];
-    request.requests['update-cloud-canon'] = { emoji: '📚', request: 'Update Cloud Canon.' };
+    request.manifest.automations = [job('automation-sync'), job('cloud-update')];
+    request.requests['cloud-update'] = { emoji: '📚', request: 'Update Cloud Canon.' };
     request.context.workers = [request.context.workers[0]];
     const worker = request.context.workers[0];
     worker.replaces = {
@@ -729,7 +747,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     const recovery = planSync(request);
     assert.deepEqual(
       recovery.operations.map(({ automationId, kind }) => [automationId, kind]),
-      [['sync', 'update']],
+      [['automation-sync', 'update']],
     );
     assert.deepEqual(planSync(request), recovery, 'an unapplied rebind remains the same update');
 
@@ -740,18 +758,18 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     assert.equal(planSync(request).operations[0].kind, 'unchanged', 'bootstrap stays sync-only');
     request.id = 'all';
     request.context.workers.push({
-      automationId: 'update-cloud-canon',
+      automationId: 'cloud-update',
       id: 'worker-canon',
       status: 'active',
       environmentId: 'test-environment',
-      name: 'Test update-cloud-canon',
+      name: 'Test cloud-update',
     });
     const resumed = planSync(request);
     assert.deepEqual(
       resumed.operations.map(({ automationId, kind }) => [automationId, kind]),
       [
-        ['sync', 'unchanged'],
-        ['update-cloud-canon', 'create'],
+        ['automation-sync', 'unchanged'],
+        ['cloud-update', 'create'],
       ],
     );
     request.existingTasks = resumed.operations.map(({ automationId, nativeId, task }) => ({
@@ -765,7 +783,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     const request = input({ existingTasks: saved(), now: later });
     const old = request.existingTasks[0];
     old.task.prompt = old.task.prompt.replaceAll(
-      '"url": "https://example.test/chats/sync"',
+      '"url": "https://example.test/chats/automation-sync"',
       '"url": null',
     );
     delete request.context.workers[0].url;
@@ -773,7 +791,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     assert.equal(update.kind, 'update');
     assert.equal(update.nativeId, old.id);
     assert.equal(update.task.enabled, old.task.enabled);
-    assert.equal(workerRequest(update.task).thread.url, 'codex://threads/worker-sync');
+    assert.equal(workerRequest(update.task).thread.url, 'codex://threads/worker-automation-sync');
     request.existingTasks[0] = { id: old.id, task: update.task };
     const unchanged = planSync({ ...request, now: '2026-03-01T00:00:00Z' }).operations[0];
     assert.equal(unchanged.kind, 'unchanged');
@@ -825,18 +843,18 @@ describe('skills/automation-sync/lib/sync-plan', () => {
         planSync(
           input({ existingTasks: [...existingTasks, { ...existingTasks[0], id: 'duplicate' }] }),
         ),
-      /native-task-ambiguous:sync/,
+      /native-task-ambiguous:automation-sync/,
     );
     assert.throws(
       () =>
         planSync(
           input({
             existingTasks: [
-              { id: 'unowned', task: { name: '🤖 TEST SYNC', prompt: 'Not managed.' } },
+              { id: 'unowned', task: { name: '🤖 TEST AUTOMATION-SYNC', prompt: 'Not managed.' } },
             ],
           }),
         ),
-      /native-task-name-collision:sync/,
+      /native-task-name-collision:automation-sync/,
     );
   });
 
@@ -859,7 +877,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       () => readTaskPrompt('<tanaabot-automation-metadata>broken'),
       /task-marker-invalid/,
     );
-    request.manifest.automations[0] = { ...job('sync'), payload: { kind: 'command' } };
+    request.manifest.automations[0] = { ...job('automation-sync'), payload: { kind: 'command' } };
     assert.throws(() => planSync(request), /prompt-automation-required/);
   });
 });

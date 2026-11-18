@@ -117,9 +117,9 @@ availability check, not a complete release inventory. Tanaboot does not install,
 account plugins or container-local plugin copies. Account import and fresh-task discovery still
 require live verification.
 
-Persistent operating-guidance delivery is tracked in
-[#16](https://github.com/tanaabased/tanaabot/issues/16). The installed global file is the source for
-that work; importing a plugin does not establish that the task received it automatically.
+Main-Dot saved-instruction sync is tracked in
+[#16](https://github.com/tanaabased/tanaabot/issues/16), using the global guidance source.
+That sync and plugin import do not establish automatic instruction delivery to Cloud tasks.
 
 ## Options
 

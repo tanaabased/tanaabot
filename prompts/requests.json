@@ -1,0 +1,14 @@
+{
+  "automation-sync": {
+    "emoji": "🔄",
+    "request": "Synchronize the repository automations from the latest main revision."
+  },
+  "instruction-sync": {
+    "emoji": "🔄",
+    "request": "Prepare the pinned repository guidance for the main tanaabot Dot’s instruction check."
+  },
+  "cloud-update": {
+    "emoji": "⬇️",
+    "request": "Check the private Canon plugin for an update, then run Startup Check and show the Cloud status report."
+  }
+}
