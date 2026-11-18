@@ -114,7 +114,7 @@ No schedule is deleted.
 
 The owning dot handles Sync's archived binding for a manual `automation-sync`-only update, a scheduled
 occurrence or Run now. For an occurrence, retain its original selection before recovery
-(normally `all`, or `automation-sync` for a bootstrap-only occurrence).
+(normally `all`).
 
 1. Read the current native Sync schedule and confirm its exact bound worker is archived in native
    history. Follow [the replacement procedure](#replace-a-confirmed-archived-worker) to reconcile
@@ -150,13 +150,9 @@ The entry point determines what happens after verification.
   Do not dispatch the worker request, queue Run now or touch other automations.
 - **Scheduled occurrence or Run now.** Resume that same occurrence once with the newly saved worker
   request and its model and effort. Pass the original selection as separate coordinator context
-  alongside the unchanged request. A new `dispatchVersion` does not widen a bootstrap-only run.
+  alongside the unchanged request.
   Carry the verified rebind into final placement and reporting even if the resumed pass finds
   Sync unchanged. Do not send the old payload, repeat the save or queue another occurrence.
-
-For rollout, manually load this skill from canonical `main` in the main Tanaabot dot and update
-only `automation-sync`. Verify the replacement binding and saved dispatcher before separately selecting
-Run now for a full sync.
 
 ### Initialization card
 
@@ -168,7 +164,7 @@ chat. Do not run the automation, change schedules or send a separate main-chat s
 Use an H2 with the emoji, uppercase resolved chat title and `· CHAT CREATED`. Keep a blank quoted line
 after the heading and before the contextual status. For successful initialization:
 
-> ## 🧪 SMOKE TEST CANARY · CHAT CREATED
+> ## 🔄 AUTOMATION SYNC · CHAT CREATED
 >
 > Reusable worker initialized. Awaiting schedule configuration.
 >
@@ -226,7 +222,7 @@ The worker uses the published Cloud environment and receives its own metadata, a
 guidance and the authored automation prompt. Its opening is rendered from the shared
 `prompts/request-partial.md` template, the resolved schedule title, and its emoji
 and short request in `prompts/requests.json`. Each selected automation needs an entry.
-Saved schedule ownership remains metadata-first, with only the supported optional canary preceding it.
+The saved schedule prompt begins with its ownership metadata.
 The client owns preview length and collapse behavior; the template does not create an accordion.
 The coordinator continues that worker, waits for its
 result and returns the compact linked summary through normal main-chat delivery. Scheduling a
@@ -253,17 +249,15 @@ The assembler preserves saved recurrence anchors across syncs and prompt edits. 
 schedule fields directly; do not reconstruct them from a description or convert them back to cron.
 
 Apply exact compiled prompts and settings through the owning dot's native schedule controls.
-Apply returned operations in order: the synchronizer comes first when selected. For a sync-only
-bootstrap use `id: "automation-sync"` in both targets and sync requests, resolving only its worker. Verify
-its saved prompt before a distinct Run now; an update cannot replace the already-running dispatcher.
-Newly compiled metadata carries `dispatchVersion: 2` to distinguish that next invocation.
+Apply returned operations in order: the synchronizer comes first when selected. For a manual
+seed use `id: "automation-sync"` in both targets and sync requests, resolving only its worker. Verify
+its saved prompt and binding before a separate Run now for the full sync.
 Never use the contributor's local scheduler as a substitute or write scheduler files. Supply the
 native scheduler's IANA timezone as `context.timezone` in both modes. Omitted source timezones use
 the saved task's timezone, or this native default for a new task. Do not substitute the Cloud
 worker's timezone. Copy `task.schedule.schedule`, `task.schedule.default_timezone` and
 `task.schedule.timing_mode` into the corresponding native call fields. Inspect
-the displayed next run during seeding to confirm local midnight. The later smoke schedule is not
-a completion dependency. Source `enabled: false` means paused, regardless of other defaults.
+the displayed next run during seeding to confirm local midnight. Source `enabled: false` means paused, regardless of other defaults.
 
 For a new disabled definition, prefer native paused creation. If creation always starts active,
 create once and immediately pause the returned native ID before applying the next task. This
@@ -278,14 +272,6 @@ updates every affected task. Generated timestamps and source revision alone do n
 unchanged schedules retain their exact prompts, timestamps and native IDs. Successful native
 responses establish saved settings when returned; read back only missing values, uncertain effects
 and explicit pilot checks. Never repeat a denied or uncertain create.
-
-An authored task prompt may start with one optional diagnostic line matching
-`TANAABOT-SYNC-CANARY: UPPERCASE-TOKEN`. The assembler copies it to the literal first line of the
-saved coordinator prompt, immediately before the ownership metadata. Tokens contain uppercase
-letters/digits separated by single hyphens. Metadata-first prompts remain supported. The line
-participates in content comparison through the authored prompt; it does not replace ownership
-matching, change the stable automation ID or reset timestamps on unchanged reruns. Do not prepend
-arbitrary text or edit the live prompt to add it.
 
 If the Cloud worker cannot save schedules, it returns prepared actions to the coordinator for
 application through this same workflow. Report the handoff as pending until application succeeds.

@@ -16,11 +16,10 @@ specific blocker without making a write. Interactive tool availability does not 
 write access; distinguish catalog presence, successful reads and an actual guarded update.
 
 The repository schedules this automation daily at 1 a.m. `America/New_York`, after midnight
-Automation Sync. This automation does not manage schedules or cutover. The operator owns the old
-updater. Never run another updater, enable this schedule, pause the old one, change credentials,
-recreate the plugin, republish an environment or update other plugins. If another writer or an
-unresolved update is observed, reconcile it before any new write; report a blocker if that cannot
-be done through the existing workflow.
+Automation Sync, which manages its schedule. Never change credentials, recreate the plugin,
+republish an environment or update other plugins. If another writer or an unresolved update is
+observed, reconcile it before any new write. Report a blocker if the existing workflow cannot
+resolve it.
 
 ## Read the installed release
 

@@ -1,7 +1,6 @@
 import {
   canonical,
   fingerprint,
-  promptCanary,
   readTaskPrompt,
   taskBody,
   taskPrompt,
@@ -81,7 +80,7 @@ function validateTask(task) {
   }
 }
 
-function compileTask(task, metadata, worker, body, dispatch, canary, header) {
+function compileTask(task, metadata, worker, body, dispatch, header) {
   const request = {
     ...worker,
     prompt: `${header}\n\n${taskPrompt({ ...metadata, role: 'worker' }, body)}`,
@@ -93,7 +92,6 @@ function compileTask(task, metadata, worker, body, dispatch, canary, header) {
     prompt: taskPrompt(
       { ...metadata, role: 'coordinator' },
       `${dispatch.trim()}\n\n## Worker request\n\n\`\`\`json\n${payload}\n\`\`\``,
-      canary,
     ),
   };
 }
@@ -151,7 +149,6 @@ export function planSync({
       const displayName = job.displayName ?? job.thread?.name ?? job.id.replaceAll('-', ' ');
       const body = taskBody(partials, job.payload.prompt);
       const header = requestHeader(partials.request, displayName, requests?.[job.id]);
-      const canary = promptCanary(job.payload.prompt);
       const task = {
         name: `🤖 ${displayName.trim().toUpperCase()}`,
         enabled: job.enabled,
@@ -166,7 +163,6 @@ export function planSync({
         effort: null,
       };
       const semantic = {
-        dispatchVersion: 2,
         ...task,
         worker,
         body,
@@ -203,7 +199,6 @@ export function planSync({
       }
       const metadata = {
         schema: 'tanaabot.automation/v1',
-        dispatchVersion: 2,
         ...identity,
         displayName,
         contentHash,
@@ -228,7 +223,6 @@ export function planSync({
           worker,
           body,
           partials.dispatch,
-          canary,
           header,
         );
         if (canonical(current.task) === canonical(unchanged))
@@ -243,7 +237,7 @@ export function planSync({
         automationId: job.id,
         kind: current ? 'update' : 'create',
         ...(current ? { nativeId: current.id, expectedCurrent: current.task } : {}),
-        task: compileTask(task, metadata, worker, body, partials.dispatch, canary, header),
+        task: compileTask(task, metadata, worker, body, partials.dispatch, header),
       };
     });
   return { schema: 'tanaabot.automation-plan/v1', source, operations };

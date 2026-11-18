@@ -60,13 +60,33 @@ test('packed plugin retains canonical skills, assets and usable links', async ()
       },
       now: '2026-01-01T00:00:00Z',
     };
-    const assembled = planSync(input);
-    const sync = assembled.operations.find(
-      ({ automationId }) => automationId === 'automation-sync',
-    );
+    const seed = planSync({
+      ...input,
+      id: 'automation-sync',
+      context: {
+        ...input.context,
+        workers: input.context.workers.filter(
+          ({ automationId }) => automationId === 'automation-sync',
+        ),
+      },
+    });
+    assert.equal(seed.operations.length, 1);
+    const [sync] = seed.operations;
+    assert.equal(sync.automationId, 'automation-sync');
+    assert.equal(sync.kind, 'create');
     assert.equal(sync.task.enabled, true);
     assert.equal(sync.task.schedule.default_timezone, 'America/New_York');
     assert.match(sync.task.schedule.schedule, /FREQ=DAILY;BYHOUR=0;BYMINUTE=0;BYSECOND=0/);
+
+    const assembled = planSync({
+      ...input,
+      existingTasks: [{ id: 'native-automation-sync', task: sync.task }],
+    });
+    assert.equal(assembled.operations.length, 3);
+    const [retained] = assembled.operations;
+    assert.equal(retained.kind, 'unchanged');
+    assert.equal(retained.nativeId, 'native-automation-sync');
+    assert.deepEqual(retained.task, sync.task);
 
     // The updater follows midnight synchronization at the operator-selected 1 a.m.
     const canon = assembled.operations.find(({ automationId }) => automationId === 'cloud-update');
@@ -91,18 +111,18 @@ test('packed plugin retains canonical skills, assets and usable links', async ()
       assert.doesNotMatch(other.task.prompt, /skills\/instruction-sync\/|## Owning Dot/);
     }
     const existingTasks = [
-      { id: 'legacy-canon', task: { name: '⬇️ UPDATE CLOUD CANON', prompt: 'Legacy updater.' } },
-      ...assembled.operations.map(({ automationId, task }) => ({
-        id: `native-${automationId}`,
+      { id: 'unrelated', task: { name: 'Weekly reminder', prompt: 'Review the calendar.' } },
+      ...assembled.operations.map(({ automationId, nativeId, task }) => ({
+        id: nativeId ?? `native-${automationId}`,
         task,
       })),
     ];
     const saved = structuredClone(existingTasks);
-    const rerun = planSync({ ...input, existingTasks, id: 'cloud-update' });
-    assert.equal(rerun.operations.length, 1);
-    assert.equal(rerun.operations[0].kind, 'unchanged');
-    assert.equal(rerun.operations[0].nativeId, 'native-cloud-update');
-    assert.deepEqual(rerun.operations[0].task, canon.task);
+    const rerun = planSync({ ...input, existingTasks, now: '2026-01-02T00:00:00Z' });
+    assert.deepEqual(
+      rerun.operations.map(({ kind, nativeId, task }) => ({ kind, nativeId, task })),
+      existingTasks.slice(1).map(({ id, task }) => ({ kind: 'unchanged', nativeId: id, task })),
+    );
     const restored = planSync({
       ...input,
       id: 'cloud-update',

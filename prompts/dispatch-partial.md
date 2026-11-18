@@ -56,7 +56,7 @@ as a compact error or warning summary; do not claim the automation succeeded.
 Only for `automationId` `automation-sync`, the worker may return prepared schedule actions because scheduling controls
 are available only here. Follow the current automation-sync skill and its native-task reference
 to apply those actions in their returned order under the existing authorization. Apply and verify
-a changed synchronizer first. Keep any bootstrap-only selection; do not expand it to other jobs.
+a changed synchronizer first. Apply only the occurrence's selected automations.
 Request the skill’s final sidebar placement pass on the attached Mac, including creation of
 missing configured groups, moves and readback in that same handoff. Then return verified
 configuration results to the workers using the skill’s display-only procedure.

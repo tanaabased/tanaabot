@@ -100,13 +100,9 @@ Use the ordinary workflow below for an active binding or initial seeding.
    tasks, following pagination. Read missing fields for matching tasks only. An incomplete listing
    cannot prove a job or worker is absent.
    Supply the native scheduler's IANA timezone as `context.timezone`; do not use the worker's clock.
-4. For a delegated sync from a saved dispatcher whose incoming metadata lacks `dispatchVersion: 2`,
-   perform only the synchronizer upgrade: use `id: "automation-sync"` for both targets and sync below.
-   Inspect the incoming occurrence, not newly assembled metadata, when choosing this path.
-   Explicit operator-requested sync-only runs and a coordinator's preserved bootstrap-only
-   recovery selection use the same selection. Leave other automation
-   actions for a separate invocation of the updated saved task. Do not run that task automatically.
-   Otherwise retain the operator's selected ID or the normal `all` selection.
+4. Use the same selection for targets and schedule assembly. For a manual seed, select
+   `id: "automation-sync"`. For a scheduled occurrence or Run now, use its original selection
+   (normally `all`). Honor any explicit operator-selected ID.
    Run `bun skills/automation-sync/scripts/sync-task.js` with `mode: "targets"` and JSON on stdin
    using the reference's input shape. This validates Cloud cadence before worker creation and omits
    elapsed one-time targets. Resolve only its returned workers through native chat controls.
@@ -150,12 +146,8 @@ Use the ordinary workflow below for an active binding or initial seeding.
    bindings out of public repository files.
 
 Apply the selected definitions' declared schedule and enabled state, using saved timezones
-or the native scheduler’s timezone for new tasks. Before enabling `cloud-update`, check
-the native listing for the previous `update-cloud-canon` schedule and any legacy Canon updater.
-If either still runs against the same plugin, leave Cloud Update activation pending for operator
-cutover. Continue independent schedule work. Completed canaries are no longer declared. Leave
-unselected native tasks untouched; removing a source definition does not authorize deleting,
-rearming or modifying its native task or worker.
+or the native scheduler’s timezone for new tasks. Leave unselected native tasks untouched.
+Removing a source definition does not authorize deleting, rearming or modifying its native task or worker.
 
 For disabled definitions, use immediate create-then-pause when native creation cannot start
 paused. Activation requires operator authorization; never hand-edit prepared task objects to
@@ -173,7 +165,6 @@ override desired state. Manual updates repeat this same workflow.
 ## Bundled Resources
 
 - [Native task inputs](./references/native-tasks.md): Native mapping and stdin shape.
-- [Smoke pilot record](./references/smoke-pilot.md): Reported scheduled-run result and remaining evidence limits.
 - [Configuration receipts](./references/configuration-receipts.md): Verified worker-local creation/update records.
 - `scripts/prepare-dependency.js`: Git dependency manifest build.
 - `scripts/sync-task.js`: Read-only assembly and comparison.
@@ -182,7 +173,6 @@ override desired state. Manual updates repeat this same workflow.
 ## Validation
 
 Run the owned tests and Canon's validator. In the authorized dot pilot, check initial creation,
-saved environment/destination, one harmless update, an unchanged rerun without duplicates, smoke
-output and visible delivery. A new live canary requires explicit operator authorization.
+saved environment/destination, one harmless update, an unchanged rerun without duplicates and visible delivery.
 Test unattended sync separately from Run now. Source and structural
 checks do not establish native scheduling or automatic delivery.

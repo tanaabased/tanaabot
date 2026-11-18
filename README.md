@@ -50,10 +50,12 @@ Paste this into the designated tanaabot dot to seed or update the synchronizer:
 Read and follow skills/automation-sync/SKILL.md and its required references
 from the latest main revision of https://github.com/tanaabased/tanaabot.
 
-Synchronize the declared automations using the existing published Tanaabot
-Cloud environment. Apply each definition's declared state. Leave the legacy
-Canon updater and completed native canary tasks alone. Do not run or delete tasks.
+Synchronize only automation-sync in the existing published Tanaabot Cloud
+environment. Verify the saved schedule, dispatcher and worker binding, then
+report the result and stop without running the automation.
 ```
+
+After verification, select **Run now** on **🤖 AUTOMATION SYNC** for the full sync.
 
 The [definitions](./.agent-system/automations.yaml) enable `automation-sync` at midnight and both
 `cloud-update` and `instruction-sync` at 1 a.m. in the native scheduler’s timezone (Eastern for this deployment).
@@ -63,16 +65,7 @@ configuration and run-results cards are separate from
 the compact linked main-chat summaries. Debug is opt-in through `debug: true` in
 [agent.yaml](./.agent-system/agent.yaml), followed by synchronization.
 
-Canary #3's scheduled run passed, as reported by the operator. Its repository definition has
-been removed; native task and chat cleanup remain with the operator. See the
-[pilot record](./skills/automation-sync/references/smoke-pilot.md) for evidence limits.
-
-When switching from `update-cloud-canon`, pause the old updater before enabling `cloud-update`.
 Cloud Update reports the Canon result, then runs Startup Check for the worker’s current status report.
-
-To test a fresh bootstrap, first ask the Dot to synchronize only `automation-sync`. If the
-previous `sync` schedule still owns the same name, remove that schedule before seeding.
-Verify the new schedule, worker and `TANAABOT` sidebar placement, then request a full sync.
 
 ## Inspect or refresh saved instructions
 

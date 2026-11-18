@@ -2,13 +2,10 @@
 
 Use the selected Tanaabot Cloud environment for the source preparation and assembly below.
 Refresh canonical `tanaabased/tanaabot` from GitHub `main`, resolve one commit for this run and
-prepare a clean source snapshot without discarding existing task edits. Read that revision's
-`skills/automation-sync/SKILL.md` and follow it for all declared automations. Resolve its required
-references from the same snapshot. Do not reuse only the instructions from an earlier run.
-If this invocation's incoming metadata predates `dispatchVersion: 2`, follow the skill's sync-only
-bootstrap selection. Also preserve a sync-only recovery selection supplied by the coordinator,
-even when the replacement request has current metadata. Leave other automations untouched in that pass. A distinct
-Run now from the updated saved schedule tests the new dispatcher.
+prepare a clean source snapshot without discarding existing task edits. Read and follow that revision's
+`skills/automation-sync/SKILL.md` and its required references from that snapshot.
+Synchronize all declared automations unless the coordinator supplies a narrower selection.
+Preserve that selection when resuming after worker recovery.
 
 The skill supplies the dependency preparation, task assembly, native schedule comparison and
 verification. It uses the Agent System Git dependency locked by this Tanaabot revision; do not
