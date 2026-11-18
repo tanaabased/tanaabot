@@ -99,6 +99,10 @@ work around setup failures; report them for a coding task.
 - Keep package and Codex plugin versions aligned. Maintain explicit npm `files` and Codex Tools
   `managedPaths`; ship regular assets rather than symlinks.
 - Keep changes small. Add folders and helpers when they have a concrete owner and use.
+- Maintain [the inventory](./INVENTORY.md) when adding, renaming or removing an entry. Put the
+  identifying name or ID in the first column and sort rows alphabetically by its visible text,
+  ignoring case. List every repository skill once by its linked base title and every automation
+  once by its manifest ID.
 
 ## Automation authoring
 
