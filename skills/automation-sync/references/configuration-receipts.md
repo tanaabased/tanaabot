@@ -76,19 +76,3 @@ duplicate this aggregate in the main chat; retain its individual compact linked 
 If the coordinator owns native writes, return the verified outcomes to the sync worker for this
 report without rerunning synchronization. Raw preparation JSON stays in tool results or private
 handoff artifacts.
-
-For a full sync, include a separate **Tanaabot instructions** row alongside the automation rows.
-Use the main Dot's observed result: ✅ Unchanged, ⚠️ Awaiting approval (document unchanged),
-✅ Saved and verified, ⚠️ Pending/Blocked/Unverified, or ❌ Failed. Do not turn worker source
-preparation into a successful instruction comparison. If the instruction check was outside the
-approved scope, mark it **Not checked** with that reason. Omit the row for single-ID and bootstrap-only
-passes. Keep schedule outcomes intact when the instruction check cannot proceed.
-
-Read and follow [instruction results](../../instruction-sync/references/results.md) and its shared
-presentation dependency before rendering the separate detailed instruction result and compact
-main-chat summary. Keep the exact proposal in the main Dot. An expected approval wait needs no
-extra failure card; use `⚠️ Instruction changes await approval; schedules <verified outcome>.`
-as the aggregate's contextual footer when appropriate. An approval continuation updates only the
-instruction result through a supported result-only handoff, without new schedule configuration cards
-or a second sync execution. If handoff is unavailable, keep the worker's result pending and report
-the verified instruction result in the main Dot with the delivery limitation.

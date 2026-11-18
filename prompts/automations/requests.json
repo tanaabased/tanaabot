@@ -3,6 +3,10 @@
     "emoji": "🔄",
     "request": "Synchronize the repository automations from the latest main revision."
   },
+  "instruction-sync": {
+    "emoji": "🔄",
+    "request": "Prepare the pinned repository guidance for the main tanaabot Dot’s instruction check."
+  },
   "update-cloud-canon": {
     "emoji": "⬇️",
     "request": "Check the existing private Canon plugin against npm latest and report the result."

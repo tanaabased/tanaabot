@@ -15,3 +15,9 @@ automations:
     schedule: '0 1 * * *'
     prompt:
       file: ../prompts/automations/update-cloud-canon.md
+  - <<: *defaults
+    id: instruction-sync
+    thread: TANAABOT INSTRUCTION SYNC
+    schedule: '0 1 * * *'
+    prompt:
+      file: ../prompts/automations/instruction-sync.md

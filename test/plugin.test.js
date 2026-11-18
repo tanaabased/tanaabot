@@ -74,6 +74,19 @@ test('packed plugin retains canonical skills, assets and usable links', async ()
     assert.equal(canon.task.enabled, true);
     assert.equal(canon.task.schedule.default_timezone, 'America/New_York');
     assert.match(canon.task.schedule.schedule, /FREQ=DAILY;BYHOUR=1;BYMINUTE=0;BYSECOND=0/);
+    const instructions = assembled.operations.find(
+      ({ automationId }) => automationId === 'instruction-sync',
+    );
+    assert.equal(instructions.kind, 'create');
+    assert.equal(instructions.task.name, '🤖 TANAABOT INSTRUCTION SYNC');
+    assert.equal(instructions.task.enabled, true);
+    assert.equal(instructions.task.schedule.default_timezone, 'America/New_York');
+    assert.match(instructions.task.schedule.schedule, /FREQ=DAILY;BYHOUR=1;BYMINUTE=0;BYSECOND=0/);
+    assert.match(instructions.task.prompt, /skills\/instruction-sync\/SKILL\.md/);
+    assert.match(instructions.task.prompt, /## Owning Dot/);
+    for (const other of [sync, canon]) {
+      assert.doesNotMatch(other.task.prompt, /skills\/instruction-sync\/|## Owning Dot/);
+    }
     const existingTasks = [
       { id: 'legacy-canon', task: { name: '⬇️ UPDATE CLOUD CANON', prompt: 'Legacy updater.' } },
       ...assembled.operations.map(({ automationId, task }) => ({

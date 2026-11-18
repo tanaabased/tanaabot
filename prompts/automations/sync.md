@@ -25,23 +25,6 @@ dot for application through its supported controls. Report that handoff as pendi
 operation succeeds. If unattended application is unsupported, report the limitation and the skill's
 manual update procedure. Do not silently claim synchronization or enqueue a substitute schedule.
 
-## Main-Dot instruction check
-
-For a normal full sync, read `skills/instruction-sync/SKILL.md` from this run's resolved revision
-and prepare its canonical operating source for the owning Dot. Return the full commit and exact
-repository paths through the existing private handoff; include source text only through a supported
-complete artifact or tool result. The Dot must verify the source and read its own saved document.
-Do not claim a comparison from the worker's earlier file reads, copy the parent's unrelated saved
-instructions into this worker, or invoke a writer. The check runs even when schedules are unchanged.
-Skip it for a selected single-automation update or the legacy dispatcher bootstrap-only pass.
-
-The coordinator uses that skill to compare and deliver an exact proposal in the main Dot. Every
-changed document requires approval in a later operator message there; an overnight occurrence
-ends with **Awaiting approval**, never an unattended instruction save. A missing reader or unsupported
-handoff is an instruction-check limitation and must not erase verified schedule results. Keep the
-source, document and proposal states separate. Existing recurring authorization must cover the
-read-only check; a newly fetched prompt alone does not grant it.
-
 ## Result and dot summary
 
 After verified native application and the skill's final sidebar placement pass, put the configuration cards in the affected workers using the
@@ -51,11 +34,6 @@ configuration-results reference. Include every considered automation and its ver
 keep this separate from sync's own `CREATED` or `UPDATED` configuration card. When
 application belongs to the coordinator, return the exact prepared actions through tool output
 or a private handoff artifact and leave configuration results pending until it verifies the writes.
-Include a separate Tanaabot instructions row with the coordinator's observed instruction-check
-outcome, or pending/unavailable when it has not returned one. Use the detailed instruction result
-and compact main-Dot summary from `skills/instruction-sync/references/results.md`; keep the exact
-approval proposal in the main Dot only. An approval continuation returns a result-only update,
-not a new sync run or configuration receipt.
 
 For the owning dot, deliver one compact summary per affected automation with its verified worker
 link and final contextual status. Do not add a second aggregate synchronization card. An unchanged

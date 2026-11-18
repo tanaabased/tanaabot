@@ -55,8 +55,8 @@ Cloud environment. Apply each definition's declared state. Leave the legacy
 Canon updater and completed native canary tasks alone. Do not run or delete tasks.
 ```
 
-The [definitions](./.agent-system/automations.yaml) enable `sync` at midnight and
-`update-cloud-canon` at 1 a.m. in the native scheduler’s timezone (Eastern for this deployment).
+The [definitions](./.agent-system/automations.yaml) enable `sync` at midnight and both
+`update-cloud-canon` and `instruction-sync` at 1 a.m. in the native scheduler’s timezone (Eastern for this deployment).
 Existing schedules retain their saved timezone. Each sync loads fresh `main`, updates itself first and
 leaves unchanged tasks alone. A final best-effort desktop pass places workers in their configured sidebar sections;
 configuration and run-results cards are separate from
@@ -74,9 +74,9 @@ In the main tanaabot Dot, ask it to read and follow
 repository revision for a read-only inventory, or
 [`skills/instruction-sync/SKILL.md`](./skills/instruction-sync/SKILL.md) to propose a refresh.
 Use supported repository reads if these skills are absent from the host catalog.
-A full sync can check instructions when authorized, but every changed proposal needs your approval
-in a later main-chat reply before saving. Unchanged checks need no approval. Scheduled handoff
-and later instruction adoption still require live verification; installing these files proves neither.
+The separate [Instruction Sync automation](./prompts/automations/instruction-sync.md) runs the
+read-only comparison. To save a change, approve the exact proposal in a later main-chat reply.
+Unchanged checks need no approval.
 
 ## Contributing
 

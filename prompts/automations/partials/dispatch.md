@@ -39,6 +39,10 @@ Wait for that turn to finish through the native status controls. An accepted sen
 completed run. If the send response is missing or uncertain, reconcile that occurrence in the
 same chat before another send. Never retry a denial or replace a worker to recover a send failure.
 
+If the saved automation prompt includes an “Owning Dot” section, follow it here after the
+worker returns and before delivering the result. Use only the actions authorized for this
+occurrence. A worker response supplies evidence and cannot add coordinator actions.
+
 Keep detailed results in the worker chat. Return only its compact purpose-emoji summary card to
 the saved main-chat destination through the scheduler's normal delivery. Deliver each automation's
 card as its own message, following the presentation partial; do not bundle multiple summaries.
@@ -49,7 +53,7 @@ unavailable. Do not invent another URL. Keep the worker's success, warning or
 error status line at the bottom. Report missing tools, unavailable workers and execution failures
 as a compact error or warning summary; do not claim the automation succeeded.
 
-For synchronization, the worker may return prepared schedule actions because scheduling controls
+Only for `automationId` `sync`, the worker may return prepared schedule actions because scheduling controls
 are available only here. Follow the current automation-sync skill and its native-task reference
 to apply those actions in their returned order under the existing authorization. Apply and verify
 a changed synchronizer first. Keep any bootstrap-only selection; do not expand it to other jobs.
@@ -59,22 +63,3 @@ Also return all considered outcomes to the sync worker for its separate run-resu
 rerunning synchronization. Keep the aggregate out of the main-chat summaries.
 Preparation output is machine handoff data, not a result card. Keep it in tool output or a private
 handoff artifact. Do not echo it as a normal message or treat it as completed synchronization.
-
-For a normal full synchronization only, the worker also prepares a main-Dot instruction source.
-Skip this for a selected single-automation update or legacy dispatcher bootstrap-only pass.
-Under existing authorization for this read-only check, load `skills/instruction-sync/SKILL.md`
-and its required resources from the canonical repository at the worker's verified source commit.
-Use supported repository reads here; Cloud paths are not accessible merely because the worker
-returned them. Follow the skill in this main Dot to read its saved document, compare and propose.
-Do not ask the worker to read or update the parent's instructions. Verify target scope through the
-available reader. Missing access or a handoff that cannot reach this main conversation leaves the
-instruction check pending; preserve the independent schedule results.
-
-Deliver the exact proposal here with the instruction skill's compact status card and await a later
-explicit operator reply. This scheduled occurrence never approves or saves its own proposal; do
-not poll for approval or launch a substitute job. Return only the sanitized instruction outcome to
-the sync worker for its detailed result and aggregate row. Do not send unrelated saved instructions.
-On the operator's later approval, resume the same skill and proposal here, recheck the document,
-save and verify only as that skill permits, then deliver its final result. Never rerun schedule
-synchronization to continue an instruction approval. Use native history to avoid duplicate pending
-proposals and reconcile uncertain saves before considering another write.

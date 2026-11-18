@@ -5,10 +5,10 @@ quoting, spacing, severity and delivery. These layouts own instruction-specific 
 placeholders with observed facts; never use a template as evidence that an operation happened.
 
 Keep the full document and exact proposal in the main Dot's private conversation. A worker receives
-only the sanitized outcome needed for the sync aggregate, never unrelated saved instructions or
+only the instruction changes and status needed for its own run report, never unrelated saved instructions or
 operator preferences. Direct invocation returns its result in the requesting main conversation.
 During automation, the coordinator delivers the compact summary through normal scheduler delivery
-and returns the sanitized detail to the sync worker without rerunning the job or sending twice.
+and returns the sanitized detail to the Instruction Sync worker without rerunning the job or sending twice.
 If either delivery is unavailable, report that limitation; do not claim delivery from composition.
 
 ## Detailed result
@@ -61,7 +61,7 @@ exact edit proposal. Do not embed the full document in the worker's card or a pu
 
 Use a real proposal link only when available. Otherwise identify the exact proposal in this
 conversation; if the proposal could not be delivered here, say that and report the handoff pending.
-When a verified active worker link is useful, use the shared “Go to chat →” convention. Do not
+For a scheduled run, include the verified active worker link using the shared “Go to chat →” convention. Do not
 invent links or represent an ordinary approval request as a native task button. After approval,
-return the saved/readback result here and update the sync worker through a supported result-only
+return the saved/readback result here and update the Instruction Sync worker through a supported result-only
 handoff if available. A failed report delivery must never repeat the instruction write.

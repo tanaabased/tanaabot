@@ -56,7 +56,7 @@ Cloud startup explicitly loads the local skills without requiring this plugin's 
 | Source                                                     | Owns                                                 |
 | ---------------------------------------------------------- | ---------------------------------------------------- |
 | [Agent manifest](./.agent-system/agent.yaml)               | Name, ID, avatar and setup/automation references     |
-| [Automation definitions](./.agent-system/automations.yaml) | Synchronizer schedule and prompt reference           |
+| [Automation definitions](./.agent-system/automations.yaml) | Automation schedules and prompt references           |
 | [Host setup](./.agent-system/setup-host.yaml)              | Host mode check/apply declaration                    |
 | [Agent setup](./.agent-system/setup-agent.yaml)            | Agent mode check/apply declaration                   |
 | [Plugin manifest](./.codex-plugin/plugin.json)             | Plugin identity, skills and branding                 |
@@ -64,9 +64,11 @@ Cloud startup explicitly loads the local skills without requiring this plugin's 
 
 ## Automations
 
-| Automation | Declared state                     |
-| ---------- | ---------------------------------- |
-| `sync`     | Enabled; daily at midnight Eastern |
+| Automation           | Declared state                     |
+| -------------------- | ---------------------------------- |
+| `sync`               | Enabled; daily at midnight Eastern |
+| `update-cloud-canon` | Enabled; daily at 1 a.m. Eastern   |
+| `instruction-sync`   | Enabled; daily at 1 a.m. Eastern   |
 
 ## Artwork
 
