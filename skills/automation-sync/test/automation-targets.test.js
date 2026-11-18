@@ -35,11 +35,11 @@ test('should require explicit native first-turn settings for seeding and recover
   assert.match(guidance, /Unsupported settings stop creation/);
 });
 
-test('should default to Tanaabot Cloud, REPORTS and the authored name without mutating declarations', () => {
+test('should default to Tanaabot Cloud and the authored name without mutating declarations', () => {
   const before = JSON.stringify(manifest);
   const [target] = automationTargets(manifest, context);
   assert.deepEqual(target.execution, { kind: 'cloud', environmentId: 'tanaabot-config' });
-  assert.deepEqual(target.thread, { name: 'Calendar Review', group: 'REPORTS' });
+  assert.deepEqual(target.thread, { name: 'Calendar Review' });
   assert.equal(target.destination.id, 'main-chat');
   assert.equal(target.model, 'fixture-default');
   assert.equal(target.effort, 'high');
@@ -55,7 +55,7 @@ test('should reject cadence before worker preparation and omit elapsed one-shot 
   assert.deepEqual(automationTargets(configured, context, 'all', '2026-01-01T12:00:00Z'), []);
 });
 
-test('should honor shared-schema environment, thread and group overrides', () => {
+test('should honor shared-schema environment and thread overrides without resolving placement', () => {
   const configured = structuredClone(manifest);
   const job = configured.automations[0];
   job.overrides.codex = {
@@ -73,7 +73,6 @@ test('should honor shared-schema environment, thread and group overrides', () =>
   assert.deepEqual(target.thread, {
     id: 'chosen-worker',
     name: 'Chosen chat',
-    group: 'OTHER REPORTS',
   });
 });
 
@@ -127,7 +126,6 @@ test('should require a verified reusable worker before preparing any schedule', 
     status: 'active',
     environmentId: 'wrong-config',
     name: 'Calendar Review',
-    group: 'REPORTS',
     url: 'https://example.test/chat',
   };
   request.context.workers.push(worker);

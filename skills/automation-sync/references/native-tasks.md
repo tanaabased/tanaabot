@@ -25,10 +25,12 @@ Run `bun skills/automation-sync/scripts/sync-task.js` with JSON on stdin:
 exactly one entry; a missing or ambiguous match stops assembly. Never substitute a local computer.
 Optional `workspaceDir` selects the clean source checkout when invoked elsewhere.
 
-Tanaabot's shared policy defaults to Cloud `tanaabot`, reusable workers under `REPORTS`, and chat
-titles equal to each authored display name without an emoji. Per-job `overrides.codex.environment`,
-`thread` and `group` use the Agent System schema. To customize a group, also declare a persistent
-`thread`, as required by that schema. Only Cloud selectors are implemented by this integration;
+Tanaabot's shared policy defaults to Cloud `tanaabot` and reusable workers. Chat titles use
+`thread.name`, then `display-name`, then the automation ID with spaces, without an added emoji.
+Per-job `overrides.codex.environment` and `thread` use the Agent System schema.
+Schedule and card names use `display-name`, then `thread.name`,
+then the automation ID with spaces. A named `thread` alone is sufficient for a shared title.
+Only Cloud selectors are implemented by this integration;
 `native`, `dot`, `auto`, named computers and independent workers stop with an unsupported-setting
 diagnostic. Agent System's own omitted defaults remain unchanged.
 
@@ -56,21 +58,6 @@ or a known native configuration mismatch stops the affected action; do not creat
 Use the saved binding and successful native launch. `environmentId` below is the published
 configuration ID from those controls, never a machine ID reported inside the container.
 Do not require the worker to independently reproduce the configuration ID.
-
-For both new and reused workers, use the assembler's `target.thread.group` as desired placement.
-Do not hard-code a section or parse configuration again. Through supported native sidebar controls,
-find the configured section and inspect the exact worker's current placement. Reuse an already-correct
-placement; otherwise move that chat and verify the result, without another approval prompt within
-the authorized sync. Reconcile an uncertain earlier move before retrying. Never move an ambiguous
-match or use an unsupported endpoint. If the section is absent, create it only when supported.
-Unsupported, failed or unverified placement is a separate reported limitation, not a failed worker
-or a reason to stop rebinding. Continue when the worker's required checks pass.
-
-Supply `context.workers[].group` only as an observed native placement; omit it when unavailable.
-Never fill it with the desired group to make a check pass. The plan's per-operation `placement`
-compares `desiredGroup` with `observedGroup`, using `verified`, `mismatched` or `unverified`.
-Saved `thread.group` remains desired configuration, not proof of a successful move. Placement
-observations do not enter the saved prompt or force a schedule update on an otherwise unchanged run.
 
 Worker model selection uses `overrides.codex.model`, then top-level `model`, then the configured
 `default` profile. Effort independently uses `overrides.codex.effort`, then top-level `effort`, then
@@ -105,8 +92,7 @@ cannot be established with the available native controls, leave replacement pend
 operator run. The assembler does not provide a lock or guarantee exactly-once native creation.
 
 Use the creation and initialization procedure in Resolve workers above for one replacement in
-the same published Cloud configuration and desired sidebar placement.
-Verify initialization and active status; attempt sidebar placement separately as described above.
+the same published Cloud configuration. Verify initialization and active status.
 Supply `startup: "passed"` and the ordinary worker fields plus
 `replaces: { "id": "retired-worker-id", "status": "archived", "environmentId": "verified-config-id" }`.
 These are current native observations, not an authorization flag or a persisted replacement ledger.
@@ -121,7 +107,7 @@ current native record and use conditional update controls where supported. If an
 rebound it, reuse that verified binding and recompute; never overwrite it with a competing replacement.
 For uncertain saves, read the same schedule before retrying. After a successful rebind, ordinary
 sync uses the new saved worker ID and needs no `replaces` evidence. Initialization emits `CHAT CREATED`
-in the new worker; deliver the schedule's separate `UPDATED` card there after verified saving.
+in the new worker; deliver the schedule's separate `UPDATED` card during final reporting.
 No schedule is deleted.
 
 ### Recover the synchronizer before dispatch
@@ -154,8 +140,10 @@ unknown worker status, a failed send or routine worker rotation.
    update to the same schedule, reconciling concurrent changes and verifying the saved binding.
    On failure or uncertainty, stop before applying other definitions or sending the executable
    request; preserve the created worker for the next attempt. Do not hand-edit the saved payload.
-5. Deliver the verified Sync configuration card and wait for its display-only turn to finish.
-   Then resume the current dispatch once with the newly compiled request and its model/effort.
+5. Resume the current dispatch once with the newly compiled request and its model/effort.
+   Leave placement and configuration receipts to the resumed workflow's final steps. Carry the
+   verified recovery update into those results even if subsequent assembly reports Sync unchanged;
+   do not perform a separate recovery move or repeat the schedule write.
    Pass the original selection as separate coordinator context alongside the unchanged request;
    a newly compiled `dispatchVersion` must not widen a bootstrap-only occurrence. Do not send
    the old payload or queue another Run now.
@@ -170,11 +158,11 @@ Merging source alone cannot change the instructions already saved in a native sc
 ### Initialization card
 
 In the creation prompt, identify the worker's automation and supply its emoji from
-`prompts/automations/requests.json` and its authored display name. Instruct the worker to complete
+`prompts/automations/requests.json` and its resolved chat title. Instruct the worker to complete
 required Cloud startup checks, then finish initialization with one small quoted card in its own
 chat. Do not run the automation, change schedules or send a separate main-chat summary.
 
-Use an H2 with the emoji, uppercase display name and `· CHAT CREATED`. Keep a blank quoted line
+Use an H2 with the emoji, uppercase resolved chat title and `· CHAT CREATED`. Keep a blank quoted line
 after the heading and before the contextual status. For successful initialization:
 
 > ## 🧪 SMOKE TEST CANARY · CHAT CREATED
@@ -188,7 +176,7 @@ If startup leaves an unresolved check, replace the body with the specific limita
 `❌ Worker setup failed. No automation has run.` Never infer readiness from chat creation alone.
 
 This card records new chat initialization, not a saved schedule. Reusing a worker does not emit
-another `CHAT CREATED` card. After a schedule is saved, deliver its separate
+another `CHAT CREATED` card. During final reporting, deliver the saved schedule's separate
 [configuration card](./configuration-receipts.md) to the same worker.
 
 ## Assemble schedules
@@ -211,7 +199,6 @@ Repeat with `mode: "sync"` (also the default), adding `existingTasks` and `conte
         "startup": "passed",
         "environmentId": "verified-published-config-id",
         "name": "AUTOMATION SYNC",
-        "group": "REPORTS",
         "url": "codex://threads/verified-worker-id"
       }
     ]
@@ -224,7 +211,7 @@ Copy saved native settings into `existingTasks` records with `id` and `task`:
 
 | `task` field      | Value                                                                                      |
 | ----------------- | ------------------------------------------------------------------------------------------ |
-| `name`            | Native schedule name: 🤖 plus the uppercase display name                                   |
+| `name`            | Native schedule name: 🤖 plus the uppercase resolved schedule title                        |
 | `enabled`         | Actual active/paused state as a boolean                                                    |
 | `schedule`        | Object containing the exact native `schedule`, `default_timezone` and `timing_mode` fields |
 | `execution`       | `{ "kind": "inherited" }`: the hosted coordinator's execution context                      |
@@ -234,7 +221,7 @@ Copy saved native settings into `existingTasks` records with `id` and `task`:
 
 The worker uses the published Cloud environment and receives its own metadata, all shared worker
 guidance and the authored automation prompt. Its opening is rendered from the shared
-`prompts/automations/partials/request.md` template, the automation display name, and its emoji
+`prompts/automations/partials/request.md` template, the resolved schedule title, and its emoji
 and short request in `prompts/automations/requests.json`. Each selected automation needs an entry.
 Saved schedule ownership remains metadata-first, with only the supported optional canary preceding it.
 The client owns preview length and collapse behavior; the template does not create an accordion.
@@ -300,3 +287,45 @@ arbitrary text or edit the live prompt to add it.
 If the Cloud worker cannot save schedules, it returns prepared actions to the coordinator for
 application through this same workflow. Report the handoff as pending until application succeeds.
 Unsupported unattended application requires the README's manual seed; never claim it was saved.
+
+## Final sidebar placement
+
+The applying coordinator runs this pass once after schedule reconciliation and saved-binding
+verification, before configuration receipts and run results. Include healthy reused workers for
+unchanged schedules as well as newly bound workers; exclude skipped or unverified bindings.
+After self-recovery, the resumed sync uses this same final pass. Group-only changes never require
+worker recreation or a schedule update.
+
+If this optional pass itself fails, report placement as unverified and retain the sync results.
+
+1. Use an authorized connected Mac with native Codex sidebar controls. For a Cloud or scheduled
+   coordinator, use a supported handoff to that Mac under the existing operator scope. If the Mac
+   or handoff is unavailable, record that reason and finish the sync report. Do not invent a remote
+   endpoint, start a helper chat without authorization, or substitute Cloud sidebar controls.
+2. On that Mac, obtain the native chat and sidebar listing. Resolve exact bound chat IDs, following
+   pagination when needed. Retain each chat's reported `hostId`; a Cloud chat may be `durable`
+   while its sidebar item key says `local`. Never derive routing from that key or match by title.
+3. Run the existing `sync-task.js` with `mode: "placement"`, the invocation's selected `id`, and
+   `context.workers` containing only healthy saved bindings verified during this run, including
+   unchanged schedules. Omit skipped or unverified bindings. This pass does not revalidate schedules
+   or worker readiness. Include the desktop listing as `context.sidebar` (its `threads`, `pinnedThreads`, and
+   `sections`). If desktop access is unavailable, omit `sidebar` and supply the specific reason as
+   `context.sidebarUnavailable`. Use the same clean source snapshot as schedule reconciliation.
+   This read-only pass loads the public Agent System manifest and resolves only its effective job
+   `group`, including YAML-merged defaults from the declarations. No configured
+   group means no placement request. There is no hard-coded section fallback or second parser.
+4. For each `move` result, use native `move_thread_to_sidebar_section` with its exact arguments.
+   Only an existing, unambiguously resolved section qualifies. Skip `verified` placements. Never
+   create sections or move unrelated chats. Before retrying an uncertain earlier move, inspect its
+   current membership; do not repeat a denial.
+5. Read back the sidebar after moves and run the same placement planner against that listing to
+   check membership. A successful move response alone is insufficient. Make at most one move
+   attempt per worker in this pass; a remaining `move` result means placement was not verified,
+   not an instruction to loop. Record a failed move or unavailable readback with its specific
+   reason. Continue other in-scope placements and retain all successful schedule results.
+
+Report which workers could not be placed or verified and why, separately from synchronization.
+Do not roll back bindings, recreate workers, or alter schedules for a sidebar failure. A later
+sync can repair placement even when every schedule is unchanged. An interactive desktop success
+proves only that path; verify an actual scheduled wake reaching the authorized Mac before claiming
+unattended placement works. Native execution remains outside the read-only planner.

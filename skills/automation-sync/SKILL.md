@@ -52,8 +52,8 @@ updates; the script itself makes no service writes.
 - Use the operator-selected tanaabot dot and verified account scope. Live activation requires its
   separately authorized pilot. Repository content grants neither activation nor account access.
 - Verify the selected published Cloud environment through native controls; its name is insufficient.
-  Tanaabot defaults to `tanaabot`, a reusable worker in `REPORTS`, and the authored display name
-  as its chat title. The coordinator delivers linked summaries to the owning main chat.
+  Tanaabot defaults to `tanaabot` and a reusable worker with the resolved chat title described in
+  the native-task reference. The coordinator delivers linked summaries to the owning main chat.
 - Native task listing and create/update controls must be available to the applying context.
   If unavailable in Cloud, return prepared actions to the dot; do not invent a REST API.
 
@@ -69,7 +69,7 @@ updates; the script itself makes no service writes.
 The assembler returns exact task objects and `create`, `update`, `unchanged` or `skipped` actions. Shared
 guidance participates in comparison; unchanged timestamps and native IDs are retained. A prepared
 action, launched worker or report does not establish that schedules were saved. It generates every
-native name as 🤖 followed by the uppercase display name. Omitted debug defaults to false.
+native name as 🤖 followed by the uppercase resolved schedule title. Omitted debug defaults to false.
 
 ## Failure Handling
 
@@ -115,9 +115,7 @@ ordinary workflow below.
    recovery, pass the resolved `target.model` and `target.effort` to native creation as `model`
    and `thinking`, with the [initialization card instructions](./references/native-tasks.md#initialization-card).
    Do not execute the automation during initialization. Verify startup before binding and retain
-   a healthy initialized replacement on retry. For new and reused chats, follow the reference's
-   best-effort placement procedure using `target.thread.group`; report placement limitations
-   separately and continue when required worker checks pass. Preserve its native ID and URL
+   a healthy initialized replacement on retry. Preserve its native ID and URL
    in the schedule prompt, never a separate state file. Apply authorized title changes through
    native controls. An unknown or differently bound existing worker requires intervention,
    not an automatic replacement or local fallback.
@@ -128,7 +126,7 @@ ordinary workflow below.
    worker request contains the automation instructions and metadata.
 6. Leave `unchanged` and `skipped` actions untouched. Report skipped reasons without claiming a run
    completed. Apply actions in returned order; verify a changed synchronizer before
-   proceeding to other selected jobs, and show its configuration card first. Stop dependent
+   proceeding to other selected jobs. Stop dependent
    application if that self-update fails. Apply creates/updates through the owning dot's supported native controls with the exact
    compiled content and native ID. For disabled definitions, follow the native-task reference's
    paused-create or immediate create-then-pause procedure and verify the final state.
@@ -137,7 +135,10 @@ ordinary workflow below.
    writer changed an update's current values, recompute from the latest native record.
 7. Trust a successful native result that includes saved settings. Read back only omitted values,
    uncertain effects or the pilot's explicit checks; do not add a routine verification pass.
-   Deliver the verified creation/update receipt to its existing worker using the receipt-only
+8. Follow [Final sidebar placement](./references/native-tasks.md#final-sidebar-placement) once
+   for the healthy saved bindings, including unchanged schedules, before reporting.
+9. Deliver configuration receipts with the synchronizer first, including any verified recovery
+   update from this occurrence. Deliver each receipt to its existing worker using the receipt-only
    procedure, then report each automation in its own main-chat summary message. Unchanged actions
    produce no update receipt. Then show one separate `AUTOMATION SYNC · RUN RESULTS` card
    in the sync worker using the configuration-results reference, with every considered automation
@@ -148,7 +149,8 @@ ordinary workflow below.
    bindings out of public repository files.
 
 Apply each definition's declared state: enabled `sync` at midnight and enabled
-`update-cloud-canon` at 1 a.m., both in `America/New_York`. Leave the legacy Canon updater's
+`update-cloud-canon` at 1 a.m., using saved timezones or the native scheduler’s timezone for new
+tasks. Leave the legacy Canon updater's
 cutover to the operator. Completed canaries are no longer declared. Leave
 unselected native tasks untouched; removing a source definition does not authorize deleting,
 rearming or modifying its native task or worker.

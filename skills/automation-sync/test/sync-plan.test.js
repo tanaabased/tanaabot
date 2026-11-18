@@ -48,7 +48,6 @@ function input(overrides = {}) {
         startup: 'passed',
         environmentId: 'test-environment',
         name: `Test ${id}`,
-        group: 'REPORTS',
         url: `https://example.test/chats/${id}`,
       })),
       destination: { kind: 'dot', id: 'test-dot' },
@@ -192,7 +191,6 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       status: 'active',
       environmentId: 'test-environment',
       name: 'Test canary',
-      group: 'REPORTS',
     });
     const second = planSync(request);
     assert.deepEqual(
@@ -294,10 +292,29 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     assert.equal(requestPayload.execution.environmentId, 'test-environment');
     assert.equal(requestPayload.thread.id, 'worker-sync');
     assert.equal(requestPayload.thread.name, 'Test sync');
-    assert.equal(requestPayload.thread.group, 'REPORTS');
+    assert.equal(Object.hasOwn(requestPayload.thread, 'group'), false);
     assert.equal(requestPayload.thread.url, 'https://example.test/chats/sync');
     assert.deepEqual(task.destination, request.context.destination);
     assert.equal(JSON.stringify(request), before);
+  });
+
+  test('should use the thread name when display-name is omitted without changing saved titles', () => {
+    const request = input({ id: 'sync' });
+    const job = request.manifest.automations[0];
+    job.thread = { name: job.displayName };
+    const [initial] = planSync(request).operations;
+    request.existingTasks = [{ id: 'native-sync', task: initial.task }];
+    delete job.displayName;
+    const [same] = planSync(request).operations;
+    assert.equal(same.kind, 'unchanged');
+    assert.deepEqual(same.task, initial.task);
+    assert.equal(readTaskPrompt(same.task.prompt).metadata.displayName, 'Test sync');
+    assert.match(workerRequest(same.task).prompt, /TEST SYNC · REQUEST/);
+    job.displayName = 'Separate schedule title';
+    const [changed] = planSync(request).operations;
+    assert.equal(changed.task.name, '🤖 SEPARATE SCHEDULE TITLE');
+    assert.equal(workerRequest(changed.task).thread.name, 'Test sync');
+    assert.equal(readTaskPrompt(changed.task.prompt).metadata.displayName, job.displayName);
   });
 
   test('should retain exact prompts, native IDs and timestamps on an unchanged rerun', () => {
@@ -415,7 +432,6 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       status: 'active',
       environmentId: 'test-environment',
       name: 'Test canary',
-      group: 'REPORTS',
       url: 'codex://threads/worker-canary',
     });
     const result = planSync(request);
@@ -594,42 +610,20 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     }
   });
 
-  test('should report observed placement separately without blocking replacement or changing saved prompts', () => {
-    for (const group of ['CHECKS', 'OTHER', undefined]) {
-      const request = input({ id: 'sync' });
-      request.manifest.automations[0].group = 'CHECKS';
-      request.existingTasks = saved(request);
-      const worker = request.context.workers[0];
-      worker.replaces = {
-        id: worker.id,
-        status: 'archived',
-        environmentId: worker.environmentId,
-      };
-      worker.id = 'replacement-sync';
-      worker.group = group;
-      const [update] = planSync(request).operations;
-      assert.equal(update.kind, 'update');
-      assert.deepEqual(update.placement, {
-        desiredGroup: 'CHECKS',
-        observedGroup: group ?? null,
-        status: group === undefined ? 'unverified' : group === 'CHECKS' ? 'verified' : 'mismatched',
-      });
-      assert.equal(workerRequest(update.task).thread.group, 'CHECKS');
-      assert.equal(Object.hasOwn(workerRequest(update.task), 'placement'), false);
-      assert.equal(
-        worker.group,
-        group,
-        'assembly must not replace an observation with desired state',
-      );
-      request.existingTasks = [{ id: update.nativeId, task: update.task }];
-      delete worker.replaces;
-      assert.equal(planSync(request).operations[0].kind, 'unchanged');
-      worker.group = 'CHECKS';
-      const [placed] = planSync(request).operations;
-      assert.equal(placed.kind, 'unchanged', 'a verified move does not rewrite the schedule');
-      assert.equal(placed.placement.status, 'verified');
-      assert.deepEqual(placed.task, update.task);
-    }
+  test('should keep group-only changes out of worker payloads and schedule comparison', () => {
+    const request = input({ id: 'sync' });
+    request.manifest.automations[0].group = 'REPORTS';
+    const [initial] = planSync(request).operations;
+    request.existingTasks = [{ id: 'native-sync', task: initial.task }];
+    request.manifest.automations[0].group = 'CHECKS';
+    request.context.workers[0].group = 'WRONG';
+    const [unchanged] = planSync(request).operations;
+    assert.equal(unchanged.kind, 'unchanged');
+    assert.deepEqual(unchanged.task, initial.task);
+    assert.equal(Object.hasOwn(unchanged, 'placement'), false);
+    assert.equal(Object.hasOwn(workerRequest(initial.task).thread, 'group'), false);
+    delete request.manifest.automations[0].group;
+    assert.equal(planSync(request).operations[0].kind, 'unchanged');
   });
 
   test('should block replacement on failed or unverified startup and mismatched environments despite optional placement', () => {
@@ -683,7 +677,6 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       status: 'active',
       environmentId: 'test-environment',
       name: 'Test update-cloud-canon',
-      group: 'REPORTS',
     });
     const resumed = planSync(request);
     assert.deepEqual(

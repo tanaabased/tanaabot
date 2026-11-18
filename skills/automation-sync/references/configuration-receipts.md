@@ -9,7 +9,7 @@ Use the saved scheduler settings, the prepared source commit and verified worker
 Include only observed facts; mark unavailable fields unverified. For an update, compare the
 previous saved values with the verified result rather than describing the desired plan as applied.
 
-Use one quoted card with an H2 containing the purpose emoji, uppercase authored display name
+Use one quoted card with an H2 containing the purpose emoji, uppercase resolved schedule title
 and a spaced middle dot followed by `CREATED` or `UPDATED`, for example
 `> ## 🔄 AUTOMATION SYNC · UPDATED`. Do not put “receipt” in the visible title. Include:
 
@@ -17,8 +17,7 @@ and a spaced middle dot followed by `CREATED` or `UPDATED`, for example
 - Configured cadence, timezone, next occurrence when useful, and saved enabled/paused state.
 - Whether the schedule and worker were retained, without printing their private IDs.
 - Sidebar placement only when useful: report the observed result separately from saved schedule
-  state. Desired `thread.group` does not prove placement. An unsupported, failed or unverified
-  move does not invalidate a successful rebind; state both outcomes without claiming a move succeeded.
+  state, using the [final placement pass](./native-tasks.md#final-sidebar-placement) result.
 - A verified worker link when useful and whether a run actually occurred. Configuration alone
   does not establish execution.
 

@@ -39,7 +39,7 @@ tool results or private handoff artifacts; unresolved problems get one actionabl
 In addition to its detailed result, each automation defines a short summary: status, useful
 outcome, whether the reader needs to review or act, and a link to the confirmed active worker.
 Use a quoted card with a bold title containing the automation's purpose emoji
-and uppercase authored display name, without an H2 or the schedule's generated 🤖 prefix. Each automation prompt selects
+and uppercase resolved schedule title, without an H2 or the schedule's generated 🤖 prefix. Each automation prompt selects
 its purpose emoji, such as 📅 for calendar review, 🔄 for synchronization or 🧪 for a smoke test.
 Keep status out of this heading.
 

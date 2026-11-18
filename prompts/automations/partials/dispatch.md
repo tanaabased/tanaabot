@@ -16,8 +16,6 @@ exact saved worker is archived, read and follow `skills/automation-sync/SKILL.md
 do not send the old request to the archived worker. It uses the same worker creation and schedule
 rebinding procedure as ordinary synchronization, then returns a newly compiled request for this
 occurrence. Resume below only after its verified rebind, using that new request.
-Sidebar placement is best-effort under that procedure; a placement limitation alone does not
-block recovery or dispatch of a healthy worker.
 For other automations, an archived worker needs synchronization; stop dispatch without replacement.
 An active worker follows normal dispatch. Stop on missing, inaccessible or unknown status without
 presenting the worker as ready or linking it. Check for an active turn in
@@ -55,7 +53,8 @@ For synchronization, the worker may return prepared schedule actions because sch
 are available only here. Follow the current automation-sync skill and its native-task reference
 to apply those actions in their returned order under the existing authorization. Apply and verify
 a changed synchronizer first. Keep any bootstrap-only selection; do not expand it to other jobs.
-Return verified configuration results to the workers using the skill's display-only procedure.
+Follow the skill's final sidebar placement pass before returning verified configuration results
+to the workers using its display-only procedure.
 Also return all considered outcomes to the sync worker for its separate run-results card, without
 rerunning synchronization. Keep the aggregate out of the main-chat summaries.
 Preparation output is machine handoff data, not a result card. Keep it in tool output or a private
