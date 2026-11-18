@@ -1,36 +1,31 @@
 # GitHub work
 
-Before any GitHub write, check the target repository's policy and classify the whole request.
-Apply the Canon routing rules before considering the connector.
+Choose the route for the whole request before any GitHub write. Check the target repository's policy
+and use the approved account and write scope.
 
-- In a Canon-managed task repository or workflow, including an ongoing pilot, “create an issue”
-  requests a Canon Task, Bug or Feature. Use Canon Task Author in an eligible Dot-managed
-  `TASK WORKER` in published Tanaabot Cloud, even when the request names no type or custom fields.
-  An explicitly requested plain issue may use the connector if repository policy permits it.
-- Use the same Cloud route and the applicable Canon skill for changes, normalization or migration
-  involving the issue type or any Canon-managed custom field. Send mixed edits together, including
-  body or other ordinary edits in the same request. Verify affected metadata on readback and preserve
-  unrelated fields.
-- If the required Cloud route or skill cannot be verified, report the blocker before writing.
-  Use only the approved account and write scope. A plain issue or approximate metadata cannot
-  fulfill a Canon request.
+- **Use Canon Task Author** for “create an issue,” “create a task” and “update a task.”
+  This includes edits to an issue's title, body, type or Canon task fields, as well as task
+  normalization and metadata migration. Use Task Author even when the operator names no fields or
+  the repository lacks native fields. An explicitly requested plain issue may use the connector
+  where repository policy permits it.
+- **Run Canon skills for GitHub work in the verified `TASK WORKER`** in published Tanaabot Cloud.
+  Send the whole request there when it combines a Canon action with an ordinary GitHub edit.
+  Verify affected metadata on readback and preserve unrelated fields. If the worker or skill is
+  unavailable, report the blocker before any write.
+- **Use the native GitHub connector** for other requests it can complete and verify, such as
+  reading an issue, assigning it, commenting, closing it or reopening it.
 
-Use the native GitHub connector when it can complete and verify the whole request. Use the
-published Tanaabot Cloud environment for coding and for GitHub or Canon work that requires
-authenticated `gh` or another capability the connector lacks. Honor an explicit operator-selected
-execution target where it satisfies the routing rules. Use the Dot's own computer only when its
-tools, account and permissions are verified for the work.
+Use published Tanaabot Cloud for coding and GitHub work requiring authenticated `gh` or another
+capability the connector lacks. Honor explicit execution targets that satisfy these routing rules.
+Use the Dot's own computer only when its tools, account and permissions are verified for the work.
 
 ### Routing examples
 
-- “Create an issue for this bug” in a Canon-managed task repository goes to Cloud and Canon Task
-  Author, even with no fields specified.
-- “Edit the body and set Complexity to Medium” goes to Cloud as one request.
-- “Assign this issue” or “Close this issue” can use the connector when the requested action is
-  routine and requires no Canon workflow or metadata change. The same applies to comments and
-  reopening. Use the connector for complete, verifiable reads.
-- If a Canon create has no eligible worker and one cannot be verified through the Cloud worker
-  procedure below, report the blocker before any GitHub mutation.
+- “Create an issue for this bug” goes to Canon Task Author in Cloud even with no fields specified.
+- “Update the task's acceptance criteria” goes to Canon Task Author in Cloud even if only the body changes.
+- “Edit the body, set Complexity to Medium and assign the issue” goes to the Cloud worker as one request.
+- “Assign this issue” or “Close this issue” can use the connector on its own.
+- If the worker cannot be verified for “Create a task,” report the blocker before writing.
 
 ## Cloud worker
 
@@ -38,8 +33,8 @@ For GitHub work routed to Cloud, reuse a chat named exactly `TASK WORKER` once n
 verify that the main Dot created it, it is active and send-capable, and it is bound to the intended
 published Tanaabot configuration. A title alone establishes none of these. If no eligible worker
 exists, create and verify one in that configuration using supported Cloud environment selection.
-Keep it scoped to GitHub work. Leave the old pilot worker alone. If the worker is busy, wait for
-it to finish. Reconcile an unresolved launch before creating another worker.
+Keep it scoped to GitHub work. If the worker is busy, wait for it to finish.
+Reconcile an unresolved launch before creating another worker.
 
 Use the prepared checkout and read runtime files there. When fresh source is needed, follow
 `prompts/refresh.md` from the selected checkout. Pass the task, applicable skills and guidance, source
