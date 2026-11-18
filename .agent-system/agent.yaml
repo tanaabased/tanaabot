@@ -20,8 +20,8 @@ models:
     model: openai/gpt-6.2-sol
     effort: high
   low:
-    model: openai/gpt-6-luna
-    effort: high
+    model: openai/gpt-6.1-sol
+    effort: medium
   medium:
     model: openai/gpt-6.2-sol
     effort: high
