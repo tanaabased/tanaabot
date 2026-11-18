@@ -78,7 +78,7 @@ test('packed plugin retains canonical skills, assets and usable links', async ()
       ({ automationId }) => automationId === 'instruction-sync',
     );
     assert.equal(instructions.kind, 'create');
-    assert.equal(instructions.task.name, '🤖 TANAABOT INSTRUCTION SYNC');
+    assert.equal(instructions.task.name, '🤖 INSTRUCTION SYNC');
     assert.equal(instructions.task.enabled, true);
     assert.equal(instructions.task.schedule.default_timezone, 'America/New_York');
     assert.match(instructions.task.schedule.schedule, /FREQ=DAILY;BYHOUR=1;BYMINUTE=0;BYSECOND=0/);

@@ -13,11 +13,11 @@ If either delivery is unavailable, report that limitation; do not claim delivery
 
 ## Detailed result
 
-Use `TANAABOT INSTRUCTION SYNC` with `UNCHANGED`, `AWAITING APPROVAL`, `SAVED`, `BLOCKED`,
+Use `INSTRUCTION SYNC` with `UNCHANGED`, `AWAITING APPROVAL`, `SAVED`, `BLOCKED`,
 `FAILED` or `UNVERIFIED`. A normal approval wait is not an execution failure. Use the shared
 warning/error treatment for unavailable access, ambiguous state or an actual failed operation.
 
-> ## 🔄 TANAABOT INSTRUCTION SYNC · <OUTCOME>
+> ## 🔄 INSTRUCTION SYNC · <OUTCOME>
 >
 > **Source:** <Repository path; previously saved commit → checked/proposed commit.>
 >
@@ -50,7 +50,7 @@ exact edit proposal. Do not embed the full document in the worker's card or a pu
 
 ## Main-chat summary
 
-> **🔄 TANAABOT INSTRUCTION SYNC**
+> **🔄 INSTRUCTION SYNC**
 >
 > <Useful outcome and whether the operator must act; for example, “Two proposed instruction
 > changes await your approval here. Nothing has been saved.”>

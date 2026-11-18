@@ -107,9 +107,13 @@ and its required references, including the shared [execution](./prompts/automati
 and [presentation](./prompts/automations/partials/presentation.md) guidance. Reuse their assembler,
 native scheduling and delivery behavior; keep task-specific instructions in the automation's prompt.
 
-- Automation Sync reconciles schedule configuration and worker bindings. Give each recurring
-  operation its own automation ID, prompt and run report. Creating or updating a schedule never
-  runs its task. Keep task-specific coordinator actions in that automation’s prompt.
+- Limit Automation Sync to synchronizing and repairing its own schedule and the other
+  repository-defined automations. It owns schedule configuration, worker bindings, sidebar
+  placement and reporting those results. Give every other recurring operation its own automation
+  ID, prompt and run report. Only that job performs its task, including any main-Dot actions.
+- Choose each worker’s sidebar group by what the operator opens it for. Use `REPORTS` for
+  results the operator routinely reviews, and `TANAABOT` for bot maintenance the operator
+  checks when something fails or needs approval. Set `group` on each definition.
 - Keep the definition, prompt and request metadata aligned. Declare the intended schedule,
   timezone, enabled state and execution settings, preserving intentional native defaults.
 - State the purpose, inputs and source, prerequisites, approved account/actions and resource scope.

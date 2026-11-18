@@ -1,23 +1,25 @@
 defaults: &defaults
-  group: REPORTS
   runtimes: [codex]
 
 automations:
   - <<: *defaults
     id: sync
+    group: TANAABOT
     thread: AUTOMATION SYNC
     schedule: '0 0 * * *'
     prompt:
       file: ../prompts/automations/sync.md
   - <<: *defaults
     id: update-cloud-canon
+    group: TANAABOT
     thread: UPDATE CLOUD CANON
     schedule: '0 1 * * *'
     prompt:
       file: ../prompts/automations/update-cloud-canon.md
   - <<: *defaults
     id: instruction-sync
-    thread: TANAABOT INSTRUCTION SYNC
+    group: TANAABOT
+    thread: INSTRUCTION SYNC
     schedule: '0 1 * * *'
     prompt:
       file: ../prompts/automations/instruction-sync.md
