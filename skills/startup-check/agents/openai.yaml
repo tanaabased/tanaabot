@@ -4,6 +4,6 @@ interface:
   icon_small: './assets/composer-icon.svg'
   icon_large: './assets/icon-large.png'
   brand_color: '#00ebfd'
-  default_prompt: 'Use $tanaabot-startup-check to verify this prepared Cloud environment, explicitly load local Tanaabot skill metadata, and check Canon catalog availability. Report the six-row startup card with details only for failed or unverified checks. Append the verified identity card only when Environment and Identity both pass. Do not change files or settings or register skills.'
+  default_prompt: 'Use $tanaabot-startup-check to verify this prepared Cloud environment, explicitly load local Tanaabot skill metadata, and check Canon catalog availability. Keep the six status rows together. Below them, include Notes only when needed, ordered ❌ errors, ⚠️ warnings, then ℹ️ information. Append the verified identity card only when Environment and Identity both pass. Do not change files or settings or register skills.'
 policy:
   allow_implicit_invocation: true

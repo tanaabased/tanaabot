@@ -1,11 +1,11 @@
 # Startup report
 
-Return the quoted startup card with these six rows, in this order. Use normal sentence
-capitalization. Successful and not-applicable rows contain only the section name and status, except
-for the optional Dotfiles informational note below.
-Keep the evidence in working context; include details only for failed or unverified checks or that note, unless
-the operator explicitly requests diagnostic evidence. Append the success-only identity card below
-only when its conditions are met.
+Start the quoted card with its overall result, followed by all six rows in the order below.
+Each row contains only the bold section name and status. Use normal sentence capitalization.
+After the last row, include **Notes** only when there is something to explain. Keep the heading
+and its bullet list inside the quote. Order notes by severity: ❌ errors, ⚠️ warnings, then ℹ️
+information. Within a severity, follow the order of the checks. Start each bullet with its
+emoji and bold section name. Append the identity card only when its conditions are met.
 
 ## Sections
 
@@ -32,9 +32,9 @@ local skill; verify those behaviors in the fresh pilot.
 Assess Git source drift against the committed revision, never the changed working file. When
 `sourceDrift` is `identity-only`, Dotfiles may pass if saved environment loading was verified through
 the actual unmodified task launcher, both effective commit identities match the committed defaults,
-and all other required Dotfiles checks pass. Add this concise note beneath its passed row:
+and all other required Dotfiles checks pass. Include this bullet in **Notes**:
 
-> **Info:** Git config identity values differ from the committed defaults; environment overrides resolve both author and committer correctly.
+> - ℹ️ **Dotfiles** — Git’s configured identity differs from the committed defaults. Environment overrides supply the expected author and committer.
 
 For `other` drift, inspect the differences privately and assess effective signing, trusted-key,
 credential-helper, HTTPS transport and Stow-link requirements. A difference alone is neither a
@@ -57,9 +57,10 @@ unverified required check makes it **⚠️ Startup check incomplete**. Otherwis
 unverified remainder briefly when it affects recovery. A script exit code is evidence for the
 operation it ran, not an exit code returned by the skill or proof of unrelated sections.
 
-For a failed or incomplete card, describe the specific missing condition in its row and give one
-concise **Next step** for the affected checks. Add **Technical detail** only when a safe error code,
-path or command materially helps recovery. Never include tokens, secret values or credential dumps.
+For each failed check, give the observed failure in an error note. For an unverified check,
+give the missing evidence in a warning note. Include a concise next step in the relevant bullet.
+Keep routine evidence in working context. Include a safe error code, path or command only when
+it helps recovery or the operator requests diagnostics. Never include tokens, secret values or credential dumps.
 Do not append raw logs, duplicate status summaries, separate warning cards, or routine successful
 revisions and tool paths. The identity card below is the only additional success card. Do not repair
 anything during verification.
@@ -67,9 +68,7 @@ anything during verification.
 ## Identity card
 
 Append this card after the startup card only when **Environment** and **Identity** both passed.
-Otherwise omit it; failures and uncertainty belong in the corresponding startup rows and their
-shared Next step. This avoids claiming loaded environment values or a verified identity when their
-checks could not establish them.
+Otherwise omit it and explain the affected checks in the startup card’s **Notes**.
 
 Use the verified GitHub login, actual Git author/committer names and emails, resolved agent email and configured SSH
 private-key path. Show HTTPS as configured and the signing-key registration result separately.
@@ -117,10 +116,12 @@ Preserve the quoted H2 heading and blank quoted line before the rows.
 > - **Dependencies — passed**
 > - **Dotfiles — passed**
 > - **Tanaabot skills — passed**
-> - **Canon skills — unverified:** This task's catalog does not expose the evidence needed to check Canon availability.
+> - **Canon skills — unverified**
 > - **Identity — passed**
 >
-> **Next step:** Inspect Canon availability in a fresh task with access to its supplied skill catalog.
+> **Notes**
+>
+> - ⚠️ **Canon skills** — This task couldn’t inspect the skill catalog. Check Canon availability in a fresh task with catalog access.
 
 ### Failed
 
@@ -130,7 +131,11 @@ Preserve the quoted H2 heading and blank quoted line before the rows.
 > - **Dependencies — passed**
 > - **Dotfiles — passed**
 > - **Tanaabot skills — passed**
-> - **Canon skills — passed**
-> - **Identity — failed:** The approved public signing key is absent from the verified GitHub account.
+> - **Canon skills — unverified**
+> - **Identity — failed**
 >
-> **Next step:** Check the approved key's GitHub signing-key registration, then rerun verification.
+> **Notes**
+>
+> - ❌ **Identity** — The approved signing key is missing from the verified GitHub account. Check its signing-key registration before rerunning startup.
+> - ⚠️ **Canon skills** — This task couldn’t inspect the skill catalog. Check Canon availability in a fresh task with catalog access.
+> - ℹ️ **Dotfiles** — Git’s configured identity differs from the committed defaults. Environment overrides supply the expected author and committer.

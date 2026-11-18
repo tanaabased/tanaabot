@@ -138,9 +138,9 @@ separate operator-authorized scope. This skill inspects the saved installation o
    Live transport and signing tests belong to the authorized Cloud pilot, not read-only startup.
    Email configuration is identity, not proof of Google authentication; connected-account selection
    remains [#11](https://github.com/tanaabased/tanaabot/issues/11).
-7. Compose the startup card using the report contract. Keep successful and not-applicable rows terse;
-   show explanatory details only for failed or unverified rows, with the report contract's optional
-   informational note for harmless Git drift. Append the success-only identity
+7. Compose the startup card using the report contract. Show all six status rows together.
+   Below them, list any notes by section, with ❌ errors first, then ⚠️ warnings, then ℹ️ information
+   such as verified identity-only Git drift. Omit **Notes** when empty. Append the success-only identity
    card only when Environment and Identity both pass. Otherwise omit it and keep the affected
    check's explanation in the startup card, without another warning card. Retain revision and diagnostic
    evidence in the working context without creating a receipt or printing routine success details. A script
@@ -157,7 +157,7 @@ separate operator-authorized scope. This skill inspects the saved installation o
 ## Validation
 
 Confirm that no provisioning, SSH connection or state change was attempted, that all six startup
-rows appear in order, and that successful rows carry only the permitted informational drift note. Check that the
+rows appear together in order, and that any notes follow the rows in severity order. Check that the
 signing-key lookup used the verified expected account, consumed all pages and reused the established local
 key match. Show the identity card only when Environment and Identity pass; use actual verified
 identity fields and never passwords, tokens or private-key contents. Apply the overall failure/uncertainty
