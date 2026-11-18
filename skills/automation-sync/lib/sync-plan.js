@@ -148,26 +148,12 @@ export function planSync({
         context.workers,
       );
       const observed = context.workers.find((record) => record.automationId === job.id);
-      // Placement is a current observation, not a saved binding or a readiness requirement.
-      const placement = {
-        desiredGroup: worker.thread.group,
-        observedGroup: observed.group ?? null,
-        status:
-          observed.group == null
-            ? 'unverified'
-            : observed.group === worker.thread.group
-              ? 'verified'
-              : 'mismatched',
-      };
+      const displayName = job.displayName ?? job.thread?.name ?? job.id.replaceAll('-', ' ');
       const body = taskBody(partials, job.payload.prompt);
-      const header = requestHeader(
-        partials.request,
-        job.displayName ?? job.id.replaceAll('-', ' '),
-        requests?.[job.id],
-      );
+      const header = requestHeader(partials.request, displayName, requests?.[job.id]);
       const canary = promptCanary(job.payload.prompt);
       const task = {
-        name: `🤖 ${(job.displayName ?? job.id.replaceAll('-', ' ')).trim().toUpperCase()}`,
+        name: `🤖 ${displayName.trim().toUpperCase()}`,
         enabled: job.enabled,
         schedule: cloudSchedule(job.schedule, {
           now,
@@ -219,7 +205,7 @@ export function planSync({
         schema: 'tanaabot.automation/v1',
         dispatchVersion: 2,
         ...identity,
-        displayName: job.displayName ?? job.id.replaceAll('-', ' '),
+        displayName,
         contentHash,
         sourceRevision: source.revision,
         sourceDirty: source.dirty,
@@ -250,14 +236,12 @@ export function planSync({
             automationId: job.id,
             kind: 'unchanged',
             nativeId: current.id,
-            placement,
             task: current.task,
           };
       }
       return {
         automationId: job.id,
         kind: current ? 'update' : 'create',
-        placement,
         ...(current ? { nativeId: current.id, expectedCurrent: current.task } : {}),
         task: compileTask(task, metadata, worker, body, partials.dispatch, canary, header),
       };

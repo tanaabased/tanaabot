@@ -56,8 +56,10 @@ Canon updater and completed native canary tasks alone. Do not run or delete task
 ```
 
 The [definitions](./.agent-system/automations.yaml) enable `sync` at midnight and
-`update-cloud-canon` at 1 a.m. Eastern. Each sync loads fresh `main`, updates itself first and
-leaves unchanged tasks alone. Workers live in `REPORTS`; their configuration and run-results cards are separate from
+`update-cloud-canon` at 1 a.m. in the native scheduler’s timezone (Eastern for this deployment).
+Existing schedules retain their saved timezone. Each sync loads fresh `main`, updates itself first and
+leaves unchanged tasks alone. A final best-effort desktop pass places workers in their configured sidebar sections;
+configuration and run-results cards are separate from
 the compact linked main-chat summaries. Debug is opt-in through `debug: true` in
 [agent.yaml](./.agent-system/agent.yaml), followed by synchronization.
 

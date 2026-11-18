@@ -27,7 +27,7 @@ manual update procedure. Do not silently claim synchronization or enqueue a subs
 
 ## Result and dot summary
 
-After verified native application, put the configuration cards in the affected workers using the
+After verified native application and the skill's final sidebar placement pass, put the configuration cards in the affected workers using the
 skill's display-only procedure. Titles use the authored name and `· CREATED` or `· UPDATED`.
 Then display one `AUTOMATION SYNC · RUN RESULTS` card in the sync worker, following the
 configuration-results reference. Include every considered automation and its verified outcome;

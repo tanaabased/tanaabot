@@ -1,20 +1,17 @@
-# Shared Tanaabot defaults: Cloud tanaabot, reusable chats named from display-name, REPORTS.
-# Native schedule names and linked main-chat summaries are assembled by automation-sync.
-- id: sync
-  display-name: AUTOMATION SYNC
-  enabled: true
+defaults: &defaults
+  group: REPORTS
   runtimes: [codex]
-  schedule:
-    cron: '0 0 * * *'
-    timezone: America/New_York
-  prompt:
-    file: ../prompts/automations/sync.md
-- id: update-cloud-canon
-  display-name: UPDATE CLOUD CANON
-  enabled: true
-  runtimes: [codex]
-  schedule:
-    cron: '0 1 * * *'
-    timezone: America/New_York
-  prompt:
-    file: ../prompts/automations/update-cloud-canon.md
+
+automations:
+  - <<: *defaults
+    id: sync
+    thread: AUTOMATION SYNC
+    schedule: '0 0 * * *'
+    prompt:
+      file: ../prompts/automations/sync.md
+  - <<: *defaults
+    id: update-cloud-canon
+    thread: UPDATE CLOUD CANON
+    schedule: '0 1 * * *'
+    prompt:
+      file: ../prompts/automations/update-cloud-canon.md
