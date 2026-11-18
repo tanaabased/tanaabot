@@ -87,6 +87,14 @@ work around setup failures; report them for a coding task.
 
 ## Contributor implementation
 
+- Keep cross-cutting defaults in [global AGENTS.md](./dotfiles/ai/.codex/AGENTS.md). Put standing
+  topic guidance for the main Dot in top-level `instructions/*.md` files and detailed procedures
+  in their owning skills. Put GitHub routing, worker selection and issue cards in
+  [instructions/github.md](./instructions/github.md) and skill authoring defaults in
+  [instructions/skills.md](./instructions/skills.md).
+- Instruction Sync imports the global file first, then the topic files in path order, from one
+  commit. Removing a rule or file removes it from the next approved replacement. Keep protected
+  platform instructions, credentials, private bindings and personal information out of these files.
 - Keep `tanaboot.sh` as the setup entrypoint, with host and agent modes. Bootstrap missing Homebrew
   with its official installer in the user's home, then delegate provisioning to Bootbox without
   sudo. Account plugin delivery remains separate from machine setup.

@@ -27,7 +27,9 @@ or including it in a startup inventory does not invoke it.
 
 - **Before reading a saved document:** Inspect the available description and schema of
   `custom_rules.read_instructions` or an explicitly supported equivalent, including target scope.
-- **Before writing the report:** Read [Tanaabot Voice](../voice/SKILL.md) and its required samples.
+- **Before attributing saved text:** Read [saved provenance](../instruction-sync/references/source.md#saved-provenance).
+- **Before writing the report:** Read the shared [presentation rules](../../prompts/presentation-partial.md)
+  and [Tanaabot Voice](../voice/SKILL.md) with its required samples.
 
 Use already available resources or supported reads of the selected repository revision when
 local files are unavailable. Do not assume the main Dot has a Cloud checkout.
@@ -46,8 +48,8 @@ refresh, use [Instruction Sync](../instruction-sync/SKILL.md) separately.
 ## Prerequisites
 
 Use the requesting Tanaabot conversation and supported read-only access within the operator's scope.
-Do not delegate the inventory and pretend a worker can inspect the parent's instruction context.
-A missing tool limits coverage; it does not prevent an honest partial report.
+Keep all report work in that conversation. A missing reader limits coverage without blocking a
+partial report.
 
 ## Inputs
 
@@ -56,8 +58,7 @@ available, and relevant operator messages or recorded preferences accessible thr
 
 ## Outputs
 
-Return the report privately in the requesting conversation. No instructions, memories, settings or
-schedules change. Do not publish its private contents to GitHub or send it to another conversation.
+Return a compact overview and a detailed private inventory in the requesting conversation.
 
 ## Failure Handling
 
@@ -75,39 +76,38 @@ Do not fabricate a complete inventory from memory or retry a denial through a di
    For the main Dot, read its saved document through `custom_rules.read_instructions` when available.
    Record returned status and revision, including an empty result. If running in Cloud with no
    reader, report that; do not substitute local `AGENTS.md` for the parent's saved document.
-3. Inspect accessible relevant operator messages and recorded preferences read-only. Preserve scope
-   and conditions, distinguish direct messages from summaries and identify superseded directions.
-   Include only operating preferences relevant to this assistant. Exclude credentials, unrelated
-   personal information, protected platform text and other assistants' directions.
-4. For repository guidance, report the managed source metadata actually retrieved, or its absence.
-   Distinguish supplied instruction context, an earlier explicit file read, saved document text and
-   behavioral evidence. Inspect additional repository guidance only when requested or already
-   available; label newly inspected text **Source inspected now; prior adoption unverified**.
-   Never fetch latest merely to fill a baseline or treat a source read as a refresh.
-5. Report conflicts and coverage gaps without resolving them by mutation. A saved instruction can
-   be retrieved without proving that every conversation follows it. Recalled preferences may be
-   useful but are not a verified persistence record. If asked whether updates are possible, describe
-   only observed controls and their per-edit approval requirement; do not invoke the writer.
+3. Inventory the actual saved text by source file using its own recorded import commit and path
+   markers. Give each file's role, summarize its saved guidance and link verified sources at the
+   immutable commit. Show any unmarked or unattributed legacy text under **Source unknown**.
+   Report missing evidence explicitly and leave unverified links out. A source read verifies
+   attribution only. Saved text, material explicitly loaded in this conversation and later
+   observed behavior each require their own evidence.
+4. List relevant conversation-derived preferences separately with their scope and evidence.
+   Distinguish direct operator messages from summaries and flag conflicts or superseded rules.
+   Exclude credentials, private bindings, personal information, protected platform text and
+   other assistants' directions.
+5. Show both cards privately as separate messages when supported. Use observed facts and a single
+   contextual status line per card. Report conflicts and limits without changing the document.
 
-Use this layout, replacing placeholders with observed facts:
+> **📋 INSTRUCTION REPORT**
+>
+> <Saved document coverage, verified source count or limits, and any separately observed behavior.>
+>
+> <One contextual final status.>
 
-> ## 📋 TANAABOT · INSTRUCTION REPORT
+> ## 📋 INSTRUCTION REPORT · DETAILS
 >
-> **Coverage:** <Sources inspected; saved document present / empty / unavailable / not inspected.>
+> **Saved document** — <Target, read revision and saved import commit, or the observed access limit.>
 >
-> **Saved document:** <Target scope and returned revision, or the precise access limit.>
+> **<Source path>** — <File role, saved guidance and verified immutable source link. Repeat per file.>
 >
-> **Repository guidance:** <Retrieved path/revision and what is known about loading.>
+> **Source unknown** — <Unattributed saved guidance, if present.>
 >
-> **Changes:** None.
+> **Conversation preferences** — <Relevant directions and their evidence, when available.>
 >
-> | Instruction        | Scope or conditions | Source                                                                        | Evidence                                                  |
-> | ------------------ | ------------------- | ----------------------------------------------------------------------------- | --------------------------------------------------------- |
-> | <Actual direction> | <When it applies>   | <Direct user message / saved document / preference summary / repository file> | <Retrieved / available in context / recalled or inferred> |
+> **Observed behavior** — <What later behavior was observed, or the verification limit.>
 >
-> **Conflicts and limits:** <Superseded or conflicting directions and unexamined sources.>
->
-> **Access and persistence:** <What could be read; what remains unknown about storage or adoption.>
+> <One contextual final status.>
 
 Keep the report useful rather than exhaustive. An empty saved document can coexist with real
 conversation-derived preferences; say so. Do not claim that accessible operator directions are
@@ -123,5 +123,5 @@ all instructions governing the assistant.
 During use, tie each reported direction to its source and evidence level, state unread sources and
 confirm no mutations occurred. When maintaining this skill, validate its package and test empty,
 unavailable and populated-reader cases, direct versus summarized preferences, and source-only reads.
-Native Dot and Cloud behavior require separate authorized trials; package validation does not prove
-instruction completeness, automatic loading or later compliance.
+In an authorized main-Dot trial, verify both visible cards against the saved document and its
+pinned sources. Check that unmarked text and conversation preferences retain their own attribution.
