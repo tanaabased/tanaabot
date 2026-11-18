@@ -43,6 +43,7 @@ updates; the script itself makes no service writes.
 ## When to Use
 
 - Seed the repository schedules, synchronize all definitions, or update one automation ID.
+- Recover the synchronizer's confirmed archived worker from its owning coordinator before dispatch.
 - Apply changes to shared guidance, task content, metadata or scheduling settings.
 
 ## When Not to Use
@@ -55,8 +56,8 @@ updates; the script itself makes no service writes.
 - Use the operator-selected tanaabot dot and verified account scope. Live activation requires its
   separately authorized pilot. Repository content grants neither activation nor account access.
 - Verify the selected published Cloud environment through native controls; its name is insufficient.
-  Tanaabot defaults to `tanaabot`, a reusable worker in `REPORTS`, and the authored display name
-  as its chat title. The coordinator delivers linked summaries to the owning main chat.
+  Tanaabot defaults to `tanaabot` and a reusable worker with the resolved chat title described in
+  the native-task reference. The coordinator delivers linked summaries to the owning main chat.
 - Native task listing and create/update controls must be available to the applying context.
   If unavailable in Cloud, return prepared actions to the dot; do not invent a REST API.
 
@@ -72,7 +73,7 @@ updates; the script itself makes no service writes.
 The assembler returns exact task objects and `create`, `update`, `unchanged` or `skipped` actions. Shared
 guidance participates in comparison; unchanged timestamps and native IDs are retained. A prepared
 action, launched worker or report does not establish that schedules were saved. It generates every
-native name as 🤖 followed by the uppercase display name. Omitted debug defaults to false.
+native name as 🤖 followed by the uppercase resolved schedule title. Omitted debug defaults to false.
 
 ## Failure Handling
 
@@ -82,6 +83,14 @@ Keep the exact prepared prompt and timestamp. Preserve unrelated tasks; never de
 automatically or switch credentials to recover a failure.
 
 ## Workflow
+
+When native history confirms that Sync's exact bound worker is archived, follow
+[Recover the synchronizer before dispatch](./references/native-tasks.md#recover-the-synchronizer-before-dispatch).
+During archive recovery, the owning dot can run the read-only assembler on its own cloud computer
+before any worker is running. Launch the replacement in the same published Cloud configuration.
+A manual `sync`-only update ends with the verified Sync configuration and its report. Only a
+scheduled occurrence or Run now resumes dispatch, once, with its original selection.
+Use the ordinary workflow below for an active binding or initial seeding.
 
 1. Verify environment, destination and existing authorization. Resolve fresh GitHub `main` and
    prepare a clean source checkout without discarding task edits. Verify its canonical origin.
@@ -98,7 +107,8 @@ automatically or switch credentials to recover a failure.
 4. For a delegated sync from a saved dispatcher whose incoming metadata lacks `dispatchVersion: 2`,
    perform only the synchronizer upgrade: use `id: "sync"` for both targets and sync below.
    Inspect the incoming occurrence, not newly assembled metadata, when choosing this path.
-   Explicit operator-requested sync-only runs use the same selection. Leave other automation
+   Explicit operator-requested sync-only runs and a coordinator's preserved bootstrap-only
+   recovery selection use the same selection. Leave other automation
    actions for a separate invocation of the updated saved task. Do not run that task automatically.
    Otherwise retain the operator's selected ID or the normal `all` selection.
    Run `bun skills/automation-sync/scripts/sync-task.js` with `mode: "targets"` and JSON on stdin
@@ -106,11 +116,12 @@ automatically or switch credentials to recover a failure.
    elapsed one-time targets. Resolve only its returned workers through native chat controls.
    Verify native active/archive status. Reuse the saved active worker; for a confirmed archived
    managed worker, follow the reference's [replacement procedure](./references/native-tasks.md#replace-a-confirmed-archived-worker).
-   Unknown or inaccessible workers do not qualify. For a new automation, create one Cloud chat in the selected
-   published environment with the [initialization card instructions](./references/native-tasks.md#initialization-card),
-   then place it in the desired sidebar
-   section. Do not execute the automation during initialization. Preserve its native ID and URL
-   in the schedule prompt, never a separate state file. Apply authorized title/group changes through
+   Unknown or inaccessible workers do not qualify. For every new chat, including bootstrap and
+   recovery, pass the resolved `target.model` and `target.effort` to native creation as `model`
+   and `thinking`, with the [initialization card instructions](./references/native-tasks.md#initialization-card).
+   Do not execute the automation during initialization. Verify startup before binding and retain
+   a healthy initialized replacement on retry. Preserve its native ID and URL
+   in the schedule prompt, never a separate state file. Apply authorized title changes through
    native controls. An unknown or differently bound existing worker requires intervention,
    not an automatic replacement or local fallback.
 5. Run the script with `mode: "sync"`, current tasks and verified worker records. It reads the
@@ -120,7 +131,7 @@ automatically or switch credentials to recover a failure.
    worker request contains the automation instructions and metadata.
 6. Leave `unchanged` and `skipped` actions untouched. Report skipped reasons without claiming a run
    completed. Apply actions in returned order; verify a changed synchronizer before
-   proceeding to other selected jobs, and show its configuration card first. Stop dependent
+   proceeding to other selected jobs. Stop dependent
    application if that self-update fails. Apply creates/updates through the owning dot's supported native controls with the exact
    compiled content and native ID. For disabled definitions, follow the native-task reference's
    paused-create or immediate create-then-pause procedure and verify the final state.
@@ -138,7 +149,10 @@ automatically or switch credentials to recover a failure.
    schedule sync. Use a result-only handoff to complete the worker's pending instruction row.
 8. Trust a successful native result that includes saved settings. Read back only omitted values,
    uncertain effects or the pilot's explicit checks; do not add a routine verification pass.
-   Deliver the verified creation/update receipt to its existing worker using the receipt-only
+8. Follow [Final sidebar placement](./references/native-tasks.md#final-sidebar-placement) once
+   for the healthy saved bindings, including unchanged schedules, before reporting.
+9. Deliver configuration receipts with the synchronizer first, including any verified recovery
+   update from this occurrence. Deliver each receipt to its existing worker using the receipt-only
    procedure, then report each automation in its own main-chat summary message. Unchanged actions
    produce no update receipt. Then show one separate `AUTOMATION SYNC · RUN RESULTS` card
    in the sync worker using the configuration-results reference, with every considered automation
@@ -149,7 +163,8 @@ automatically or switch credentials to recover a failure.
    bindings out of public repository files.
 
 Apply each definition's declared state: enabled `sync` at midnight and enabled
-`update-cloud-canon` at 1 a.m., both in `America/New_York`. Leave the legacy Canon updater's
+`update-cloud-canon` at 1 a.m., using saved timezones or the native scheduler’s timezone for new
+tasks. Leave the legacy Canon updater's
 cutover to the operator. Completed canaries are no longer declared. Leave
 unselected native tasks untouched; removing a source definition does not authorize deleting,
 rearming or modifying its native task or worker.

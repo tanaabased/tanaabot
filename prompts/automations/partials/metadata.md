@@ -11,7 +11,7 @@ effective definition, all injected partials and prompt content, excluding genera
 and source revision. Missing `agent.yaml` debug configuration means `debug: false` here.
 
 `role` distinguishes the hosted coordinator from its Cloud worker. `execution` describes the
-worker's published environment, and `worker` identifies its reusable chat, sidebar group and
+worker's published environment, and `worker` identifies its reusable chat and
 native-provided results URL. The coordinator's own execution remains inherited from the owning dot.
 
 Do not print the metadata on every run. Use it for execution and comparison. Only when

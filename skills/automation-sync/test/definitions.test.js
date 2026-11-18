@@ -5,6 +5,7 @@ import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 
 import definitions from '../lib/definitions.js';
+import automationTargets from '../lib/automation-targets.js';
 import { planSync } from '../lib/sync-plan.js';
 
 test('should load external definitions through the real public Agent System export', async () => {
@@ -18,7 +19,32 @@ test('should load external definitions through the real public Agent System expo
     );
     await writeFile(
       join(root, '.agent-system/automations.yaml'),
-      '- id: smoke\n  enabled: false\n  model: medium\n  effort: medium\n  schedule: "0 0 * * *"\n  thread: Custom smoke\n  group: checks\n  overrides:\n    codex:\n      model: fixture-override\n      environment: {type: cloud, name: fixture}\n  prompt:\n    file: ../prompts/automations/smoke.md\n',
+      `defaults: &defaults
+  group: REPORTS
+  runtimes: [codex]
+automations:
+  - <<: *defaults
+    id: smoke
+    enabled: false
+    model: medium
+    effort: medium
+    schedule: "0 0 * * *"
+    display-name: &smoke-name Custom smoke
+    thread: *smoke-name
+    group: checks
+    overrides:
+      codex:
+        model: fixture-override
+        environment: {type: cloud, name: fixture}
+    prompt:
+      file: ../prompts/automations/smoke.md
+  - <<: *defaults
+    id: inherited
+    thread: Inherited settings
+    schedule: "0 1 * * *"
+    prompt:
+      file: ../prompts/automations/smoke.md
+`,
     );
     await writeFile(join(root, 'prompts/automations/smoke.md'), 'Fixture smoke marker.');
     for (const [name, content] of Object.entries({
@@ -35,8 +61,28 @@ test('should load external definitions through the real public Agent System expo
     );
     const loaded = await definitions(root);
     assert.equal(loaded.manifest.automations[0].payload.prompt, 'Fixture smoke marker.');
+    const [overridden, inherited] = loaded.manifest.automations;
+    assert.equal(overridden.enabled, false);
+    assert.equal(inherited.enabled, true);
+    assert.equal(inherited.group, 'REPORTS');
+    assert.deepEqual(inherited.runtimes, ['codex']);
+    assert.equal(inherited.schedule.timezone, null);
+    const [target] = automationTargets(
+      { ...loaded.manifest, automations: [overridden] },
+      {
+        timezone: 'America/New_York',
+        environments: [{ id: 'fixture-cloud', name: 'fixture' }],
+        destination: { kind: 'dot', id: 'test-dot' },
+      },
+    );
+    // Targets are resolved before any worker exists, including its first-turn settings.
+    assert.equal(loaded.manifest.automations[0].group, 'CHECKS');
+    assert.equal(Object.hasOwn(target.thread, 'group'), false);
+    assert.equal(target.model, 'fixture-override');
+    assert.equal(target.effort, 'medium');
     const result = planSync({
       ...loaded,
+      id: 'smoke',
       existingTasks: [],
       now: '2026-01-01T00:00:00Z',
       source: { revision: 'a'.repeat(40), dirty: false },
@@ -50,7 +96,6 @@ test('should load external definitions through the real public Agent System expo
             status: 'active',
             environmentId: 'fixture-cloud',
             name: 'Custom smoke',
-            group: 'CHECKS',
             url: 'https://example.test/chat',
           },
         ],

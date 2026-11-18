@@ -40,7 +40,6 @@ export default function automationTargets(
               ? { id: override?.thread ?? job.thread.id }
               : {}),
             name: job.thread?.name ?? job.displayName ?? job.id.replaceAll('-', ' '),
-            group: job.group ?? 'REPORTS',
           },
           ...workerSettings(job, manifest.models),
           destination: { kind: 'dot', id: context.destination.id },

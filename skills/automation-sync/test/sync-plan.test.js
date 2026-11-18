@@ -1,6 +1,8 @@
 import { describe, test } from 'bun:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 
+import automationTargets from '../lib/automation-targets.js';
 import { planSync } from '../lib/sync-plan.js';
 import { readTaskPrompt, taskBody, taskPrompt } from '../utils/task-prompt.js';
 
@@ -44,9 +46,9 @@ function input(overrides = {}) {
         automationId: id,
         id: `worker-${id}`,
         status: 'active',
+        startup: 'passed',
         environmentId: 'test-environment',
         name: `Test ${id}`,
-        group: 'REPORTS',
         url: `https://example.test/chats/${id}`,
       })),
       destination: { kind: 'dot', id: 'test-dot' },
@@ -63,6 +65,24 @@ function saved(request = input()) {
 }
 
 describe('skills/automation-sync/lib/sync-plan', () => {
+  test('should render the bounded Sync recovery route with the shared dispatcher', () => {
+    const request = input();
+    request.partials.dispatch = readFileSync(
+      new URL('../../../prompts/automations/partials/dispatch.md', import.meta.url),
+      'utf8',
+    );
+    for (const { task } of planSync(request).operations) {
+      const dispatcher = readTaskPrompt(task.prompt).body.split('## Worker request')[0];
+      // The prompt owns this permission boundary; this does not test native tool execution.
+      assert.match(dispatcher, /Only when this coordinator's `automationId` is `sync`/);
+      assert.match(dispatcher, /exact saved worker is archived/);
+      assert.match(dispatcher, /Recover the synchronizer before dispatch/);
+      assert.match(dispatcher, /For other automations,[\s\S]*stop dispatch without replacement/);
+      assert.match(dispatcher, /An active worker follows normal dispatch/);
+      assert.match(dispatcher, /Stop on missing, inaccessible or unknown status/);
+    }
+  });
+
   test('should carry changed selections into the same worker on every scheduled request', () => {
     const request = input({ id: 'sync' });
     const [initial] = planSync(request).operations;
@@ -172,7 +192,6 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       status: 'active',
       environmentId: 'test-environment',
       name: 'Test canary',
-      group: 'REPORTS',
     });
     const second = planSync(request);
     assert.deepEqual(
@@ -274,10 +293,29 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     assert.equal(requestPayload.execution.environmentId, 'test-environment');
     assert.equal(requestPayload.thread.id, 'worker-sync');
     assert.equal(requestPayload.thread.name, 'Test sync');
-    assert.equal(requestPayload.thread.group, 'REPORTS');
+    assert.equal(Object.hasOwn(requestPayload.thread, 'group'), false);
     assert.equal(requestPayload.thread.url, 'https://example.test/chats/sync');
     assert.deepEqual(task.destination, request.context.destination);
     assert.equal(JSON.stringify(request), before);
+  });
+
+  test('should use the thread name when display-name is omitted without changing saved titles', () => {
+    const request = input({ id: 'sync' });
+    const job = request.manifest.automations[0];
+    job.thread = { name: job.displayName };
+    const [initial] = planSync(request).operations;
+    request.existingTasks = [{ id: 'native-sync', task: initial.task }];
+    delete job.displayName;
+    const [same] = planSync(request).operations;
+    assert.equal(same.kind, 'unchanged');
+    assert.deepEqual(same.task, initial.task);
+    assert.equal(readTaskPrompt(same.task.prompt).metadata.displayName, 'Test sync');
+    assert.match(workerRequest(same.task).prompt, /TEST SYNC · REQUEST/);
+    job.displayName = 'Separate schedule title';
+    const [changed] = planSync(request).operations;
+    assert.equal(changed.task.name, '🤖 SEPARATE SCHEDULE TITLE');
+    assert.equal(workerRequest(changed.task).thread.name, 'Test sync');
+    assert.equal(readTaskPrompt(changed.task.prompt).metadata.displayName, job.displayName);
   });
 
   test('should retain exact prompts, native IDs and timestamps on an unchanged rerun', () => {
@@ -395,7 +433,6 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       status: 'active',
       environmentId: 'test-environment',
       name: 'Test canary',
-      group: 'REPORTS',
       url: 'codex://threads/worker-canary',
     });
     const result = planSync(request);
@@ -552,6 +589,176 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     request.manifest.automations[0].enabled = false;
     request.manifest.automations[0].schedule.seconds = 7200;
     assert.throws(() => planSync(request), /worker-rebind-settings-changed:sync/);
+  });
+
+  test('should preserve destination and coordinator settings during a worker rebind', () => {
+    for (const [field, value] of [
+      ['destination', { kind: 'dot', id: 'other-dot' }],
+      ['execution', { kind: 'other' }],
+      ['model', 'saved-coordinator-model'],
+      ['effort', 'medium'],
+    ]) {
+      const request = input({ id: 'sync', existingTasks: saved() });
+      const worker = request.context.workers[0];
+      worker.replaces = {
+        id: worker.id,
+        status: 'archived',
+        environmentId: worker.environmentId,
+      };
+      worker.id = 'replacement-sync';
+      request.existingTasks[0].task[field] = value;
+      assert.throws(() => planSync(request), /worker-rebind-settings-changed:sync/);
+    }
+  });
+
+  test('should keep group-only changes out of worker payloads and schedule comparison', () => {
+    const request = input({ id: 'sync' });
+    request.manifest.automations[0].group = 'REPORTS';
+    const [initial] = planSync(request).operations;
+    request.existingTasks = [{ id: 'native-sync', task: initial.task }];
+    request.manifest.automations[0].group = 'CHECKS';
+    request.context.workers[0].group = 'WRONG';
+    const [unchanged] = planSync(request).operations;
+    assert.equal(unchanged.kind, 'unchanged');
+    assert.deepEqual(unchanged.task, initial.task);
+    assert.equal(Object.hasOwn(unchanged, 'placement'), false);
+    assert.equal(Object.hasOwn(workerRequest(initial.task).thread, 'group'), false);
+    delete request.manifest.automations[0].group;
+    assert.equal(planSync(request).operations[0].kind, 'unchanged');
+  });
+
+  test('should block replacement on failed or unverified startup and mismatched environments despite optional placement', () => {
+    const request = input({ id: 'sync', existingTasks: saved() });
+    const worker = request.context.workers[0];
+    worker.replaces = {
+      id: worker.id,
+      status: 'archived',
+      environmentId: worker.environmentId,
+    };
+    worker.id = 'replacement-sync';
+    delete worker.group;
+    for (const startup of ['failed', 'unverified', undefined]) {
+      worker.startup = startup;
+      assert.throws(() => planSync(request), /reusable-worker-startup-not-passed:sync/);
+    }
+    worker.startup = 'passed';
+    worker.environmentId = 'wrong-environment';
+    assert.throws(() => planSync(request), /reusable-worker-target-mismatch:sync/);
+  });
+
+  test('should preflight a manual Sync rebind with no running worker and stop at the verified update', () => {
+    const request = input({ id: 'sync', existingTasks: saved() });
+    const [sync, other] = request.existingTasks;
+    const retired = workerRequest(sync.task);
+    request.context = {
+      environments: request.context.environments,
+      destination: sync.task.destination,
+      timezone: sync.task.schedule.default_timezone,
+    };
+    request.manifest.automations[0].overrides.codex = { model: 'fixture-new', effort: 'medium' };
+    const targets = automationTargets(request.manifest, request.context, request.id, now);
+    assert.equal(targets.length, 1);
+    const [target] = targets;
+    assert.equal(target.execution.environmentId, retired.execution.environmentId);
+    assert.deepEqual([target.model, target.effort], ['fixture-new', 'medium']);
+
+    // Native startup and save results are fixtures. Only the dot has a computer at preflight.
+    request.context.workers = [
+      {
+        automationId: target.automationId,
+        id: 'initialized-replacement',
+        name: target.thread.name,
+        status: 'active',
+        startup: 'passed',
+        environmentId: target.execution.environmentId,
+        replaces: {
+          id: retired.thread.id,
+          status: 'archived',
+          environmentId: retired.execution.environmentId,
+        },
+      },
+    ];
+    const plan = planSync(request);
+    assert.equal(plan.operations.length, 1);
+    const [update] = plan.operations;
+    assert.equal(update.kind, 'update');
+    assert.equal(update.nativeId, sync.id);
+    assert.deepEqual(update.expectedCurrent, sync.task);
+    const binding = workerRequest(update.task);
+    assert.equal(binding.thread.id, 'initialized-replacement');
+    assert.deepEqual([binding.model, binding.effort], [target.model, target.effort]);
+    request.existingTasks = [{ id: update.nativeId, task: update.task }, other];
+    delete request.context.workers[0].replaces;
+    assert.deepEqual(
+      planSync(request).operations.map(({ automationId, kind }) => [automationId, kind]),
+      [['sync', 'unchanged']],
+    );
+
+    // The native dispatch decision belongs to the skill, outside the read-only planner.
+    const guidance = readFileSync(
+      new URL('../references/native-tasks.md', import.meta.url),
+      'utf8',
+    );
+    const recovery = guidance
+      .split('### Recover the synchronizer before dispatch')[1]
+      .split('### Initialization card')[0];
+    assert.match(recovery, /owning dot's own cloud computer[\s\S]*?`mode: "targets"`/);
+    assert.match(
+      recovery,
+      /Manual `sync`-only update\.[^\n]*report it and stop\.\s+Do not dispatch/,
+    );
+    assert.match(
+      recovery,
+      /Scheduled occurrence or Run now\.[^\n]*Resume that same occurrence once/,
+    );
+  });
+
+  test('should prepare only the Sync rebind before a resumed pass creates Canon and then no-ops', () => {
+    const request = input({ id: 'sync' });
+    request.existingTasks = saved(request);
+    request.manifest.automations = [job('sync'), job('update-cloud-canon')];
+    request.requests['update-cloud-canon'] = { emoji: '📚', request: 'Update Cloud Canon.' };
+    request.context.workers = [request.context.workers[0]];
+    const worker = request.context.workers[0];
+    worker.replaces = {
+      id: worker.id,
+      status: 'archived',
+      environmentId: worker.environmentId,
+    };
+    worker.id = 'replacement-sync';
+    const recovery = planSync(request);
+    assert.deepEqual(
+      recovery.operations.map(({ automationId, kind }) => [automationId, kind]),
+      [['sync', 'update']],
+    );
+    assert.deepEqual(planSync(request), recovery, 'an unapplied rebind remains the same update');
+
+    // Native saving is external: only feed its observed result into the resumed planning pass.
+    const update = recovery.operations[0];
+    request.existingTasks = [{ id: update.nativeId, task: update.task }];
+    delete worker.replaces;
+    assert.equal(planSync(request).operations[0].kind, 'unchanged', 'bootstrap stays sync-only');
+    request.id = 'all';
+    request.context.workers.push({
+      automationId: 'update-cloud-canon',
+      id: 'worker-canon',
+      status: 'active',
+      environmentId: 'test-environment',
+      name: 'Test update-cloud-canon',
+    });
+    const resumed = planSync(request);
+    assert.deepEqual(
+      resumed.operations.map(({ automationId, kind }) => [automationId, kind]),
+      [
+        ['sync', 'unchanged'],
+        ['update-cloud-canon', 'create'],
+      ],
+    );
+    request.existingTasks = resumed.operations.map(({ automationId, nativeId, task }) => ({
+      id: nativeId ?? `native-${automationId}`,
+      task,
+    }));
+    assert.ok(planSync(request).operations.every(({ kind }) => kind === 'unchanged'));
   });
 
   test('should backfill a missing saved link once and retain the exact task afterward', () => {

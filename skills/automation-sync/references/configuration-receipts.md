@@ -9,13 +9,15 @@ Use the saved scheduler settings, the prepared source commit and verified worker
 Include only observed facts; mark unavailable fields unverified. For an update, compare the
 previous saved values with the verified result rather than describing the desired plan as applied.
 
-Use one quoted card with an H2 containing the purpose emoji, uppercase authored display name
+Use one quoted card with an H2 containing the purpose emoji, uppercase resolved schedule title
 and a spaced middle dot followed by `CREATED` or `UPDATED`, for example
 `> ## 🔄 AUTOMATION SYNC · UPDATED`. Do not put “receipt” in the visible title. Include:
 
 - What was created or materially changed, including relevant before → after values.
 - Configured cadence, timezone, next occurrence when useful, and saved enabled/paused state.
 - Whether the schedule and worker were retained, without printing their private IDs.
+- Sidebar placement only when useful: report the observed result separately from saved schedule
+  state, using the [final placement pass](./native-tasks.md#final-sidebar-placement) result.
 - A verified worker link when useful and whether a run actually occurred. Configuration alone
   does not establish execution.
 
@@ -52,6 +54,8 @@ After native application finishes, display one separate aggregate card in the sy
 If sync itself was created or updated, show its configuration card first, then this run-results
 card as a separate message. An unchanged sync needs only the run-results card; never invent an
 update to produce two cards. Keep each automation's configuration receipt in its own worker.
+If an unchanged schedule still has a placement limitation, include it in the run-results note
+without inventing a configuration update or blocking other work.
 
 Use one row per automation considered in this invocation. Report verified native outcomes,
 not the assembler's proposed operations: ✅ Created, ✅ Updated, ✅ Unchanged, ⚠️ Skipped or

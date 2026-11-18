@@ -6,7 +6,8 @@ prepare a clean source snapshot without discarding existing task edits. Read tha
 `skills/automation-sync/SKILL.md` and follow it for all declared automations. Resolve its required
 references from the same snapshot. Do not reuse only the instructions from an earlier run.
 If this invocation's incoming metadata predates `dispatchVersion: 2`, follow the skill's sync-only
-bootstrap selection. Leave other automations untouched in that pass. A distinct
+bootstrap selection. Also preserve a sync-only recovery selection supplied by the coordinator,
+even when the replacement request has current metadata. Leave other automations untouched in that pass. A distinct
 Run now from the updated saved schedule tests the new dispatcher.
 
 The skill supplies the dependency preparation, task assembly, native schedule comparison and
@@ -43,7 +44,7 @@ read-only check; a newly fetched prompt alone does not grant it.
 
 ## Result and dot summary
 
-After verified native application, put the configuration cards in the affected workers using the
+After verified native application and the skill's final sidebar placement pass, put the configuration cards in the affected workers using the
 skill's display-only procedure. Titles use the authored name and `· CREATED` or `· UPDATED`.
 Then display one `AUTOMATION SYNC · RUN RESULTS` card in the sync worker, following the
 configuration-results reference. Include every considered automation and its verified outcome;

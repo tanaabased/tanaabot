@@ -43,12 +43,14 @@ function bindWorker(target, workers) {
     throw new Error(`native-worker-id-invalid:${target.automationId}`);
   if (worker.status !== 'active')
     throw new Error(`reusable-worker-not-active:${target.automationId}`);
+  if (worker.startup !== undefined && worker.startup !== 'passed')
+    throw new Error(`reusable-worker-startup-not-passed:${target.automationId}`);
   if (
     worker.environmentId !== target.execution.environmentId ||
     (target.thread.id && worker.id !== target.thread.id)
   )
     throw new Error(`reusable-worker-target-mismatch:${target.automationId}`);
-  if (worker.name !== target.thread.name || worker.group !== target.thread.group)
+  if (worker.name !== target.thread.name)
     throw new Error(`reusable-worker-settings-drift:${target.automationId}`);
   return {
     ...target,
@@ -145,15 +147,13 @@ export function planSync({
         targets.find((target) => target.automationId === job.id),
         context.workers,
       );
+      const observed = context.workers.find((record) => record.automationId === job.id);
+      const displayName = job.displayName ?? job.thread?.name ?? job.id.replaceAll('-', ' ');
       const body = taskBody(partials, job.payload.prompt);
-      const header = requestHeader(
-        partials.request,
-        job.displayName ?? job.id.replaceAll('-', ' '),
-        requests?.[job.id],
-      );
+      const header = requestHeader(partials.request, displayName, requests?.[job.id]);
       const canary = promptCanary(job.payload.prompt);
       const task = {
-        name: `🤖 ${(job.displayName ?? job.id.replaceAll('-', ' ')).trim().toUpperCase()}`,
+        name: `🤖 ${displayName.trim().toUpperCase()}`,
         enabled: job.enabled,
         schedule: cloudSchedule(job.schedule, {
           now,
@@ -178,6 +178,8 @@ export function planSync({
       if (current) {
         const previous = current.parsed.metadata;
         if (previous.worker?.id && previous.worker.id !== worker.thread.id) {
+          if (observed.startup !== 'passed')
+            throw new Error(`reusable-worker-startup-not-passed:${job.id}`);
           const retired = context.workers.find(
             (record) => record.automationId === job.id,
           )?.replaces;
@@ -189,8 +191,9 @@ export function planSync({
           )
             throw new Error(`reusable-worker-replacement-required:${job.id}`);
           if (
-            task.enabled !== current.task.enabled ||
-            canonical(task.schedule) !== canonical(current.task.schedule)
+            ['enabled', 'schedule', 'destination', 'execution', 'model', 'effort'].some(
+              (key) => canonical(task[key]) !== canonical(current.task[key]),
+            )
           )
             throw new Error(`worker-rebind-settings-changed:${job.id}`);
         }
@@ -202,7 +205,7 @@ export function planSync({
         schema: 'tanaabot.automation/v1',
         dispatchVersion: 2,
         ...identity,
-        displayName: job.displayName ?? job.id.replaceAll('-', ' '),
+        displayName,
         contentHash,
         sourceRevision: source.revision,
         sourceDirty: source.dirty,

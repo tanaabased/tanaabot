@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 
 import definitions from '../lib/definitions.js';
 import automationTargets from '../lib/automation-targets.js';
+import placementPlan from '../lib/placement-plan.js';
 import { planSync } from '../lib/sync-plan.js';
 import syncReport from '../utils/sync-report.js';
 
@@ -25,23 +26,32 @@ try {
     dirty: git('status', '--porcelain').length > 0,
   };
   const now = new Date().toISOString();
-  if (input.mode !== undefined && !['targets', 'sync'].includes(input.mode))
+  if (input.mode !== undefined && !['targets', 'sync', 'placement'].includes(input.mode))
     throw new Error('sync-mode-invalid');
   const result =
-    input.mode === 'targets'
+    input.mode === 'placement'
       ? {
-          schema: 'tanaabot.automation-targets/v1',
           source,
-          targets: automationTargets(loaded.manifest, input.context, input.id, now),
+          ...placementPlan({
+            manifest: loaded.manifest,
+            context: input.context,
+            id: input.id,
+          }),
         }
-      : planSync({
-          ...loaded,
-          source,
-          existingTasks: input.existingTasks,
-          context: input.context,
-          id: input.id,
-          now,
-        });
+      : input.mode === 'targets'
+        ? {
+            schema: 'tanaabot.automation-targets/v1',
+            source,
+            targets: automationTargets(loaded.manifest, input.context, input.id, now),
+          }
+        : planSync({
+            ...loaded,
+            source,
+            existingTasks: input.existingTasks,
+            context: input.context,
+            id: input.id,
+            now,
+          });
   process.stdout.write(
     `${JSON.stringify({ ...result, ...(result.operations && loaded.manifest.debug ? { presentation: syncReport(result, true) } : {}) }, null, 2)}\n`,
   );
