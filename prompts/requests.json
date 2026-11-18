@@ -1,5 +1,5 @@
 {
-  "sync": {
+  "automation-sync": {
     "emoji": "🔄",
     "request": "Synchronize the repository automations from the latest main revision."
   },

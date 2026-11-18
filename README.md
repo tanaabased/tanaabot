@@ -55,7 +55,7 @@ Cloud environment. Apply each definition's declared state. Leave the legacy
 Canon updater and completed native canary tasks alone. Do not run or delete tasks.
 ```
 
-The [definitions](./.agent-system/automations.yaml) enable `sync` at midnight and both
+The [definitions](./.agent-system/automations.yaml) enable `automation-sync` at midnight and both
 `update-cloud-canon` and `instruction-sync` at 1 a.m. in the native scheduler’s timezone (Eastern for this deployment).
 Existing schedules retain their saved timezone. Each sync loads fresh `main`, updates itself first and
 leaves unchanged tasks alone. A final best-effort desktop pass places workers in their configured sidebar sections;
@@ -66,6 +66,10 @@ the compact linked main-chat summaries. Debug is opt-in through `debug: true` in
 Canary #3's scheduled run passed, as reported by the operator. Its repository definition has
 been removed; native task and chat cleanup remain with the operator. See the
 [pilot record](./skills/automation-sync/references/smoke-pilot.md) for evidence limits.
+
+To test a fresh bootstrap, first ask the Dot to synchronize only `automation-sync`. If the
+previous `sync` schedule still owns the same name, remove that schedule before seeding.
+Verify the new schedule, worker and `TANAABOT` sidebar placement, then request a full sync.
 
 ## Inspect or refresh saved instructions
 

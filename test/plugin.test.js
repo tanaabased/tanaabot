@@ -61,7 +61,9 @@ test('packed plugin retains canonical skills, assets and usable links', async ()
       now: '2026-01-01T00:00:00Z',
     };
     const assembled = planSync(input);
-    const sync = assembled.operations.find(({ automationId }) => automationId === 'sync');
+    const sync = assembled.operations.find(
+      ({ automationId }) => automationId === 'automation-sync',
+    );
     assert.equal(sync.task.enabled, true);
     assert.equal(sync.task.schedule.default_timezone, 'America/New_York');
     assert.match(sync.task.schedule.schedule, /FREQ=DAILY;BYHOUR=0;BYMINUTE=0;BYSECOND=0/);

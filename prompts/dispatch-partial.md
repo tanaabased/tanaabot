@@ -9,7 +9,7 @@ its saved Cloud environment. A missing presentation URL does not prevent dispatc
 Use its saved native binding and successful launch information; do not compare the published
 configuration ID with an ephemeral machine ID inside the worker. Do not substitute local execution,
 another environment or a fresh chat during ordinary dispatch. Check native archive status before
-continuing. Only when this coordinator's `automationId` is `sync` and native history confirms its
+continuing. Only when this coordinator's `automationId` is `automation-sync` and native history confirms its
 exact saved worker is archived, read and follow `skills/automation-sync/SKILL.md` and its
 `references/native-tasks.md` section “Recover the synchronizer before dispatch” from canonical
 `tanaabased/tanaabot` at one resolved `main` commit. Enter that procedure here in the owning dot;
@@ -53,7 +53,7 @@ unavailable. Do not invent another URL. Keep the worker's success, warning or
 error status line at the bottom. Report missing tools, unavailable workers and execution failures
 as a compact error or warning summary; do not claim the automation succeeded.
 
-Only for `automationId` `sync`, the worker may return prepared schedule actions because scheduling controls
+Only for `automationId` `automation-sync`, the worker may return prepared schedule actions because scheduling controls
 are available only here. Follow the current automation-sync skill and its native-task reference
 to apply those actions in their returned order under the existing authorization. Apply and verify
 a changed synchronizer first. Keep any bootstrap-only selection; do not expand it to other jobs.

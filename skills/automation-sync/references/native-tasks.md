@@ -112,9 +112,9 @@ No schedule is deleted.
 
 ### Recover the synchronizer before dispatch
 
-The owning dot handles Sync's archived binding for a manual `sync`-only update, a scheduled
+The owning dot handles Sync's archived binding for a manual `automation-sync`-only update, a scheduled
 occurrence or Run now. For an occurrence, retain its original selection before recovery
-(normally `all`, or `sync` for a bootstrap-only occurrence).
+(normally `all`, or `automation-sync` for a bootstrap-only occurrence).
 
 1. Read the current native Sync schedule and confirm its exact bound worker is archived in native
    history. Follow [the replacement procedure](#replace-a-confirmed-archived-worker) to reconcile
@@ -124,7 +124,7 @@ occurrence or Run now. For an occurrence, retain its original selection before r
 2. On the owning dot's own cloud computer, prepare a clean checkout pinned to one canonical
    `tanaabased/tanaabot` GitHub `main` commit. Read that revision's skill and required references.
    Run `bun install --frozen-lockfile --ignore-scripts` and `bun run automations:prepare` there.
-   Run the read-only assembler with `mode: "targets"` and `id: "sync"` using the verified
+   Run the read-only assembler with `mode: "targets"` and `id: "automation-sync"` using the verified
    published configuration listing, native scheduler timezone and saved dot destination.
    Check that the resolved environment ID matches the retired worker's published `tanaabot`
    configuration. This preflight requires no running instance of that configuration. If it fails,
@@ -137,7 +137,7 @@ occurrence or Run now. For an occurrence, retain its original selection before r
    observations unverified. Before binding, verify passed startup, active status and the published
    configuration through native launch or association evidence. Check the published setup/version
    when available and report unavailable version evidence as unverified. Leave the old chat archived.
-4. From the same clean checkout, run `mode: "sync"` with `id: "sync"`, current native tasks and
+4. From the same clean checkout, run `mode: "sync"` with `id: "automation-sync"`, current native tasks and
    the verified replacement and `replaces` evidence. Follow the shared rebind procedure to apply
    the exact prepared update to the existing schedule. Verify its saved dispatcher and worker ID,
    preserving schedule ID, cadence, enabled state, coordinator settings and destination. Reconcile
@@ -146,7 +146,7 @@ occurrence or Run now. For an occurrence, retain its original selection before r
 
 The entry point determines what happens after verification.
 
-- **Manual `sync`-only update.** After verifying the saved Sync configuration, report it and stop.
+- **Manual `automation-sync`-only update.** After verifying the saved Sync configuration, report it and stop.
   Do not dispatch the worker request, queue Run now or touch other automations.
 - **Scheduled occurrence or Run now.** Resume that same occurrence once with the newly saved worker
   request and its model and effort. Pass the original selection as separate coordinator context
@@ -155,7 +155,7 @@ The entry point determines what happens after verification.
   Sync unchanged. Do not send the old payload, repeat the save or queue another occurrence.
 
 For rollout, manually load this skill from canonical `main` in the main Tanaabot dot and update
-only `sync`. Verify the replacement binding and saved dispatcher before separately selecting
+only `automation-sync`. Verify the replacement binding and saved dispatcher before separately selecting
 Run now for a full sync.
 
 ### Initialization card
@@ -189,14 +189,14 @@ Repeat with `mode: "sync"` (also the default), adding `existingTasks` and `conte
 ```json
 {
   "mode": "sync",
-  "id": "sync",
+  "id": "automation-sync",
   "context": {
     "timezone": "America/New_York",
     "environments": [{ "id": "verified-published-config-id", "name": "tanaabot" }],
     "destination": { "kind": "dot", "id": "verified-main-chat-id" },
     "workers": [
       {
-        "automationId": "sync",
+        "automationId": "automation-sync",
         "id": "verified-worker-id",
         "status": "active",
         "startup": "passed",
@@ -254,7 +254,7 @@ schedule fields directly; do not reconstruct them from a description or convert 
 
 Apply exact compiled prompts and settings through the owning dot's native schedule controls.
 Apply returned operations in order: the synchronizer comes first when selected. For a sync-only
-bootstrap use `id: "sync"` in both targets and sync requests, resolving only its worker. Verify
+bootstrap use `id: "automation-sync"` in both targets and sync requests, resolving only its worker. Verify
 its saved prompt before a distinct Run now; an update cannot replace the already-running dispatcher.
 Newly compiled metadata carries `dispatchVersion: 2` to distinguish that next invocation.
 Never use the contributor's local scheduler as a substitute or write scheduler files. Supply the

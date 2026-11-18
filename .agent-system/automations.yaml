@@ -4,7 +4,7 @@ defaults: &defaults
 
 automations:
   - <<: *defaults
-    id: sync
+    id: automation-sync
     group: TANAABOT
     thread: AUTOMATION SYNC
     schedule: '0 0 * * *'

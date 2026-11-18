@@ -66,7 +66,7 @@ Cloud startup explicitly loads the local skills without requiring this plugin's 
 
 | Automation           | Worker group | Declared state                     |
 | -------------------- | ------------ | ---------------------------------- |
-| `sync`               | `TANAABOT`   | Enabled; daily at midnight Eastern |
+| `automation-sync`    | `TANAABOT`   | Enabled; daily at midnight Eastern |
 | `update-cloud-canon` | `TANAABOT`   | Enabled; daily at 1 a.m. Eastern   |
 | `instruction-sync`   | `TANAABOT`   | Enabled; daily at 1 a.m. Eastern   |
 

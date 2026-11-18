@@ -84,7 +84,7 @@ When native history confirms that Sync's exact bound worker is archived, follow
 [Recover the synchronizer before dispatch](./references/native-tasks.md#recover-the-synchronizer-before-dispatch).
 During archive recovery, the owning dot can run the read-only assembler on its own cloud computer
 before any worker is running. Launch the replacement in the same published Cloud configuration.
-A manual `sync`-only update ends with the verified Sync configuration and its report. Only a
+A manual `automation-sync`-only update ends with the verified Sync configuration and its report. Only a
 scheduled occurrence or Run now resumes dispatch, once, with its original selection.
 Use the ordinary workflow below for an active binding or initial seeding.
 
@@ -101,7 +101,7 @@ Use the ordinary workflow below for an active binding or initial seeding.
    cannot prove a job or worker is absent.
    Supply the native scheduler's IANA timezone as `context.timezone`; do not use the worker's clock.
 4. For a delegated sync from a saved dispatcher whose incoming metadata lacks `dispatchVersion: 2`,
-   perform only the synchronizer upgrade: use `id: "sync"` for both targets and sync below.
+   perform only the synchronizer upgrade: use `id: "automation-sync"` for both targets and sync below.
    Inspect the incoming occurrence, not newly assembled metadata, when choosing this path.
    Explicit operator-requested sync-only runs and a coordinator's preserved bootstrap-only
    recovery selection use the same selection. Leave other automation

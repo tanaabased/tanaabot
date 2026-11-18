@@ -122,7 +122,7 @@ export function planSync({
   const selected = id === 'all' ? jobs : jobs.filter((job) => job.id === id);
   const operations = selected
     .filter((job) => job.runtimes.includes('codex'))
-    .toSorted((a, b) => Number(b.id === 'sync') - Number(a.id === 'sync'))
+    .toSorted((a, b) => Number(b.id === 'automation-sync') - Number(a.id === 'automation-sync'))
     .map((job) => {
       const identity = { repository, agentId: manifest.agent.id, automationId: job.id };
       const matches = records.filter(

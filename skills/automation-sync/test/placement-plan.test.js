@@ -5,7 +5,7 @@ import placementPlan from '../lib/placement-plan.js';
 
 function fixture() {
   const jobs = [
-    { id: 'sync', group: 'REPORTS', runtimes: ['codex'] },
+    { id: 'automation-sync', group: 'REPORTS', runtimes: ['codex'] },
     { id: 'other', group: 'CHECKS', runtimes: ['codex'] },
   ];
   const workers = jobs.map((job) => ({
@@ -37,12 +37,12 @@ test('should match configured sections and exact desktop identities for verified
   );
   assert.deepEqual(placements[0].move, {
     source: 'codex',
-    threadId: 'worker-sync',
+    threadId: 'worker-automation-sync',
     hostId: 'durable',
     sectionId: 'reports-section',
   });
   assert.deepEqual(input, before);
-  assert.equal(placementPlan({ ...input, id: 'sync' }).placements.length, 1);
+  assert.equal(placementPlan({ ...input, id: 'automation-sync' }).placements.length, 1);
   input.manifest.automations[0].group = 'CHECKS';
   assert.equal(placementPlan(input).placements[0].move.sectionId, 'checks-section');
   input.context.workers[0].id = 'same-title-different-chat';
@@ -58,11 +58,11 @@ test('should match configured sections and exact desktop identities for verified
 test('should verify readback and skip already-correct Cloud chats despite local sidebar keys', () => {
   const input = fixture();
   assert.equal(placementPlan(input).placements[0].status, 'move');
-  input.context.sidebar.sections[0].itemKeys = ['codex:thread:local:worker-sync'];
+  input.context.sidebar.sections[0].itemKeys = ['codex:thread:local:worker-automation-sync'];
   const placed = placementPlan(input).placements[0];
   assert.equal(placed.status, 'verified');
   assert.equal(Object.hasOwn(placed, 'move'), false);
-  input.context.sidebar.sections[0].itemKeys = ['codex:thread:local:worker-sync-other'];
+  input.context.sidebar.sections[0].itemKeys = ['codex:thread:local:worker-automation-sync-other'];
   assert.equal(placementPlan(input).placements[0].status, 'move');
 });
 
@@ -82,7 +82,11 @@ test('should avoid moves without a sidebar or an unambiguous chat and section', 
   assert.equal(missingListing.placements[0].reason, 'sidebar-sections-unavailable');
   assert.deepEqual(missingListing.sectionsToCreate, []);
   input.context.sidebar = fixture().context.sidebar;
-  input.context.sidebar.threads.push({ id: 'worker-sync', kind: 'codex', hostId: 'other-host' });
+  input.context.sidebar.threads.push({
+    id: 'worker-automation-sync',
+    kind: 'codex',
+    hostId: 'other-host',
+  });
   assert.equal(placementPlan(input).placements[0].reason, 'desktop-chat-missing-or-ambiguous');
   delete input.manifest.automations[0].group;
   assert.equal(placementPlan(input).placements[0].reason, 'no-configured-group');
