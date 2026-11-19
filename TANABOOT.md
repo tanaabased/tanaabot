@@ -153,6 +153,15 @@ invalid arguments. A selected revision's entrypoint retains its failure status.
 
 ## Cloud verification
 
+Rerun full Cloud setup at a revision that includes Record Publication and keep the displayed
+**Setup ID**. Publish or republish the environment and start a fresh task in it. Check that
+Startup Check shows the same ID, then ask the fresh task to
+[Record Publication](./skills/record-publication/SKILL.md) with that ID.
+Then synchronize the existing Automation Sync and Instruction Sync dispatchers in place and
+verify their saved schedules and worker bindings. Keep compatible workers, including those
+without a local receipt reader. Before the first recording, sync uses the default branch
+when GitHub confirms the receipt is absent.
+
 Allow GitHub source/raw/release downloads and the package hosts needed by Bootbox, Homebrew and Bun
 in the environment's network policy. Access failures must be resolved in the selected environment;
 Tanaboot does not select credentials or bypass its proxy.

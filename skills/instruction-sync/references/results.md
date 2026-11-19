@@ -39,6 +39,9 @@ out of rule counts. In the main Dot, include the private removal details and exa
 replacement separately when proposing a save. On the worker, summarize unattributed removals
 by count under **Source unknown**.
 
+If this run used the first-publication fallback, include it and the default branch in **Source**
+and the main-chat summary, even when the instructions were unchanged.
+
 For a migration review or approval wait, use a status such as `⚠️ First replacement needs
 migration review.` or `⚠️ Exact replacement awaiting approval.` After a verified save, use
 `✅ Saved instructions verified.` An unchanged result ends with

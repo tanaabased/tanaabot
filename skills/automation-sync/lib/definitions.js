@@ -15,7 +15,15 @@ export default async function definitions(workspaceDir) {
     throw error;
   }
   const partials = {};
-  for (const name of ['metadata', 'execution', 'presentation', 'dispatch', 'request']) {
+  for (const name of [
+    'metadata',
+    'execution',
+    'presentation',
+    'dispatch',
+    'request',
+    'sync-source',
+    'sync-worker',
+  ]) {
     const file = await realpath(resolve(root, `prompts/${name}-partial.md`));
     const path = relative(root, file);
     if (path === '..' || path.startsWith(`..${sep}`))

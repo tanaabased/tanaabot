@@ -4,15 +4,16 @@ Tanaabot's Codex Cloud sources and their current status. See [Tanaboot](./TANABO
 
 ## Skills
 
-| Skill                                                           | Use                                                                  | Dependencies                                                 |
-| --------------------------------------------------------------- | -------------------------------------------------------------------- | ------------------------------------------------------------ |
-| [Automation Sync](./skills/automation-sync/SKILL.md)            | Prepare and synchronize hosted schedules from repository definitions | Prepared checkout, Bun and native scheduling controls        |
-| [Instruction Report](./skills/instruction-report/SKILL.md)      | Inspect accessible instructions and their evidence without changes   | Available read-only instruction sources                      |
-| [Instruction Sync](./skills/instruction-sync/SKILL.md)          | Propose main-Dot instruction changes and verify approved saves       | Main Dot's native instruction controls and repository access |
-| [Skill Author](./skills/skill-author/SKILL.md)                  | Create, maintain and validate tanaabot skills                        | Discoverable `tanaab-skill-author` and Bun                   |
-| [Spaceport Fortune Cookie](./skills/spaceport-fortune/SKILL.md) | Exercise local skill selection and required-reference loading        | Bundled fortune reference                                    |
-| [Startup Check](./skills/startup-check/SKILL.md)                | Verify a prepared Cloud environment without repairs                  | Prepared Tanaabot source and task catalog                    |
-| [Voice](./skills/voice/SKILL.md)                                | Replies and documentation in tanaabot's voice                        | None                                                         |
+| Skill                                                           | Use                                                                  | Dependencies                                                     |
+| --------------------------------------------------------------- | -------------------------------------------------------------------- | ---------------------------------------------------------------- |
+| [Automation Sync](./skills/automation-sync/SKILL.md)            | Prepare and synchronize hosted schedules from repository definitions | Prepared checkout, Bun and native scheduling controls            |
+| [Instruction Report](./skills/instruction-report/SKILL.md)      | Inspect accessible instructions and their evidence without changes   | Available read-only instruction sources                          |
+| [Instruction Sync](./skills/instruction-sync/SKILL.md)          | Propose main-Dot instruction changes and verify approved saves       | Main Dot's native instruction controls and repository access     |
+| [Record Publication](./skills/record-publication/SKILL.md)      | Record the source policy of a verified Cloud publication             | Fresh Cloud task, expected setup ID and authorized GitHub writer |
+| [Skill Author](./skills/skill-author/SKILL.md)                  | Create, maintain and validate tanaabot skills                        | Discoverable `tanaab-skill-author` and Bun                       |
+| [Spaceport Fortune Cookie](./skills/spaceport-fortune/SKILL.md) | Exercise local skill selection and required-reference loading        | Bundled fortune reference                                        |
+| [Startup Check](./skills/startup-check/SKILL.md)                | Verify a prepared Cloud environment without repairs                  | Prepared Tanaabot source and task catalog                        |
+| [Voice](./skills/voice/SKILL.md)                                | Replies and documentation in tanaabot's voice                        | None                                                             |
 
 Skill Author customizes Canon's methods. Install Canon separately in your ChatGPT account as described
 under [Skills](./TANABOOT.md#skills). Missing required tools or references leave

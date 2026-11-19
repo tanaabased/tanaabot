@@ -10,6 +10,14 @@ import cloudSchedule from '../utils/cloud-schedule.js';
 import requestHeader from '../utils/request-header.js';
 
 const repository = 'tanaabased/tanaabot';
+const sourceSyncJobs = new Set(['automation-sync', 'instruction-sync']);
+
+function syncPartial(partials, name) {
+  const partial = partials[name];
+  if (typeof partial !== 'string' || !partial.trim())
+    throw new Error(`shared-partial-required:${name}`);
+  return partial.trim();
+}
 
 function workerLink(worker) {
   const link = worker.url ?? `codex://threads/${worker.id}`;
@@ -147,7 +155,14 @@ export function planSync({
       );
       const observed = context.workers.find((record) => record.automationId === job.id);
       const displayName = job.displayName ?? job.thread?.name ?? job.id.replaceAll('-', ' ');
-      const body = taskBody(partials, job.payload.prompt);
+      const consumesSyncSource = sourceSyncJobs.has(job.id);
+      const dispatch = consumesSyncSource
+        ? `${syncPartial(partials, 'sync-source')}\n\n${partials.dispatch.trim()}`
+        : partials.dispatch.trim();
+      const workerPrompt = consumesSyncSource
+        ? `${syncPartial(partials, 'sync-worker')}\n\n${job.payload.prompt}`
+        : job.payload.prompt;
+      const body = taskBody(partials, workerPrompt);
       const header = requestHeader(partials.request, displayName, requests?.[job.id]);
       const task = {
         name: `🤖 ${displayName.trim().toUpperCase()}`,
@@ -167,7 +182,7 @@ export function planSync({
         worker,
         body,
         header,
-        dispatch: partials.dispatch.trim(),
+        dispatch,
         debug: manifest.debug === true,
       };
       const contentHash = fingerprint({ ...identity, task: semantic });
@@ -222,7 +237,7 @@ export function planSync({
           },
           worker,
           body,
-          partials.dispatch,
+          dispatch,
           header,
         );
         if (canonical(current.task) === canonical(unchanged))
@@ -237,7 +252,7 @@ export function planSync({
         automationId: job.id,
         kind: current ? 'update' : 'create',
         ...(current ? { nativeId: current.id, expectedCurrent: current.task } : {}),
-        task: compileTask(task, metadata, worker, body, partials.dispatch, header),
+        task: compileTask(task, metadata, worker, body, dispatch, header),
       };
     });
   return { schema: 'tanaabot.automation-plan/v1', source, operations };

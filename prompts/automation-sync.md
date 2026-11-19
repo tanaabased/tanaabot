@@ -1,9 +1,8 @@
 # Synchronize repository automations
 
 Use the selected Tanaabot Cloud environment for the source preparation and assembly below.
-Refresh canonical `tanaabased/tanaabot` from GitHub `main`, resolve one commit for this run and
-prepare a clean source snapshot without discarding existing task edits. Read and follow that revision's
-`skills/automation-sync/SKILL.md` and its required references from that snapshot.
+Read and follow `skills/automation-sync/SKILL.md` and its required references from the
+verified source snapshot. Pass the originating `sourceSelection` to the assembler.
 Synchronize all declared automations unless the coordinator supplies a narrower selection.
 Preserve that selection when resuming after worker recovery.
 
@@ -18,7 +17,8 @@ paused. Enabling a definition requires an operator-authorized source change and 
 never edit a prepared task object to override its desired state.
 
 If this Cloud worker lacks native scheduling tools, return the prepared actions to the owning
-dot for application through its supported controls. Report that handoff as pending until the native
+dot along with the complete source selection for application through its supported controls.
+Report that handoff as pending until the native
 operation succeeds. If unattended application is unsupported, report the limitation and the skill's
 manual update procedure. Do not silently claim synchronization or enqueue a substitute schedule.
 

@@ -75,7 +75,14 @@ separate operator-authorized scope. This skill inspects the saved installation o
    Its successful output lists only verified variable names. Never print the environment file,
    secret values, hashes, tokens or command environment.
    Do not source the loader to turn a failed visibility check into a pass.
-4. For **Tanaabot skills**, enumerate `SKILL.md` files beneath the prepared checkout's `skills/`
+4. For **Tanaabot**, run `bun --no-env-file <prepared-checkout>/scripts/publication-task.js local`
+   through the actual task launcher. Use the validated local receipt for the setup ID, selector,
+   installed commit and sync target. A missing receipt leaves this part unverified. An invalid
+   receipt fails this part. Continue the independent inventory even when the receipt check fails.
+   Display the receipt details in the status report. During setup review or a fresh published
+   startup, also show the verified setup ID in the startup card's Tanaabot note. This step is
+   local and read-only. It does not record a publication.
+   Enumerate `SKILL.md` files beneath the prepared checkout's `skills/`
    directory. Verify each instruction file is readable and has a nonempty body and valid YAML
    frontmatter with nonempty string `name` and `description` fields. Names must be unique within
    this inventory. Retain every name, description and absolute file path, together with the prepared

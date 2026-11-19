@@ -53,6 +53,8 @@ automations:
       presentation: 'Fixture presentation guidance.',
       dispatch: 'Fixture coordinator guidance.',
       request: '> ## {{emoji}} {{title}} · REQUEST\n>\n> {{request}}',
+      'sync-source': 'Fixture Dot source selection.',
+      'sync-worker': 'Fixture worker source handoff.',
     }))
       await writeFile(join(root, `prompts/${name}-partial.md`), content);
     await writeFile(
