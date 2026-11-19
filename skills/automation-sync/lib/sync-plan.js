@@ -40,16 +40,38 @@ function workerLink(worker) {
   return { url: link };
 }
 
-function bindWorker(target, workers) {
+function findWorker(automationId, workers) {
   if (!Array.isArray(workers)) throw new Error('native-workers-required');
-  const matches = workers.filter((worker) => worker.automationId === target.automationId);
-  if (matches.length !== 1 || !matches[0].id?.trim())
-    throw new Error(`reusable-worker-missing-or-ambiguous:${target.automationId}`);
-  const worker = matches[0];
-  if (!/^[a-zA-Z0-9][a-zA-Z0-9_-]*$/u.test(worker.id))
-    throw new Error(`native-worker-id-invalid:${target.automationId}`);
-  if (worker.status !== 'active')
-    throw new Error(`reusable-worker-not-active:${target.automationId}`);
+  const matches = workers.filter((worker) => worker.automationId === automationId);
+  const [worker] = matches;
+  if (matches.length > 1 || (worker && !worker.id))
+    throw new Error(`reusable-worker-missing-or-ambiguous:${automationId}`);
+  if (worker && (typeof worker.id !== 'string' || !/^[a-zA-Z0-9][a-zA-Z0-9_-]*$/u.test(worker.id)))
+    throw new Error(`native-worker-id-invalid:${automationId}`);
+  return worker;
+}
+
+function historyMatch(view, id) {
+  if (
+    view?.source !== 'history' ||
+    !Array.isArray(view.ids) ||
+    view.ids.some((value) => typeof value !== 'string' || !value)
+  )
+    return 'unknown';
+  if (view.ids.includes(id)) return 'found';
+  return view.complete === true ? 'absent' : 'unknown';
+}
+
+function workerStatus(history, id) {
+  if (!id) return 'unverified';
+  const active = historyMatch(history?.active, id);
+  const archived = historyMatch(history?.archived, id);
+  if (active === 'found' && archived === 'absent') return 'active';
+  if (archived === 'found' && active === 'absent') return 'archived';
+  return 'unverified';
+}
+
+function bindWorker(target, worker) {
   if (worker.startup !== undefined && worker.startup !== 'passed')
     throw new Error(`reusable-worker-startup-not-passed:${target.automationId}`);
   if (
@@ -149,11 +171,22 @@ export function planSync({
           ...(current ? { nativeId: current.id, task: current.task } : {}),
         };
       }
-      const worker = bindWorker(
-        targets.find((target) => target.automationId === job.id),
-        context.workers,
-      );
-      const observed = context.workers.find((record) => record.automationId === job.id);
+      const target = targets.find((target) => target.automationId === job.id);
+      const savedWorkerId = current?.parsed.metadata.worker?.id;
+      const observed = findWorker(job.id, context.workers);
+      const observedStatus = workerStatus(context.workerHistory, observed?.id);
+      const savedStatus = savedWorkerId && workerStatus(context.workerHistory, savedWorkerId);
+      if (!observed || observedStatus !== 'active' || savedStatus === 'unverified') {
+        const needsReplacement =
+          savedStatus === 'archived' && (!observed || observed.id === savedWorkerId);
+        return {
+          automationId: job.id,
+          kind: 'skipped',
+          reason: needsReplacement ? 'worker-archived' : 'worker-status-unverified',
+          ...(current ? { nativeId: current.id, task: current.task } : {}),
+        };
+      }
+      const worker = bindWorker(target, observed);
       const displayName = job.displayName ?? job.thread?.name ?? job.id.replaceAll('-', ' ');
       const consumesSyncSource = sourceSyncJobs.has(job.id);
       const dispatch = consumesSyncSource
@@ -191,10 +224,9 @@ export function planSync({
         if (previous.worker?.id && previous.worker.id !== worker.thread.id) {
           if (observed.startup !== 'passed')
             throw new Error(`reusable-worker-startup-not-passed:${job.id}`);
-          const retired = context.workers.find(
-            (record) => record.automationId === job.id,
-          )?.replaces;
+          const retired = observed.replaces;
           if (
+            savedStatus !== 'archived' ||
             retired?.id !== previous.worker.id ||
             retired.status !== 'archived' ||
             retired.environmentId !== previous.execution?.environmentId ||
