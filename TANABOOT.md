@@ -153,9 +153,10 @@ invalid arguments. A selected revision's entrypoint retains its failure status.
 
 ## Cloud verification
 
-After full Cloud setup, click **Publish** or **Republish**. Once it succeeds, send
-`Record Publication` in the same publisher chat. [Record Publication](./skills/record-publication/SKILL.md)
-uses the Setup ID from that chat’s latest successful install.
+After full Cloud setup, click **Publish** or **Republish**. Once it succeeds, copy
+`Record Publication <setup-id>` from the onboarding card into the same publisher chat.
+The card fills in the verified Setup ID. If you send just `Record Publication`, the
+[skill](./skills/record-publication/SKILL.md) uses the ID from that chat’s latest successful install.
 Then synchronize the existing Automation Sync and Instruction Sync dispatchers in place and
 verify their saved schedules and worker bindings. Keep compatible workers, including those
 without a local receipt reader. Before the first recording, sync uses the default branch

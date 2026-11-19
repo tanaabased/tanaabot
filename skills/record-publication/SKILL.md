@@ -31,8 +31,8 @@ receipt supplies the source policy for Automation Sync and Instruction Sync.
 
 ## When to Use
 
-- The operator requests `Record Publication` in the publisher chat after Publish or Republish.
-  An explicit Setup ID is optional.
+- The operator requests `Record Publication <setup-id>` in the publisher chat after Publish or
+  Republish. The short form `Record Publication` uses the Setup ID from that chat’s latest successful install.
 - The operator checks the outcome of an already attempted receipt write.
 
 ## When Not to Use

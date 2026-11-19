@@ -89,10 +89,10 @@ Tanaabot onboarding.
 
    > **📦 NEXT STEP · RECORD PUBLICATION**
    >
-   > Click **Publish** (or **Republish** for a rebuild). Once it succeeds, record setup
-   > `<setup-id>` by sending this command here in the publisher chat.
+   > Click **Publish** (or **Republish** for a rebuild). Once it succeeds, send this
+   > command here in the publisher chat.
    >
-   > `Record Publication`
+   > `Record Publication <setup-id>`
 
 Use only the configured Tanaabot SSH key through Bootbox; do not generate a new identity or add inbound
 SSH access. Do not add accounts, Agent System binding or schedules during onboarding.
