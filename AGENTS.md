@@ -80,6 +80,17 @@ Tanaabot onboarding.
    Guidance readability does not prove automatic loading. Main-Dot saved-instruction sync in
    [#16](https://github.com/tanaabased/tanaabot/issues/16) does not establish Cloud instruction delivery.
 
+   Only during this pre-publication onboarding review, when the install succeeds, Startup Check
+   passes and its verified Setup ID matches the ID printed by this install, end the reply with
+   the separate card below. Replace `<setup-id>` in the command with that exact ID.
+
+   > **📦 NEXT STEP · RECORD PUBLICATION**
+   >
+   > Click **Publish** (or **Republish** for a rebuild), then open a fresh task in that environment.
+   > Once its Setup ID matches the one below, send this command in the fresh task.
+   >
+   > `Record Publication <setup-id>`
+
 Use only the configured Tanaabot SSH key through Bootbox; do not generate a new identity or add inbound
 SSH access. Do not add accounts, Agent System binding or schedules during onboarding.
 Keep the persistent shell initialization in the shell dotpackage. Do not edit repository sources to
