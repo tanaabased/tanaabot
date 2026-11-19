@@ -54,8 +54,7 @@ After native application finishes, display one separate aggregate card in the sy
 If sync itself was created or updated, show its configuration card first, then this run-results
 card as a separate message. An unchanged sync needs only the run-results card; never invent an
 update to produce two cards. Keep each automation's configuration receipt in its own worker.
-If an unchanged schedule still has a placement limitation, include it in the run-results note
-without inventing a configuration update or blocking other work.
+Include any verified move or placement limitation in the run-results note for an unchanged schedule.
 
 Use one row per automation considered in this invocation. Report verified native outcomes,
 not the assembler's proposed operations: ✅ Created, ✅ Updated, ✅ Unchanged, ⚠️ Skipped or
@@ -71,10 +70,23 @@ not establish that it ran. For example, after verified application:
 >
 > ✅ Synchronization complete. The saved schedule is current.
 
-Use a contextual final status reflecting failures, pending actions or missing evidence. Do not
-duplicate this aggregate in the main chat; retain its individual compact linked summaries.
+Use a contextual final status reflecting failures, pending actions or missing evidence.
 If this run used the first-publication fallback, state that and name the default branch in the
 run-results note and compact summary, including when the schedules were unchanged.
 If the coordinator owns native writes, return the verified outcomes to the sync worker for this
 report without rerunning synchronization. Raw preparation JSON stays in tool results or private
 handoff artifacts.
+
+## Main-chat summaries
+
+After the placement pass, the applying context reports through the normal result delivery to the
+owning Dot. When schedules changed, deliver the existing compact summary for each affected
+automation. When no schedules were created or updated, return exactly one compact
+**🔄 AUTOMATION SYNC** card for the run. Use the shared summary layout and link to the Sync worker
+when its link is verified.
+
+For a clean no-op, say “✅ Sync complete. All selected schedules were already current.” Include
+any verified sidebar moves with the worker and its destination group. Report any placement issues
+or other incomplete outcomes in that same card, with the affected worker and reason when known.
+Use a warning or error status for incomplete or failed work. Keep the detailed run-results table
+in the Sync worker.

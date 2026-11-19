@@ -144,10 +144,10 @@ Use the ordinary workflow below for an active binding or initial seeding.
    for the healthy saved bindings, including unchanged schedules, before reporting.
 9. Deliver configuration receipts with the synchronizer first, including any verified recovery
    update from this occurrence. Deliver each receipt to its existing worker using the receipt-only
-   procedure, then report each automation in its own main-chat summary message. Unchanged actions
-   produce no update receipt. Then show one separate `AUTOMATION SYNC · RUN RESULTS` card
-   in the sync worker using the configuration-results reference, with every considered automation
-   and its verified outcome. Do not duplicate that aggregate in the main chat.
+   procedure. Unchanged actions produce no update receipt. Show one separate
+   `AUTOMATION SYNC · RUN RESULTS` card in the sync worker with every considered automation and
+   its verified outcome. Follow the [main-chat summary rules](./references/configuration-receipts.md#main-chat-summaries),
+   including the single Automation Sync card when no schedules changed.
    Distinguish saved state, receipt delivery and actual execution.
    Keep preparation output in tool results or a private handoff artifact; it is not a normal
    result card. Report completed actions and actionable limits in the shared card style. Keep private native

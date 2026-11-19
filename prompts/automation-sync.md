@@ -30,10 +30,10 @@ Then display one `AUTOMATION SYNC · RUN RESULTS` card in the sync worker, follo
 configuration-results reference. Include every considered automation and its verified outcome;
 keep this separate from sync's own `CREATED` or `UPDATED` configuration card. When
 application belongs to the coordinator, return the exact prepared actions through tool output
-or a private handoff artifact and leave configuration results pending until it verifies the writes.
+or a private handoff artifact, including when all schedules are unchanged. Leave configuration
+results pending until the coordinator verifies the outcome.
 
-For the owning dot, deliver one compact summary per affected automation with its verified worker
-link and final contextual status. Do not add a second aggregate synchronization card. An unchanged
-run still produces the worker's run-results card without new configuration cards. Preserve missing-tool
-handoffs as pending; never call them completed synchronization. Use the host's saved delivery
-mechanism without a duplicate direct send.
+The applying context follows the skill's configuration-results reference for main-chat delivery.
+When no schedules were created or updated, return one compact Automation Sync card after the
+placement pass. Include any verified moves or placement issues. Preserve missing-tool handoffs
+as pending and use the host's normal result delivery.
