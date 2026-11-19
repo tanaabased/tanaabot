@@ -92,14 +92,14 @@ normalization of compatibility JSON. Inspect import diagnostics when available. 
 response alone does not establish the saved file inventory. Report unavailable or mismatched
 readback as incomplete without blindly publishing again.
 
-## Result and dot summary
+## Final worker reply
 
 Report every invocation, including unchanged, blocked and failed runs. The shared presentation
-partial owns quoting, spacing, status severity, links and delivery. This prompt owns the Canon
-result fields and wording in both cards below. Return the full result here in the reusable worker
-and the compact summary to the owning coordinator for its normal main-chat delivery. Do not send
-another report yourself. The layouts below are templates, not evidence of a completed run; replace
-every placeholder with verified results.
+partial owns quoting, spacing and status severity. Put the detailed Canon outcome, Startup Check
+verdict and exactly one full status report together in your final reply in that order. Keep these
+cards out of progress messages and tool output, even if the Canon update is blocked or fails.
+Do not include the coordinator's compact summary. The layouts below are templates, not evidence
+of a completed run; replace every placeholder with verified results.
 
 ### Full worker result
 
@@ -144,26 +144,31 @@ optional Debug card; do not repeat them in successful rows.
 
 ### Final worker step: Startup Check and status report
 
-After recording the update outcome in its own card, run Startup Check once in this same worker
+After determining the update outcome, run Startup Check once in this same worker
 for **every outcome**, including unchanged, blocked or failed updates. This scheduled task
 explicitly requests: **Run Startup Check and show the status report.** Read and follow
 `skills/startup-check/SKILL.md` and its required references from the verified prepared Tanaabot
 checkout. Use fresh observations after the update attempt. Leave the Cloud image, packages,
 dotfiles and credentials as they are.
 
-Display Startup Check’s normal verdict and then exactly one separate **ℹ️ STATUS REPORT** in
-the worker, regardless of debug. Startup Check owns both layouts. Compare the Canon version
-visible in this worker with the saved account release when both are available. If they differ,
-identify both with their sources. If the host cannot verify a loaded version, keep it
-**Unverified**. Never substitute the npm version or account readback for a runtime observation.
+In the final reply, place Startup Check’s normal verdict and exactly one separate
+**ℹ️ STATUS REPORT** after the Canon outcome, regardless of debug. Startup Check owns both layouts.
+Compare the Canon version visible in this worker with the saved account release when both are
+available. If they differ, identify both with their sources. If the host cannot verify a loaded
+version, keep it **Unverified**. Never substitute the npm version or account readback for a runtime
+observation.
 
 If Startup Check is unavailable, fails or returns partial evidence, report that limitation
-alongside the existing update outcome. Keep a confirmed save verified and an uncertain update
-unverified. A reporting failure never triggers a second update or a new worker.
+alongside the existing update outcome. Still include the verdict and all six report sections:
+Environment, Dependencies, Dotfiles, Tanaabot skills, Canon skills and Identity. Use the Startup
+Check [report layout](../skills/startup-check/references/startup-report.md); mark unobserved findings
+**Unverified**, not passed. Keep a confirmed save verified and an uncertain update unverified.
+A reporting failure never triggers a second update or a new worker.
 
-### Summary for tanaabot's main chat
+### Summary for tanaabot's main chat (coordinator only)
 
-Use the shared compact-card layout with this automation's title and outcome:
+After reading the completed worker reply, the coordinator uses the shared compact-card layout
+with this automation's title and outcome:
 
 > **⬇️ CLOUD UPDATE**
 >
@@ -173,7 +178,9 @@ Use the shared compact-card layout with this automation's title and outcome:
 >
 > <Exactly one contextual final status: ✅ verified outcome, ⚠️ incomplete outcome, or ❌ failed operation.>
 
-Summarize the Canon outcome and any actionable startup issue in one card. Say whether the operator needs to act. Keep detailed inventory and verification
+Summarize the Canon outcome and any actionable startup issue in one card. If Startup Check failed
+or is incomplete, preserve any verified Canon outcome without giving the run an unqualified success
+status. Say whether the operator needs to act. Keep detailed inventory and verification
 rows in the worker; do not duplicate its full card in the main chat. Include the verified worker
 link only when available and follow the shared navigation fallback otherwise. Respect native
 delivery and report missing delivery capability rather than imitating success. Do not suppress
