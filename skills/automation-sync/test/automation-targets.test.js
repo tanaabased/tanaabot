@@ -30,7 +30,7 @@ const context = {
 test('should require explicit native first-turn settings for seeding and recovery', () => {
   const guidance = readFileSync(new URL('../references/native-tasks.md', import.meta.url), 'utf8');
   // this verifies the native-call instructions, not a live chat creation.
-  assert.match(guidance, /including initial seeding and archive recovery/);
+  assert.match(guidance, /including initial seeding and recovery/);
   assert.match(guidance, /`model: target.model` and `thinking: target.effort` explicitly/);
   assert.match(guidance, /Unsupported settings stop creation/);
 });

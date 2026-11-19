@@ -83,11 +83,18 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       const dispatcher = readTaskPrompt(task.prompt).body.split('## Worker request')[0];
       // the prompt owns this permission boundary; this does not test native tool execution.
       assert.match(dispatcher, /Only when this coordinator's `automationId` is `automation-sync`/);
-      assert.match(dispatcher, /exact saved worker is archived/);
+      assert.match(dispatcher, /exact saved worker is archived or deleted/);
       assert.match(dispatcher, /Recover the synchronizer before dispatch/);
-      assert.match(dispatcher, /For other automations,[\s\S]*stop dispatch without replacement/);
+      assert.match(
+        dispatcher,
+        /For other automations,[\s\S]*?archived or deleted worker as needing Automation Sync\.\s+Stop dispatch without replacement/,
+      );
       assert.match(dispatcher, /An active worker follows normal dispatch/);
       assert.match(dispatcher, /report the worker as Unverified and stop without sending/);
+      assert.match(
+        dispatcher,
+        /reconcile any prior send for that exact invocation[\s\S]*?If the send was accepted, skip the send[\s\S]*?stop without sending again/,
+      );
     }
   });
 
@@ -424,8 +431,11 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       { active: sameChildren, archived: history([]).archived },
       { ...history([id]), archived: { ...history([]).archived, complete: false } },
       history([id, smoke], [id]),
-      history([`${id}-other`, smoke]),
+      { ...history([`${id}-other`, smoke]), active: { ...history([]).active, complete: false } },
       { ...history([id]), archived: { source: 'history', complete: true } },
+      { ...history([id, smoke]), deleted: { source: 'native-deletion', ids: [id] } },
+      { ...history([smoke], [id]), deleted: { source: 'native-deletion', ids: [id] } },
+      { active: history([smoke]).active, deleted: { source: 'lookup', ids: [id] } },
     ]) {
       const request = input({ existingTasks: saved() });
       request.context.workerHistory = workerHistory;
@@ -456,21 +466,48 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     assert.equal(smoke.kind, 'unchanged');
   });
 
-  test('should use the same verified archive rebind for another selected automation', () => {
-    const request = input({ existingTasks: saved(), id: 'smoke' });
-    const original = request.existingTasks[1];
-    const worker = request.context.workers[1];
-    worker.replaces = { id: worker.id, status: 'archived', environmentId: worker.environmentId };
-    worker.id = 'replacement-smoke';
-    delete worker.url;
-    request.context.workerHistory = history([worker.id], [worker.replaces.id]);
-    const operations = planSync(request).operations;
-    assert.equal(operations.length, 1);
-    const [update] = operations;
-    assert.equal(update.kind, 'update');
-    assert.equal(update.nativeId, original.id);
-    assert.deepEqual(update.task.schedule, original.task.schedule);
-    assert.equal(workerRequest(update.task).thread.id, worker.id);
+  test('should mark verified deleted bindings as pending recovery for all selected automations', () => {
+    const request = input({ existingTasks: saved() });
+    for (const workerHistory of [
+      history(['worker-automation-sync-other']),
+      {
+        deleted: { source: 'native-deletion', ids: ['worker-automation-sync', 'worker-smoke'] },
+      },
+    ]) {
+      request.context.workerHistory = workerHistory;
+      assert.deepEqual(
+        planSync(request).operations.map(({ automationId, kind, reason }) => [
+          automationId,
+          kind,
+          reason,
+        ]),
+        [
+          ['automation-sync', 'skipped', 'worker-deleted'],
+          ['smoke', 'skipped', 'worker-deleted'],
+        ],
+      );
+    }
+  });
+
+  test('should use the same rebind for an archived or deleted worker during a full sync', () => {
+    for (const status of ['archived', 'deleted']) {
+      const request = input({ existingTasks: saved() });
+      const original = request.existingTasks[1];
+      const worker = request.context.workers[1];
+      worker.replaces = { id: worker.id, status, environmentId: worker.environmentId };
+      worker.id = 'replacement-smoke';
+      delete worker.url;
+      request.context.workerHistory = history(
+        ['worker-automation-sync', worker.id],
+        status === 'archived' ? [worker.replaces.id] : [],
+      );
+      const [sync, update] = planSync(request).operations;
+      assert.equal(sync.kind, 'unchanged');
+      assert.equal(update.kind, 'update');
+      assert.equal(update.nativeId, original.id);
+      assert.deepEqual(update.task.schedule, original.task.schedule);
+      assert.equal(workerRequest(update.task).thread.id, worker.id);
+    }
   });
 
   test('should refuse malformed worker identities', () => {
@@ -481,8 +518,13 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     }
   });
 
-  test('should rebind a confirmed archived worker in place, recover a retry and then no-op', () => {
-    for (const enabled of [false, true]) {
+  test('should rebind a confirmed retired Sync worker in place, recover a retry and then no-op', () => {
+    for (const [status, enabled] of [
+      ['archived', false],
+      ['archived', true],
+      ['deleted', false],
+      ['deleted', true],
+    ]) {
       const request = input({ now: later });
       request.manifest.automations[0].enabled = enabled;
       request.existingTasks = saved(request);
@@ -490,13 +532,13 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       const replacement = request.context.workers[0];
       replacement.replaces = {
         id: replacement.id,
-        status: 'archived',
+        status,
         environmentId: replacement.environmentId,
       };
       replacement.id = 'replacement-worker';
       request.context.workerHistory = history(
         ['replacement-worker', 'worker-smoke'],
-        ['worker-automation-sync'],
+        status === 'archived' ? ['worker-automation-sync'] : [],
       );
       delete replacement.url;
       const result = planSync(request);
@@ -506,6 +548,11 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       assert.deepEqual(update.expectedCurrent, original.task);
       assert.equal(update.task.enabled, enabled);
       assert.deepEqual(update.task.schedule, original.task.schedule);
+      assert.deepEqual(update.task.destination, original.task.destination);
+      assert.deepEqual(
+        workerRequest(update.task).execution,
+        workerRequest(original.task).execution,
+      );
       assert.equal(workerRequest(update.task).thread.id, 'replacement-worker');
       assert.equal(workerRequest(update.task).thread.url, 'codex://threads/replacement-worker');
       assert.equal(result.operations[1].kind, 'unchanged');
@@ -520,7 +567,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
 
       replacement.replaces = {
         id: 'worker-automation-sync',
-        status: 'archived',
+        status,
         environmentId: 'test-environment',
       };
       replacement.id = 'competing-worker';
@@ -530,6 +577,31 @@ describe('skills/automation-sync/lib/sync-plan', () => {
         /reusable-worker-replacement-required:automation-sync/,
       );
     }
+  });
+
+  test('should require matching deletion evidence, passed startup and the original environment', () => {
+    const request = input({ existingTasks: saved() });
+    const [replacement] = request.context.workers;
+    replacement.id = 'replacement-worker';
+    delete replacement.url;
+    replacement.replaces = {
+      id: 'worker-automation-sync',
+      status: 'deleted',
+      environmentId: replacement.environmentId,
+    };
+    request.context.workerHistory = history([replacement.id, 'worker-smoke']);
+    request.context.workerHistory.archived.complete = false;
+    assert.equal(planSync(request).operations[0].reason, 'worker-status-unverified');
+
+    request.context.workerHistory.archived.complete = true;
+    replacement.replaces.status = 'archived';
+    assert.throws(() => planSync(request), /reusable-worker-replacement-required:automation-sync/);
+    replacement.replaces.status = 'deleted';
+    replacement.startup = undefined;
+    assert.throws(() => planSync(request), /reusable-worker-startup-not-passed:automation-sync/);
+    replacement.startup = 'passed';
+    replacement.replaces.environmentId = 'other-environment';
+    assert.throws(() => planSync(request), /reusable-worker-replacement-required:automation-sync/);
   });
 
   test('should require exact archive evidence and preserve explicit targets and rebind settings', () => {
@@ -700,9 +772,14 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       recovery,
       /Scheduled occurrence or Run now\.[^\n]*Resume that same occurrence once/,
     );
+    assert.match(recovery, /A full manual sync resumes its original invocation/);
+    assert.match(
+      recovery,
+      /reconcile any earlier send for that exact invocation[\s\S]*?already accepted[\s\S]*?stop without sending again/,
+    );
   });
 
-  test('should prepare only the Sync rebind before a resumed pass creates Canon and then no-ops', () => {
+  test('should rebind the deleted Sync worker before resuming the original full sync', () => {
     const request = input({ id: 'automation-sync' });
     request.existingTasks = saved(request);
     request.manifest.automations = [job('automation-sync'), job('cloud-update')];
@@ -711,11 +788,11 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     const worker = request.context.workers[0];
     worker.replaces = {
       id: worker.id,
-      status: 'archived',
+      status: 'deleted',
       environmentId: worker.environmentId,
     };
     worker.id = 'replacement-sync';
-    request.context.workerHistory = history([worker.id], [worker.replaces.id]);
+    request.context.workerHistory = history([worker.id]);
     const recovery = planSync(request);
     assert.deepEqual(
       recovery.operations.map(({ automationId, kind }) => [automationId, kind]),

@@ -40,7 +40,7 @@ updates; the script itself makes no service writes.
 ## When to Use
 
 - Seed the repository schedules, synchronize all definitions, or update one automation ID.
-- Recover the synchronizer's confirmed archived worker from its owning coordinator before dispatch.
+- Recover the synchronizer when the owning Dot verifies that its saved worker is archived or deleted.
 - Apply changes to shared guidance, task content, metadata or scheduling settings.
 
 ## When Not to Use
@@ -81,12 +81,12 @@ automatically or switch credentials to recover a failure.
 
 ## Workflow
 
-When native history confirms that Sync's exact bound worker is archived, follow
+When native evidence confirms that Sync's exact bound worker is archived or deleted, follow
 [Recover the synchronizer before dispatch](./references/native-tasks.md#recover-the-synchronizer-before-dispatch).
-During archive recovery, the owning dot can run the read-only assembler on its own cloud computer
+During recovery, the owning Dot can run the read-only assembler on its own cloud computer
 before any worker is running. Launch the replacement in the same published Cloud configuration.
-A manual `automation-sync`-only update ends with the verified Sync configuration and its report. Only a
-scheduled occurrence or Run now resumes dispatch, once, with its original selection.
+A manual `automation-sync`-only update ends with the verified Sync configuration and its report.
+A full manual sync, scheduled occurrence or Run now resumes once with its original selection.
 Use the ordinary workflow below for an active binding or initial seeding.
 
 1. Verify environment, destination and existing authorization. The owning Dot uses the shared
@@ -106,13 +106,13 @@ Use the ordinary workflow below for an active binding or initial seeding.
    Supply the native scheduler's IANA timezone as `context.timezone`; do not use the worker's clock.
 4. Use the same selection for targets and schedule assembly. For a manual seed, select
    `id: "automation-sync"`. For a scheduled occurrence or Run now, use its original selection
-   (normally `all`). Honor any explicit operator-selected ID.
+   (normally `all`), as for a full manual sync. Honor any explicit operator-selected ID.
    Run `bun skills/automation-sync/scripts/sync-task.js` with `mode: "targets"`, `sourceSelection`, and JSON on stdin
    using the reference's input shape. This validates Cloud cadence before worker creation and omits
    elapsed one-time targets. Resolve only its returned workers through native chat controls.
-   Verify the exact saved ID with [archive-aware history](./references/native-tasks.md#verify-worker-status).
-   Reuse the saved active worker. For a confirmed archived managed worker, follow the
-   [replacement procedure](./references/native-tasks.md#replace-a-confirmed-archived-worker).
+   [Verify the status](./references/native-tasks.md#verify-worker-status) of the exact saved ID.
+   Reuse the saved active worker. For a managed worker confirmed archived or deleted, follow
+   the [replacement procedure](./references/native-tasks.md#replace-a-retired-worker).
    Unknown or inaccessible workers do not qualify. For every new chat, including bootstrap and
    recovery, pass the resolved `target.model` and `target.effort` to native creation as `model`
    and `thinking`, with the [initialization card instructions](./references/native-tasks.md#initialization-card).
@@ -129,8 +129,8 @@ Use the ordinary workflow below for an active binding or initial seeding.
    clean checkout before applying. Report the sync source revision and the recorded installed
    revision separately, or explicitly report the first-publication fallback. The compiled scheduled prompt coordinates the worker; its embedded
    worker request contains the automation instructions and metadata.
-6. Leave `unchanged` and `skipped` actions untouched. Report `worker-status-unverified` as Unverified
-   and `worker-archived` as pending recovery. Apply actions in returned order. Verify a changed
+6. Leave `unchanged` and `skipped` actions untouched. Report `worker-status-unverified` as Unverified.
+   Report `worker-archived` and `worker-deleted` as pending recovery. Apply actions in returned order. Verify a changed
    synchronizer before proceeding to other selected jobs. Stop dependent
    application if that self-update fails. Apply creates/updates through the owning dot's supported native controls with the exact
    compiled content and native ID. For disabled definitions, follow the native-task reference's

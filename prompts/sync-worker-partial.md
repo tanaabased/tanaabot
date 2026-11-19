@@ -3,7 +3,7 @@
 Read the verified `sourceSelection` supplied by the owning Dot in this occurrence. Its
 `sourceCommit` must be a full lowercase SHA. If the handoff is absent or contradictory,
 stop and report the source preparation blocker. Only the Dot resolves the publication policy.
-Use the same selection on retry, including a continuation after archive recovery.
+Use the same selection on retry, including a continuation after worker recovery.
 
 Fetch that exact commit into a separate checkout. Use the command below with the verified
 `sourceCommit` supplied as `source_commit` in the task launcher. The command prints the absolute

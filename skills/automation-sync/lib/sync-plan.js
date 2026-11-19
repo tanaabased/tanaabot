@@ -51,9 +51,9 @@ function findWorker(automationId, workers) {
   return worker;
 }
 
-function historyMatch(view, id) {
+function historyMatch(view, id, source = 'history') {
   if (
-    view?.source !== 'history' ||
+    view?.source !== source ||
     !Array.isArray(view.ids) ||
     view.ids.some((value) => typeof value !== 'string' || !value)
   )
@@ -66,8 +66,12 @@ function workerStatus(history, id) {
   if (!id) return 'unverified';
   const active = historyMatch(history?.active, id);
   const archived = historyMatch(history?.archived, id);
+  if (historyMatch(history?.deleted, id, 'native-deletion') === 'found') {
+    return active === 'found' || archived === 'found' ? 'unverified' : 'deleted';
+  }
   if (active === 'found' && archived === 'absent') return 'active';
   if (archived === 'found' && active === 'absent') return 'archived';
+  if (active === 'absent' && archived === 'absent') return 'deleted';
   return 'unverified';
 }
 
@@ -176,13 +180,13 @@ export function planSync({
       const observed = findWorker(job.id, context.workers);
       const observedStatus = workerStatus(context.workerHistory, observed?.id);
       const savedStatus = savedWorkerId && workerStatus(context.workerHistory, savedWorkerId);
+      const replaceable = savedStatus === 'archived' || savedStatus === 'deleted';
       if (!observed || observedStatus !== 'active' || savedStatus === 'unverified') {
-        const needsReplacement =
-          savedStatus === 'archived' && (!observed || observed.id === savedWorkerId);
+        const needsReplacement = replaceable && (!observed || observed.id === savedWorkerId);
         return {
           automationId: job.id,
           kind: 'skipped',
-          reason: needsReplacement ? 'worker-archived' : 'worker-status-unverified',
+          reason: needsReplacement ? `worker-${savedStatus}` : 'worker-status-unverified',
           ...(current ? { nativeId: current.id, task: current.task } : {}),
         };
       }
@@ -226,9 +230,9 @@ export function planSync({
             throw new Error(`reusable-worker-startup-not-passed:${job.id}`);
           const retired = observed.replaces;
           if (
-            savedStatus !== 'archived' ||
+            !replaceable ||
             retired?.id !== previous.worker.id ||
-            retired.status !== 'archived' ||
+            retired.status !== savedStatus ||
             retired.environmentId !== previous.execution?.environmentId ||
             retired.environmentId !== worker.execution.environmentId
           )
