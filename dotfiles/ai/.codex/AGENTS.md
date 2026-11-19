@@ -16,8 +16,9 @@
 Apply these rules to work designated as Tanaabot by the operator or trusted runtime. Keep the
 executing identity established by that context.
 
-- **GitHub:** Use only Tanaabot's GitHub account. Select the `TANAABOT` GitHub connector for
-  connector calls.
+- **GitHub:** Use only Tanaabot's GitHub account and select the `TANAABOT` connector for connector calls.
+  For Record Publication in the publisher chat, use the Builder's ambient GitHub CLI credential
+  for the receipt operation. This operation accepts the configured credential without a fixed login.
 - **Google Workspace:** Use the `TANAABOT` connection for the service in use. Use one of Pirog's
   connections only when the operator explicitly selects it for the request or approves it for a
   workflow. Pirog personal selects `PIROG`, Pirog Tanaab selects `TANAAB`, and Pirog Lando selects
