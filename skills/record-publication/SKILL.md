@@ -27,7 +27,8 @@ receipt supplies the source policy for Automation Sync and Instruction Sync.
 
 - **Always:** Read the [account and authority guidance](../../dotfiles/ai/.codex/AGENTS.md#accounts-and-authority)
   and [GitHub routing](../../instructions/github.md).
-- **Before reporting:** Read [Tanaabot Voice](../voice/SKILL.md) and its required samples.
+- **Before reporting:** Read [Tanaabot Voice](../voice/SKILL.md), its required samples and the
+  [shared chat card guidance](../../prompts/presentation-partial.md).
 
 ## When to Use
 
@@ -57,9 +58,26 @@ throughout this request.
 
 ## Outputs
 
-The full receipt as the only changed file, `tanaabot-publication.json`, on the canonical
-default branch. Show the setup ID, installed SHA, sync target and independently verified
-receipt commit or readback link. Repeating an already recorded setup is a no-op.
+The only file recorded on the canonical default branch is `tanaabot-publication.json`.
+Finish in the publisher chat with one quoted result card. For a verified receipt, use this layout:
+
+> ## 📌 RECORD PUBLICATION · RECORDED
+>
+> - **Setup ID** `<setup-id>`
+> - **Installed commit** `<installed-sha>`
+> - **Sync target** <policy from the receipt>
+> - **Receipt** <link to the receipt commit or verified file>
+>
+> ✅ The saved receipt matches this setup.
+
+Link to the returned `receiptCommit` when available. Otherwise link to `tanaabot-publication.json`
+at the verified `receiptAt` revision. For `already-recorded`, use the same fields with the heading
+`📌 RECORD PUBLICATION · ALREADY RECORDED` and the footer “✅ This setup is already recorded.”
+
+For an uncertain write, use `## ⚠️ RECORD PUBLICATION · UNVERIFIED`. Identify the setup, what
+could not be verified and how to check the saved receipt before another attempt. For a confirmed
+failure, use `## ❌ RECORD PUBLICATION · FAILED`. Identify the affected setup when known, give
+the actual reason and the next action. The confirmation question in step 2 is an ordinary prompt.
 
 ## Failure Handling
 
@@ -75,7 +93,7 @@ report the conflict or uncertainty. Never rebase or retry an old proposal onto a
    `bun --no-env-file scripts/publication-task.js prepare <setup-id>` from the prepared checkout
    in the publisher chat. The read-only result contains the validated local receipt,
    the current default branch and an exact conditional commit request, or `already-recorded`.
-   For `already-recorded`, report “This setup is already recorded” and end the operation.
+   For `already-recorded`, show the already-recorded card and end the operation.
 2. For a new receipt, compare this setup's pre-publication observation in the publisher chat
    with a fresh `cloud_environment_environment_status` read. Stop if the Setup ID or
    `source_config_id` identifies a different setup or configuration. When current observations
