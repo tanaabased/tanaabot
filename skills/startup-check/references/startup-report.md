@@ -76,10 +76,11 @@ Always show the startup card first. Select at most one additional heading in thi
    selects **🔬 DEBUG · STATUS REPORT**.
 3. Otherwise finish after the startup card.
 
-Both headings use the same body. Use uppercase titles for the H2 and six H3s. Quote them together with the bulleted fields. Keep
-field labels bold and variable names, paths, versions and identities in backticks.
-Use the observations from this run. If a check failed or could not run, retain its section,
-state the failure or mark missing fields **Unverified**, and keep independently verified facts.
+Both headings use the template below. Keep all six sections in order and give each field its own
+quoted bullet with a bold label. On every run, including repeat rebuilds, show the value observed
+on this run even when it matches the previous run. Keep the bullet for each missing value and
+mark it **Unverified**. Report observed failures explicitly and keep independently verified values.
+Use uppercase H2 and H3 titles and put variable names, paths, versions and identities in backticks.
 
 - **Environment:** Use the native environment name, observed OS, actual task shell and verified
   checkout path. Report saved 1Password loading and the names returned by a successful
@@ -95,17 +96,18 @@ state the failure or mark missing fields **Unverified**, and keep independently 
   `--version` output on the same PATH. Derive the list from the prepared Brewfile.
 - **Dotfiles:** List the packages whose expected links and contents were verified. Identify
   incomplete packages separately when applicable.
-- **Canon skills:** Report catalog availability. Use version metadata exposed by the current host
-  for the loaded Canon plugin, listing distinct versions if applicable. Label an operator-supplied
-  version **reported**; absent evidence, show **Unverified**. Version visibility is independent of
+- **Canon skills:** Report catalog availability. Check the current host’s metadata for the loaded
+  Canon plugin and show its version in **Plugin version**. List each distinct loaded version if
+  applicable. If the host exposes no version, label an operator-supplied version **reported**.
+  Use **Unverified** only when neither source provides a version. Version visibility is independent of
   catalog readiness. Never infer a loaded version from npm, a different install or a skill name.
-- **Identity:** Show the verified GitHub login, Git author and committer (combine when equal),
+- **Identity:** Show the verified GitHub login, Git author, Git committer,
   manifest-bound agent email, configured transport, signing mode, configured key path and key
   verification. Distinguish local key matching and account registration when they differ. Neither
   configured transport nor a registered key proves a live push or signed commit. Keep key material,
   credentials and private service bindings out of the report.
 
-Illustrative requested report (debug uses the same body with the 🔬 heading):
+Use this field layout with values from the current run. Debug uses the same body with the 🔬 heading.
 
 > ## ℹ️ STATUS REPORT
 >
@@ -145,12 +147,13 @@ Illustrative requested report (debug uses the same body with the 🔬 heading):
 > ### CANON SKILLS
 >
 > - **Task catalog** Canon skills available
-> - **Plugin version** `0.14.1`
+> - **Plugin version** **Unverified**
 >
 > ### IDENTITY
 >
 > - **GitHub account** `tanaabot` · authenticated
-> - **Git author and committer** `tanaabot <tanaabot@tanaab.dev>`
+> - **Git author** `tanaabot <tanaabot@tanaab.dev>`
+> - **Git committer** `tanaabot <tanaabot@tanaab.dev>`
 > - **Agent email** `tanaabot@tanaab.dev`
 > - **Git transport** HTTPS
 > - **Git signing** Local SSH signing configured
