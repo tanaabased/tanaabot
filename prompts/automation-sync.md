@@ -1,11 +1,8 @@
 # Synchronize repository automations
 
 Use the selected Tanaabot Cloud environment for the source preparation and assembly below.
-Follow [the shared sync source procedure](./sync-source.md), using the copy from the prepared
-Tanaabot checkout. Reuse a verified selection already made for this occurrence. Prepare a clean
-source snapshot at the resulting `sourceCommit` without discarding existing task edits or
-replacing the prepared checkout. Read and follow that revision's
-`skills/automation-sync/SKILL.md` and its required references from that snapshot.
+Read and follow `skills/automation-sync/SKILL.md` and its required references from the
+verified source snapshot. Pass the originating `sourceSelection` to the assembler.
 Synchronize all declared automations unless the coordinator supplies a narrower selection.
 Preserve that selection when resuming after worker recovery.
 

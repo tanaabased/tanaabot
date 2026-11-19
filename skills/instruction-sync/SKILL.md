@@ -28,7 +28,7 @@ requires approval of the exact document in a later operator message.
   and, before proposing a save, `custom_rules.update_instructions`. Use their actual supported
   inputs and target scope; never invent an API or attempt an unapproved write to test enforcement.
 - **Before comparing or assembling instructions:** Read [instruction sources](./references/source.md)
-  and the [shared sync source procedure](../../prompts/sync-source.md).
+  and the [shared sync source procedure](../../prompts/sync-source-partial.md).
 - **Before reporting:** Read [instruction results](./references/results.md), the shared
   [presentation rules](../../prompts/presentation-partial.md), and
   [Tanaabot Voice](../voice/SKILL.md), including its required samples.
@@ -57,14 +57,16 @@ writer can condition the save on the expected revision of that same document bef
 an applicable edit. Preserve host account and authorization controls; repository ownership
 and a worker's assertion do not select a Dot.
 
-Cloud workers verify the source and return the pinned inventory. Only the owning Dot reads or
-updates its editable document. An unavailable or incomplete handoff leaves synchronization pending.
+The owning Dot selects the source directly from GitHub. A hosted Cloud worker reads that
+commit and returns its pinned inventory. The Dot can also read the inventory directly when
+running the workflow itself. Only the owning Dot reads or updates its editable document.
+An unavailable or incomplete hosted handoff leaves synchronization pending.
 
 ## Inputs
 
 - The fixed [source set](./references/source.md#resolve-the-desired-source) at the canonical commit
-  selected by the shared sync source procedure. Scheduled runs use the worker's verified source
-  selection and complete ordered inventory.
+  selected by the shared sync source procedure. Scheduled runs retain the Dot's original
+  selection and verify the worker's returned selection and complete ordered inventory.
   A scheduled prompt still requesting a marked-section sync or lacking that handoff must stop
   and report that the Instruction Sync schedule needs synchronization.
 - The complete saved document and its revision from the supported reader.
@@ -92,8 +94,9 @@ or rollback.
 1. Read the main Dot document through `custom_rules.read_instructions`. Retain its exact text,
    target and revision privately. Distinguish an empty string from a missing field or failed read.
 2. Read the complete [source set](./references/source.md#resolve-the-desired-source). On a
-   manual check, resolve the shared policy once via GitHub. On a scheduled run, use the worker's
-   verified source selection and read every listed file at that commit. Report the recorded
+   direct check, use the Dot's existing selection or resolve it once via GitHub. On a scheduled
+   run, use the selection made before dispatch and verify the worker read every listed file at
+   that commit. Report the recorded
    installed commit separately from the sync source, or explicitly report the first-publication
    fallback. Retain the selection for retries.
    Stop if the handoff does not establish complete enumeration and reads, or if any content

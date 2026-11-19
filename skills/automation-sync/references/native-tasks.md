@@ -123,9 +123,11 @@ occurrence or Run now. For an occurrence, retain its original selection before r
    prior attempts and check for in-flight recovery. Reuse a healthy replacement when available.
    If another run already saved the rebind, verify the saved dispatcher and binding, then finish
    according to the entry point below. Unknown status or a failed send does not qualify for replacement.
-2. On the owning dot's own cloud computer, prepare a clean checkout pinned to `sourceCommit`
-   from the shared sync source procedure. Keep the complete selection for the replacement
-   worker's continuation of this occurrence. Read that revision's skill and required references.
+2. Reuse the owning Dot's complete selection for this occurrence. If recovery is entered
+   directly before selection, use the [same GitHub procedure](../../../prompts/sync-source-partial.md)
+   as normal dispatch. On the owning Dot's own cloud computer, prepare a clean checkout pinned
+   to `sourceCommit`. Keep the selection for the replacement worker's continuation of this
+   occurrence. Read that revision's skill and required references.
    Run `bun install --frozen-lockfile --ignore-scripts` and `bun run automations:prepare` there.
    Run the read-only assembler with `mode: "targets"` and `id: "automation-sync"` using the verified
    published configuration listing, native scheduler timezone and saved dot destination.

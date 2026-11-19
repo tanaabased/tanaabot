@@ -2,8 +2,7 @@
 
 ## Cloud worker
 
-Follow [the shared sync source procedure](./sync-source.md) from the prepared Tanaabot checkout.
-Follow `skills/instruction-sync/references/source.md` at the selected `sourceCommit`.
+Follow `skills/instruction-sync/references/source.md` from the verified source snapshot.
 Read `dotfiles/ai/.codex/AGENTS.md` first, then every top-level `instructions/*.md` in ascending
 path order. Verify the complete listing and reads at the same commit, along with the pinned
 Instruction Sync skill and required resources. Return the complete verified source selection, ordered source
@@ -13,10 +12,12 @@ main Dot comparison as pending until a result is received.
 
 ## Owning Dot
 
-Verify this run's handoff and the main tanaabot Dot target. If preparation failed or is
+Verify this run's handoff against the selection you sent and confirm the main tanaabot Dot
+target. If preparation failed or is
 incomplete, report the specific blocker in the shared card style and stop before comparison.
 Otherwise read and follow `skills/instruction-sync/SKILL.md` and its required references at
-`sourceCommit`. Use the handoff's selection and inventory without resolving the policy again.
+`sourceCommit`. Use the original selection and the worker's verified inventory without
+resolving the policy again.
 Compare the complete saved document with
 the complete desired source. Start a private migration review if the first replacement still
 needs it. Otherwise reuse a matching pending proposal or show the exact full replacement and

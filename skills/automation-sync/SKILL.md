@@ -32,7 +32,7 @@ updates; the script itself makes no service writes.
   [execution](../../prompts/execution-partial.md) and
   [presentation](../../prompts/presentation-partial.md) partials, the coordinator's
   [dispatch](../../prompts/dispatch-partial.md) partial, the shared
-  [sync source procedure](../../prompts/sync-source.md), and the selected revision's
+  [sync source procedure](../../prompts/sync-source-partial.md), and the selected revision's
   [account guidance](../../dotfiles/ai/.codex/AGENTS.md#accounts-and-authority).
 - **Before writing the result:** Read [Tanaabot Voice](../voice/SKILL.md) and its required samples,
   unless another voice was requested. Apply the presentation partial's result and summary rules.
@@ -89,11 +89,13 @@ A manual `automation-sync`-only update ends with the verified Sync configuration
 scheduled occurrence or Run now resumes dispatch, once, with its original selection.
 Use the ordinary workflow below for an active binding or initial seeding.
 
-1. Verify environment, destination and existing authorization. Use the shared sync source
-   procedure or reuse the verified selection already established for this run. Prepare a clean
-   source checkout at `sourceCommit` without discarding task edits. Verify its canonical origin.
-   Read this skill and its required references from that revision. Do not provision the machine
-   or run Agent System Install. Stop dependent work on account/access failure.
+1. Verify environment, destination and existing authorization. The owning Dot uses the shared
+   sync source procedure via GitHub, or reuses the exact selection already established for this
+   run. A hosted worker uses the selection supplied by its owning Dot. A direct Dot run can
+   use that same selection in its own clean checkout. Use a separate checkout at
+   `sourceCommit`, verify canonical origin, and read this skill and its required references
+   from that revision. Preserve the prepared checkout and reuse active compatible workers.
+   Stop dependent work on account, access or source verification failure.
 2. In that checkout, run `bun install --frozen-lockfile --ignore-scripts`, then
    `bun run automations:prepare`. This builds only the locked Agent System Git dependency's public
    manifest entrypoint using its upstream build settings. Runtime loading uses the public

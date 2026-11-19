@@ -44,8 +44,8 @@ setup result, publish the environment and start a fresh task to verify it.
 
 ## Synchronize scheduled tasks
 
-Follow the [Cloud rollout steps](./TANABOOT.md#cloud-verification) for existing workers, then paste
-this into the designated tanaabot dot to seed or update the synchronizer:
+Follow the [Cloud rollout steps](./TANABOOT.md#cloud-verification), then paste this into the
+designated tanaabot dot to seed or update the synchronizer:
 
 ```text
 Read and follow skills/automation-sync/SKILL.md and its required references

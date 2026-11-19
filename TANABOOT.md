@@ -153,20 +153,19 @@ invalid arguments. A selected revision's entrypoint retains its failure status.
 
 ## Cloud verification
 
-Use a revision that includes Record Publication. After a successful full Cloud setup, keep
-the displayed **Setup ID**. Publish or republish the
-environment and start a fresh task in it. Check that Startup Check shows the same ID, then ask
-the fresh task to [Record Publication](./skills/record-publication/SKILL.md) with that ID.
+Rerun full Cloud setup at a revision that includes Record Publication and keep the displayed
+**Setup ID**. Publish or republish the environment and start a fresh task in it. Check that
+Startup Check shows the same ID, then ask the fresh task to
+[Record Publication](./skills/record-publication/SKILL.md) with that ID.
 The local receipt is kept outside the checkout. Record Publication commits it as
 `tanaabot-publication.json` through your authorized GitHub workflow. Before the first receipt
 is recorded, sync can use the default branch if GitHub confirms the file is absent.
 
-Replace existing Automation Sync and Instruction Sync workers whose prepared checkout lacks the
-updated `scripts/publication-task.js` reader. Archive those workers, start replacements in the republished
-environment, and rebind and verify their existing schedules through the owning Dot. The fallback
-requires the reader in the new checkout. If republishing changes the native configuration ID,
-use an explicit operator-approved binding change through native controls. Ordinary archived-worker
-recovery requires the saved configuration ID.
+Manually synchronize the existing Automation Sync and Instruction Sync dispatchers in place.
+The owning Dot now selects the source through GitHub before sending work. Keep existing active
+workers that can fetch and use the selected commit, including workers whose prepared checkout
+lacks the receipt reader. Verify the saved schedule and worker bindings after sync. Replace a
+worker only if its binding or tools are incompatible, or it needs the new image for another task.
 
 Allow GitHub source/raw/release downloads and the package hosts needed by Bootbox, Homebrew and Bun
 in the environment's network policy. Access failures must be resolved in the selected environment;
