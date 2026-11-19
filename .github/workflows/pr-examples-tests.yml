@@ -19,6 +19,7 @@ jobs:
       matrix:
         example:
           - codex-plugin
+          - openclaw
           - tanaaboot-inputs
           - tanaaboot-defaults
           - tanaaboot-host
@@ -60,6 +61,11 @@ jobs:
           echo "TANABOOT_PACKAGE_ROOT=$package_root" >> "$GITHUB_ENV"
       - name: Refresh Homebrew when needed
         run: HOMEBREW_NO_AUTO_UPDATE= brew update-if-needed
+      - name: Set up OpenClaw
+        if: matrix.example == 'openclaw'
+        uses: tanaabased/actions/setup-openclaw@v1
+        with:
+          agent-system: ./node_modules/@tanaab/openclaw-agent-system
       - name: Run Leia-backed example
         uses: tanaabased/actions/run-leia@v1
         env:

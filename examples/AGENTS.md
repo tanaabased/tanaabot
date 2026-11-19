@@ -11,6 +11,7 @@ operator authorization.
   `tanaaboot-agent` cover their corresponding setup modes. `tanaaboot-cloud-setup` covers workspace
   revision selection and invocation of that revision's entrypoint.
 - The `codex-plugin` scenario installs the same unpacked candidate in a disposable Codex home.
+- The `openclaw` scenario validates the packaged agent manifest and checks that OpenClaw can install and discover the bundled skills.
 - Keep constant fixtures beside their scenario. Add another folder only for a distinct flow or
   incompatible setup. Register new scenarios in the `pr-examples-tests.yml` matrix.
 - Cover bootstrap, readiness, shell loading, key handling, permissions and reruns through the packaged
