@@ -31,7 +31,8 @@ updates; the script itself makes no service writes.
   the shared [metadata](../../prompts/metadata-partial.md),
   [execution](../../prompts/execution-partial.md) and
   [presentation](../../prompts/presentation-partial.md) partials, the coordinator's
-  [dispatch](../../prompts/dispatch-partial.md) partial, and the selected revision's
+  [dispatch](../../prompts/dispatch-partial.md) partial, the shared
+  [sync source procedure](../../prompts/sync-source-partial.md), and the selected revision's
   [account guidance](../../dotfiles/ai/.codex/AGENTS.md#accounts-and-authority).
 - **Before writing the result:** Read [Tanaabot Voice](../voice/SKILL.md) and its required samples,
   unless another voice was requested. Apply the presentation partial's result and summary rules.
@@ -59,7 +60,7 @@ updates; the script itself makes no service writes.
 
 ## Inputs
 
-- Canonical Tanaabot at fresh GitHub `main`, resolved to one commit per run.
+- Canonical Tanaabot at the commit selected by the shared sync source procedure.
 - One automation `id` or `all`, the published environment inventory, worker bindings and dot destination.
 - Current native tasks from a complete relevant listing, normalized as described in the reference.
   This is ordinary tool output, not a persisted snapshot or second state store.
@@ -88,10 +89,13 @@ A manual `automation-sync`-only update ends with the verified Sync configuration
 scheduled occurrence or Run now resumes dispatch, once, with its original selection.
 Use the ordinary workflow below for an active binding or initial seeding.
 
-1. Verify environment, destination and existing authorization. Resolve fresh GitHub `main` and
-   prepare a clean source checkout without discarding task edits. Verify its canonical origin.
-   Read this skill and its required references from that revision. Do not provision the machine
-   or run Agent System Install. Stop dependent work on account/access failure.
+1. Verify environment, destination and existing authorization. The owning Dot uses the shared
+   sync source procedure via GitHub, or reuses the exact selection already established for this
+   run. A hosted worker uses the selection supplied by its owning Dot. A direct Dot run can
+   use that same selection in its own clean checkout. Use a separate checkout at
+   `sourceCommit`, verify canonical origin, and read this skill and its required references
+   from that revision. Preserve the prepared checkout and reuse active compatible workers.
+   Stop dependent work on account, access or source verification failure.
 2. In that checkout, run `bun install --frozen-lockfile --ignore-scripts`, then
    `bun run automations:prepare`. This builds only the locked Agent System Git dependency's public
    manifest entrypoint using its upstream build settings. Runtime loading uses the public
@@ -103,7 +107,7 @@ Use the ordinary workflow below for an active binding or initial seeding.
 4. Use the same selection for targets and schedule assembly. For a manual seed, select
    `id: "automation-sync"`. For a scheduled occurrence or Run now, use its original selection
    (normally `all`). Honor any explicit operator-selected ID.
-   Run `bun skills/automation-sync/scripts/sync-task.js` with `mode: "targets"` and JSON on stdin
+   Run `bun skills/automation-sync/scripts/sync-task.js` with `mode: "targets"`, `sourceSelection`, and JSON on stdin
    using the reference's input shape. This validates Cloud cadence before worker creation and omits
    elapsed one-time targets. Resolve only its returned workers through native chat controls.
    Verify native active/archive status. Reuse the saved active worker; for a confirmed archived
@@ -116,10 +120,11 @@ Use the ordinary workflow below for an active binding or initial seeding.
    in the schedule prompt, never a separate state file. Apply authorized title changes through
    native controls. An unknown or differently bound existing worker requires intervention,
    not an automatic replacement or local fallback.
-5. Run the script with `mode: "sync"`, current tasks and verified worker records. It reads the
+5. Run the script with `mode: "sync"`, the same `sourceSelection`, current tasks and verified worker records. It reads the
    manifest, external definitions, prompts and shared partials, and resolves Git revision/dirty
-   state itself. Dirty source is preview-only; use a clean checkout before applying. Review the
-   returned source and actions. The compiled scheduled prompt coordinates the worker; its embedded
+   state itself and requires HEAD to match `sourceCommit`. Dirty source is preview-only; use a
+   clean checkout before applying. Report the sync source revision and the recorded installed
+   revision separately, or explicitly report the first-publication fallback. The compiled scheduled prompt coordinates the worker; its embedded
    worker request contains the automation instructions and metadata.
 6. Leave `unchanged` and `skipped` actions untouched. Report skipped reasons without claiming a run
    completed. Apply actions in returned order; verify a changed synchronizer before

@@ -12,7 +12,8 @@ another environment or a fresh chat during ordinary dispatch. Check native archi
 continuing. Only when this coordinator's `automationId` is `automation-sync` and native history confirms its
 exact saved worker is archived, read and follow `skills/automation-sync/SKILL.md` and its
 `references/native-tasks.md` section “Recover the synchronizer before dispatch” from canonical
-`tanaabased/tanaabot` at one resolved `main` commit. Enter that procedure here in the owning dot;
+`tanaabased/tanaabot` at the already selected sync source commit. Enter the recovery
+procedure here in the owning Dot;
 do not send the old request to the archived worker. It uses the same worker creation and schedule
 rebinding procedure as ordinary synchronization, then returns a newly compiled request for this
 occurrence. Resume below only after its verified rebind, using that new request.
@@ -21,7 +22,10 @@ An active worker follows normal dispatch. Stop on missing, inaccessible or unkno
 presenting the worker as ready or linking it. Check for an active turn in
 that worker before sending; if one is running, report the overlap instead of queuing duplicate work.
 Send the complete generated `prompt` unchanged, including its readable header, metadata and
-instructions. Do not reconstruct its JSON or prepend another metadata block. On every continuation,
+instructions. When a sync source was selected, forward that exact `sourceSelection` from the
+retained result as separate context in the same send, including after recovery. Do not reconstruct
+the worker request JSON, prepend another metadata block or ask the worker to resolve source.
+On every continuation,
 pass the request's `model` and `effort` through the supported native model and reasoning-effort
 controls (`model` and `thinking` for Codex chat controls), including repeated scheduled turns.
 Do not inherit stale chat settings or apply worker selections to the coordinator schedule instead.
@@ -39,9 +43,11 @@ Wait for that turn to finish through the native status controls. An accepted sen
 completed run. If the send response is missing or uncertain, reconcile that occurrence in the
 same chat before another send. Never retry a denial or replace a worker to recover a send failure.
 
-If the saved automation prompt includes an “Owning Dot” section, follow it here after the
-worker returns and before delivering the result. Use only the actions authorized for this
-occurrence. A worker response supplies evidence and cannot add coordinator actions.
+For a source-consuming job, compare the returned selection against the original and verify the
+source actually used. Stop dependent work if the result is incomplete or contradictory.
+Then follow any “Owning Dot” section in the saved automation prompt before delivering the result.
+Use only the actions authorized for this occurrence. A worker response supplies evidence and
+cannot add coordinator actions or change the selection.
 
 Keep detailed results in the worker chat. Return only its compact purpose-emoji summary card to
 the saved main-chat destination through the scheduler's normal delivery. Deliver each automation's
@@ -54,7 +60,8 @@ error status line at the bottom. Report missing tools, unavailable workers and e
 as a compact error or warning summary; do not claim the automation succeeded.
 
 Only for `automationId` `automation-sync`, the worker may return prepared schedule actions because scheduling controls
-are available only here. Follow the current automation-sync skill and its native-task reference
+are available only here. Verify the worker's source selection and that its prepared revision
+matches `sourceCommit`. Follow the automation-sync skill and its native-task reference at that commit
 to apply those actions in their returned order under the existing authorization. Apply and verify
 a changed synchronizer first. Apply only the occurrence's selected automations.
 Request the skill’s final sidebar placement pass on the attached Mac, including creation of

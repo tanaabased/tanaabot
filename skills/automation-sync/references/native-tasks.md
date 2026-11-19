@@ -24,6 +24,8 @@ Run `bun skills/automation-sync/scripts/sync-task.js` with JSON on stdin:
 `environments` contains only published runnable configurations from native controls. Names select
 exactly one entry; a missing or ambiguous match stops assembly. Never substitute a local computer.
 Optional `workspaceDir` selects the clean source checkout when invoked elsewhere.
+Include the complete shared `sourceSelection` as a top-level field in every assembler call.
+It is omitted from the examples for brevity. Reuse that result for targets, sync and placement.
 
 Tanaabot's shared policy defaults to Cloud `tanaabot` and reusable workers. Chat titles use
 `thread.name`, then `display-name`, then the automation ID with spaces, without an added emoji.
@@ -121,8 +123,11 @@ occurrence or Run now. For an occurrence, retain its original selection before r
    prior attempts and check for in-flight recovery. Reuse a healthy replacement when available.
    If another run already saved the rebind, verify the saved dispatcher and binding, then finish
    according to the entry point below. Unknown status or a failed send does not qualify for replacement.
-2. On the owning dot's own cloud computer, prepare a clean checkout pinned to one canonical
-   `tanaabased/tanaabot` GitHub `main` commit. Read that revision's skill and required references.
+2. Reuse the owning Dot's complete selection for this occurrence. If recovery is entered
+   directly before selection, use the [same GitHub procedure](../../../prompts/sync-source-partial.md)
+   as normal dispatch. On the owning Dot's own cloud computer, prepare a clean checkout pinned
+   to `sourceCommit`. Keep the selection for the replacement worker's continuation of this
+   occurrence. Read that revision's skill and required references.
    Run `bun install --frozen-lockfile --ignore-scripts` and `bun run automations:prepare` there.
    Run the read-only assembler with `mode: "targets"` and `id: "automation-sync"` using the verified
    published configuration listing, native scheduler timezone and saved dot destination.
@@ -300,7 +305,8 @@ If this optional pass itself fails, report placement as unverified and retain th
    unchanged schedules. Omit skipped or unverified bindings. This pass does not revalidate schedules
    or worker readiness. Include the desktop listing as `context.sidebar` (its `threads`, `pinnedThreads`, and
    `sections`). If desktop access is unavailable, omit `sidebar` and supply the specific reason as
-   `context.sidebarUnavailable`. Use the same clean source snapshot as schedule reconciliation.
+   `context.sidebarUnavailable`. Use the same clean source snapshot and `sourceSelection` as
+   schedule reconciliation.
    This read-only pass loads the public Agent System manifest and resolves only its effective job
    `group`, including YAML-merged defaults from the declarations. No configured
    group means no placement request. There is no hard-coded section fallback or second parser.

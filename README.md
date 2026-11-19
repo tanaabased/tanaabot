@@ -44,7 +44,8 @@ setup result, publish the environment and start a fresh task to verify it.
 
 ## Synchronize scheduled tasks
 
-Paste this into the designated tanaabot dot to seed or update the synchronizer:
+Follow the [Cloud rollout steps](./TANABOOT.md#cloud-verification), then paste this into the
+designated tanaabot dot to seed or update the synchronizer:
 
 ```text
 Read and follow skills/automation-sync/SKILL.md and its required references
@@ -55,14 +56,14 @@ environment. Verify the saved schedule, dispatcher and worker binding, then
 report the result and stop without running the automation.
 ```
 
-After verification, select **Run now** on **🤖 AUTOMATION SYNC** for the full sync.
+After verifying the saved synchronizer, select **Run now** on **🤖 AUTOMATION SYNC** for the full sync.
 
 The [definitions](./.agent-system/automations.yaml) enable `automation-sync` at midnight and both
 `cloud-update` and `instruction-sync` at 1 a.m. in the native scheduler’s timezone (Eastern for this deployment).
-Existing schedules retain their saved timezone. Each sync loads fresh `main`, updates itself first and
-leaves unchanged tasks alone. A final best-effort desktop pass places workers in their configured sidebar sections;
-configuration and run-results cards are separate from
-the compact linked main-chat summaries. Debug is opt-in through `debug: true` in
+Existing schedules retain their saved timezone. Sync updates itself first and leaves unchanged
+tasks alone. A final best-effort desktop pass places workers in their configured sidebar sections.
+Workers receive configuration and run-results cards, and the main chat receives compact linked
+summaries. Debug is opt-in through `debug: true` in
 [agent.yaml](./.agent-system/agent.yaml), followed by synchronization.
 
 Cloud Update reports the Canon result, then runs Startup Check for the worker’s current status report.

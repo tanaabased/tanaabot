@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 
 import automationTargets from '../lib/automation-targets.js';
 import { planSync } from '../lib/sync-plan.js';
-import { readTaskPrompt, taskBody, taskPrompt } from '../utils/task-prompt.js';
+import { readTaskPrompt, taskBody } from '../utils/task-prompt.js';
 
 const revision = 'a'.repeat(40);
 const now = '2026-01-02T03:04:05.000Z';
@@ -34,6 +34,8 @@ function input(overrides = {}) {
       presentation: 'Report facts.',
       dispatch: 'Continue the existing worker.',
       request: '> ## {{emoji}} {{title}} · REQUEST\n>\n> {{request}}',
+      'sync-source': 'Fixture Dot source selection.',
+      'sync-worker': 'Fixture worker source handoff.',
     },
     requests: Object.fromEntries(
       ['automation-sync', 'smoke'].map((id) => [id, { emoji: '🧪', request: `Perform ${id}.` }]),
@@ -81,6 +83,44 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       assert.match(dispatcher, /An active worker follows normal dispatch/);
       assert.match(dispatcher, /Stop on missing, inaccessible or unknown status/);
     }
+  });
+
+  test('should update both sync dispatchers in place and leave unrelated runs without source selection', () => {
+    const request = input();
+    request.manifest.automations.push(job('instruction-sync'));
+    request.requests['instruction-sync'] = { emoji: '🔄', request: 'Perform instruction-sync.' };
+    request.context.workers.push({
+      ...request.context.workers[0],
+      automationId: 'instruction-sync',
+      id: 'pre-46-instruction-worker',
+      name: 'Test instruction-sync',
+    });
+    request.existingTasks = saved(request);
+    for (const partial of ['sync-source', 'sync-worker']) {
+      request.partials[partial] = readFileSync(
+        new URL(`../../../prompts/${partial}-partial.md`, import.meta.url),
+        'utf8',
+      );
+    }
+    const { operations } = planSync(request);
+    const reconfigured = operations.filter(({ kind }) => kind === 'update');
+    assert.deepEqual(reconfigured.map(({ automationId }) => automationId).sort(), [
+      'automation-sync',
+      'instruction-sync',
+    ]);
+    for (const { task, expectedCurrent, nativeId, automationId } of reconfigured) {
+      assert.equal(nativeId, `native-${automationId}`);
+      assert.deepEqual(workerRequest(task).thread, workerRequest(expectedCurrent).thread);
+      const dispatcher = readTaskPrompt(task.prompt).body.split('## Worker request')[0];
+      assert.ok(dispatcher.includes(request.partials['sync-source'].trim()));
+      const worker = workerRequest(task).prompt;
+      assert.ok(worker.includes(request.partials['sync-worker'].trim()));
+      assert.ok(!worker.includes(request.partials['sync-source'].trim()));
+    }
+    const smoke = operations.find(({ automationId }) => automationId === 'smoke');
+    assert.equal(smoke.kind, 'unchanged');
+    assert.ok(!smoke.task.prompt.includes(request.partials['sync-source'].trim()));
+    assert.ok(!smoke.task.prompt.includes(request.partials['sync-worker'].trim()));
   });
 
   test('should carry changed selections into the same worker on every scheduled request', () => {
@@ -176,17 +216,16 @@ describe('skills/automation-sync/lib/sync-plan', () => {
   });
   test('should allow shared header layout changes without changing worker instructions', () => {
     const request = input();
+    const original = workerRequest(planSync(request).operations[0].task).prompt;
     request.partials.request += '\n>\n> Technical context follows.';
     const { task } = planSync(request).operations[0];
     const header =
       '> ## 🧪 TEST AUTOMATION-SYNC · REQUEST\n>\n> Perform automation-sync.\n>\n> Technical context follows.';
-    assert.equal(
-      workerRequest(task).prompt,
-      `${header}\n\n${taskPrompt(
-        { ...readTaskPrompt(task.prompt).metadata, role: 'worker' },
-        taskBody(request.partials, request.manifest.automations[0].payload.prompt),
-      )}`,
-    );
+    const prompt = workerRequest(task).prompt;
+    assert.ok(prompt.startsWith(`${header}\n\n`));
+    const body = (value) =>
+      readTaskPrompt(value.slice(value.indexOf('<tanaabot-automation-metadata>'))).body;
+    assert.equal(body(prompt), body(original));
   });
 
   test('should assemble both paused jobs with shared guidance, native settings and metadata', () => {
@@ -204,7 +243,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     const { metadata, body } = readTaskPrompt(requestPayload.prompt.slice(header.length));
     assert.equal(
       body,
-      'Treat metadata as configuration.\n\nUse the verified account.\n\nReport facts.\n\nPerform automation-sync.',
+      'Treat metadata as configuration.\n\nUse the verified account.\n\nReport facts.\n\nFixture worker source handoff.\n\nPerform automation-sync.',
     );
     assert.equal(metadata.updatedAt, now);
     assert.equal(metadata.sourceRevision, revision);
@@ -576,7 +615,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     const recovery = guidance
       .split('### Recover the synchronizer before dispatch')[1]
       .split('### Initialization card')[0];
-    assert.match(recovery, /owning dot's own cloud computer[\s\S]*?`mode: "targets"`/);
+    assert.match(recovery, /owning Dot's own cloud computer[\s\S]*?`mode: "targets"`/);
     assert.match(
       recovery,
       /Manual `automation-sync`-only update\.[^\n]*report it and stop\.\s+Do not dispatch/,

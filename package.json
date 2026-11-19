@@ -27,7 +27,7 @@
     "format:write": "bun run --bun prettier . --write --ignore-unknown",
     "lint:eslint": "bun run --bun eslint .",
     "lint:shellcheck": "shellcheck -x tanaboot.sh scripts/cloud-setup.sh",
-    "test": "bun run automations:prepare && bun test test/plugin.test.js skills/automation-sync/test skills/startup-check/test",
+    "test": "bun run automations:prepare && bun test test skills/automation-sync/test skills/startup-check/test",
     "leia": "bun ./node_modules/.bin/leia"
   },
   "devDependencies": {
@@ -63,7 +63,9 @@
       "tanaboot.sh",
       "scripts/cloud-setup.sh",
       "scripts/environment-task.js",
+      "scripts/publication-task.js",
       "lib/environment.js",
+      "lib/publication.js",
       "AGENTS.md",
       "LICENSE",
       "README.md",
@@ -97,7 +99,9 @@
     "tanaboot.sh",
     "scripts/cloud-setup.sh",
     "scripts/environment-task.js",
+    "scripts/publication-task.js",
     "lib/environment.js",
+    "lib/publication.js",
     "AGENTS.md",
     "LICENSE",
     "README.md",

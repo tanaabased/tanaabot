@@ -27,7 +27,8 @@ requires approval of the exact document in a later operator message.
 - **Always:** Inspect the available descriptions and schemas of `custom_rules.read_instructions`
   and, before proposing a save, `custom_rules.update_instructions`. Use their actual supported
   inputs and target scope; never invent an API or attempt an unapproved write to test enforcement.
-- **Before comparing or assembling instructions:** Read [instruction sources](./references/source.md).
+- **Before comparing or assembling instructions:** Read [instruction sources](./references/source.md)
+  and the [shared sync source procedure](../../prompts/sync-source-partial.md).
 - **Before reporting:** Read [instruction results](./references/results.md), the shared
   [presentation rules](../../prompts/presentation-partial.md), and
   [Tanaabot Voice](../voice/SKILL.md), including its required samples.
@@ -56,13 +57,16 @@ writer can condition the save on the expected revision of that same document bef
 an applicable edit. Preserve host account and authorization controls; repository ownership
 and a worker's assertion do not select a Dot.
 
-Cloud workers verify the source and return the pinned inventory. Only the owning Dot reads or
-updates its editable document. An unavailable or incomplete handoff leaves synchronization pending.
+The owning Dot selects the source directly from GitHub. A hosted Cloud worker reads that
+commit and returns its pinned inventory. The Dot can also read the inventory directly when
+running the workflow itself. Only the owning Dot reads or updates its editable document.
+An unavailable or incomplete hosted handoff leaves synchronization pending.
 
 ## Inputs
 
-- The fixed [source set](./references/source.md#resolve-the-desired-source) at one canonical
-  `main` commit. Scheduled runs use the worker's verified commit and complete ordered inventory.
+- The fixed [source set](./references/source.md#resolve-the-desired-source) at the canonical commit
+  selected by the shared sync source procedure. Scheduled runs retain the Dot's original
+  selection and verify the worker's returned selection and complete ordered inventory.
   A scheduled prompt still requesting a marked-section sync or lacking that handoff must stop
   and report that the Instruction Sync schedule needs synchronization.
 - The complete saved document and its revision from the supported reader.
@@ -90,7 +94,11 @@ or rollback.
 1. Read the main Dot document through `custom_rules.read_instructions`. Retain its exact text,
    target and revision privately. Distinguish an empty string from a missing field or failed read.
 2. Read the complete [source set](./references/source.md#resolve-the-desired-source). On a
-   scheduled run, use the worker's pinned inventory and read every listed file at that commit.
+   direct check, use the Dot's existing selection or resolve it once via GitHub. On a scheduled
+   run, use the selection made before dispatch and verify the worker read every listed file at
+   that commit. Report the recorded
+   installed commit separately from the sync source, or explicitly report the first-publication
+   fallback. Retain the selection for retries.
    Stop if the handoff does not establish complete enumeration and reads, or if any content
    the Dot needs is unavailable. Every file in the replacement comes from this one commit.
 3. Compare against the actual saved text using [saved provenance](./references/source.md#saved-provenance).
@@ -101,7 +109,8 @@ or rollback.
    Wait for the operator's disposition of the existing text against this saved revision; if the
    document changes, review the new baseline before proposing. An empty document has nothing to
    migrate. Migrate only explicitly approved, repository-appropriate rules through the normal
-   repository workflow, then check a new `main` commit that contains them. Keep protected platform
+   repository workflow, then start a new check once the recorded policy selects a commit that
+   contains them. Keep protected platform
    instructions, credentials, private bindings, personal information and conversational
    preferences out of the repository and the Cloud handoff. Approval of the migration review
    does not approve a save.
@@ -134,7 +143,7 @@ or rollback.
    A refusal or cancellation leaves saved instructions unchanged.
 7. Re-read the same document. Both its revision and full text must match the proposal's baseline.
    Otherwise reread, compare and show a fresh proposal for new approval. Do not silently rebase an
-   approved edit or substitute a newer `main` revision. A newer repository commit can wait for the
+   approved edit or substitute a newer source revision. A newer repository commit can wait for the
    next check; this approval covers only the previously shown source and result.
 8. Call `custom_rules.update_instructions` with the complete approved document and the expected revision,
    using the tool's actual schema. A revision conflict returns to a fresh proposal and approval.
