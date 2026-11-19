@@ -110,8 +110,9 @@ Use the ordinary workflow below for an active binding or initial seeding.
    Run `bun skills/automation-sync/scripts/sync-task.js` with `mode: "targets"`, `sourceSelection`, and JSON on stdin
    using the reference's input shape. This validates Cloud cadence before worker creation and omits
    elapsed one-time targets. Resolve only its returned workers through native chat controls.
-   Verify native active/archive status. Reuse the saved active worker; for a confirmed archived
-   managed worker, follow the reference's [replacement procedure](./references/native-tasks.md#replace-a-confirmed-archived-worker).
+   Verify the exact saved ID with [archive-aware history](./references/native-tasks.md#verify-worker-status).
+   Reuse the saved active worker. For a confirmed archived managed worker, follow the
+   [replacement procedure](./references/native-tasks.md#replace-a-confirmed-archived-worker).
    Unknown or inaccessible workers do not qualify. For every new chat, including bootstrap and
    recovery, pass the resolved `target.model` and `target.effort` to native creation as `model`
    and `thinking`, with the [initialization card instructions](./references/native-tasks.md#initialization-card).
@@ -120,15 +121,17 @@ Use the ordinary workflow below for an active binding or initial seeding.
    in the schedule prompt, never a separate state file. Apply authorized title changes through
    native controls. An unknown or differently bound existing worker requires intervention,
    not an automatic replacement or local fallback.
-5. Run the script with `mode: "sync"`, the same `sourceSelection`, current tasks and verified worker records. It reads the
-   manifest, external definitions, prompts and shared partials, and resolves Git revision/dirty
+5. Before assembly, verify the exact saved worker IDs and any replacements in native history.
+   Run the script with `mode: "sync"`, the same `sourceSelection`, current tasks, worker records and
+   `context.workerHistory`. It reads the manifest, external definitions, prompts and shared
+   partials, and resolves Git revision/dirty
    state itself and requires HEAD to match `sourceCommit`. Dirty source is preview-only; use a
    clean checkout before applying. Report the sync source revision and the recorded installed
    revision separately, or explicitly report the first-publication fallback. The compiled scheduled prompt coordinates the worker; its embedded
    worker request contains the automation instructions and metadata.
-6. Leave `unchanged` and `skipped` actions untouched. Report skipped reasons without claiming a run
-   completed. Apply actions in returned order; verify a changed synchronizer before
-   proceeding to other selected jobs. Stop dependent
+6. Leave `unchanged` and `skipped` actions untouched. Report `worker-status-unverified` as Unverified
+   and `worker-archived` as pending recovery. Apply actions in returned order. Verify a changed
+   synchronizer before proceeding to other selected jobs. Stop dependent
    application if that self-update fails. Apply creates/updates through the owning dot's supported native controls with the exact
    compiled content and native ID. For disabled definitions, follow the native-task reference's
    paused-create or immediate create-then-pause procedure and verify the final state.

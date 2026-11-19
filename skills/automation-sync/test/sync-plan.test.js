@@ -21,6 +21,12 @@ const job = (id) => ({
 function workerRequest(task) {
   return JSON.parse(readTaskPrompt(task.prompt).body.split('```json\n')[1].split('\n```')[0]);
 }
+function history(active, archived = []) {
+  return {
+    active: { source: 'history', ids: active, complete: true },
+    archived: { source: 'history', ids: archived, complete: true },
+  };
+}
 function input(overrides = {}) {
   return {
     manifest: {
@@ -44,10 +50,10 @@ function input(overrides = {}) {
     existingTasks: [],
     context: {
       environments: [{ id: 'test-environment', name: 'tanaabot' }],
+      workerHistory: history(['worker-automation-sync', 'worker-smoke']),
       workers: ['automation-sync', 'smoke'].map((id) => ({
         automationId: id,
         id: `worker-${id}`,
-        status: 'active',
         startup: 'passed',
         environmentId: 'test-environment',
         name: `Test ${id}`,
@@ -81,7 +87,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       assert.match(dispatcher, /Recover the synchronizer before dispatch/);
       assert.match(dispatcher, /For other automations,[\s\S]*stop dispatch without replacement/);
       assert.match(dispatcher, /An active worker follows normal dispatch/);
-      assert.match(dispatcher, /Stop on missing, inaccessible or unknown status/);
+      assert.match(dispatcher, /report the worker as Unverified and stop without sending/);
     }
   });
 
@@ -95,6 +101,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       id: 'pre-46-instruction-worker',
       name: 'Test instruction-sync',
     });
+    request.context.workerHistory.active.ids.push('pre-46-instruction-worker');
     request.existingTasks = saved(request);
     for (const partial of ['sync-source', 'sync-worker']) {
       request.partials[partial] = readFileSync(
@@ -403,15 +410,70 @@ describe('skills/automation-sync/lib/sync-plan', () => {
   test('should retain the saved worker identity rather than silently bind a replacement', () => {
     const request = input({ existingTasks: saved() });
     request.context.workers[0].id = 'replacement-worker';
+    request.context.workerHistory.active.ids.push('replacement-worker');
     assert.throws(() => planSync(request), /reusable-worker-replacement-required:automation-sync/);
   });
 
-  test('should refuse archived, unknown and malformed worker identities', () => {
-    for (const status of ['archived', 'unknown', 'offline', undefined]) {
-      const request = input();
-      request.context.workers[0].status = status;
-      assert.throws(() => planSync(request), /reusable-worker-not-active:automation-sync/);
+  test('should skip only the unverified binding when native history cannot settle the exact ID', () => {
+    const id = 'worker-automation-sync';
+    const smoke = 'worker-smoke';
+    const sameChildren = { source: 'direct-children', ids: [id], complete: true };
+    for (const workerHistory of [
+      undefined,
+      { active: sameChildren, archived: sameChildren },
+      { active: sameChildren, archived: history([]).archived },
+      { ...history([id]), archived: { ...history([]).archived, complete: false } },
+      history([id, smoke], [id]),
+      history([`${id}-other`, smoke]),
+      { ...history([id]), archived: { source: 'history', complete: true } },
+    ]) {
+      const request = input({ existingTasks: saved() });
+      request.context.workerHistory = workerHistory;
+      request.context.workers[0].status = 'active'; // The old assertion cannot prove status.
+      const [sync] = planSync(request).operations;
+      assert.deepEqual(sync, {
+        automationId: 'automation-sync',
+        kind: 'skipped',
+        reason: 'worker-status-unverified',
+        nativeId: request.existingTasks[0].id,
+        task: request.existingTasks[0].task,
+      });
     }
+    const request = input({ existingTasks: saved() });
+    request.context.workerHistory = history([id, smoke], [id]);
+    assert.equal(planSync(request).operations[1].kind, 'unchanged');
+    request.context.workerHistory = history([id, smoke]);
+    request.context.workerHistory.active.complete = false; // The exact IDs were already found.
+    assert.ok(planSync(request).operations.every(({ kind }) => kind === 'unchanged'));
+  });
+
+  test('should mark a confirmed archived binding as pending recovery', () => {
+    const request = input({ existingTasks: saved() });
+    request.context.workerHistory = history(['worker-smoke'], ['worker-automation-sync']);
+    const [sync, smoke] = planSync(request).operations;
+    assert.equal(sync.kind, 'skipped');
+    assert.equal(sync.reason, 'worker-archived');
+    assert.equal(smoke.kind, 'unchanged');
+  });
+
+  test('should use the same verified archive rebind for another selected automation', () => {
+    const request = input({ existingTasks: saved(), id: 'smoke' });
+    const original = request.existingTasks[1];
+    const worker = request.context.workers[1];
+    worker.replaces = { id: worker.id, status: 'archived', environmentId: worker.environmentId };
+    worker.id = 'replacement-smoke';
+    delete worker.url;
+    request.context.workerHistory = history([worker.id], [worker.replaces.id]);
+    const operations = planSync(request).operations;
+    assert.equal(operations.length, 1);
+    const [update] = operations;
+    assert.equal(update.kind, 'update');
+    assert.equal(update.nativeId, original.id);
+    assert.deepEqual(update.task.schedule, original.task.schedule);
+    assert.equal(workerRequest(update.task).thread.id, worker.id);
+  });
+
+  test('should refuse malformed worker identities', () => {
     for (const id of ['worker/id', 'worker?query', 'worker#fragment', ' worker', 'worker%2Fid']) {
       const request = input();
       request.context.workers[0].id = id;
@@ -432,6 +494,10 @@ describe('skills/automation-sync/lib/sync-plan', () => {
         environmentId: replacement.environmentId,
       };
       replacement.id = 'replacement-worker';
+      request.context.workerHistory = history(
+        ['replacement-worker', 'worker-smoke'],
+        ['worker-automation-sync'],
+      );
       delete replacement.url;
       const result = planSync(request);
       const update = result.operations[0];
@@ -458,6 +524,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
         environmentId: 'test-environment',
       };
       replacement.id = 'competing-worker';
+      request.context.workerHistory.active.ids.push('competing-worker');
       assert.throws(
         () => planSync(request),
         /reusable-worker-replacement-required:automation-sync/,
@@ -469,6 +536,10 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     const request = input({ existingTasks: saved() });
     const replacement = request.context.workers[0];
     replacement.id = 'replacement-worker';
+    request.context.workerHistory = history(
+      ['replacement-worker', 'worker-smoke'],
+      ['worker-automation-sync'],
+    );
     delete replacement.url;
     const archived = {
       id: 'worker-automation-sync',
@@ -489,9 +560,12 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       );
     }
     replacement.replaces = archived;
-    replacement.status = 'unknown';
-    assert.throws(() => planSync(request), /reusable-worker-not-active:automation-sync/);
-    replacement.status = 'active';
+    request.context.workerHistory.active.ids.push(archived.id);
+    assert.equal(planSync(request).operations[0].reason, 'worker-status-unverified');
+    request.context.workerHistory.active.ids.pop();
+    request.context.workerHistory.archived.ids.push(replacement.id);
+    assert.equal(planSync(request).operations[0].reason, 'worker-status-unverified');
+    request.context.workerHistory.archived.ids.pop();
     request.manifest.automations[0].overrides.codex = {
       target: { thread: 'worker-automation-sync' },
     };
@@ -519,6 +593,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
         environmentId: worker.environmentId,
       };
       worker.id = 'replacement-sync';
+      request.context.workerHistory = history([worker.id], [worker.replaces.id]);
       request.existingTasks[0].task[field] = value;
       assert.throws(() => planSync(request), /worker-rebind-settings-changed:automation-sync/);
     }
@@ -549,6 +624,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       environmentId: worker.environmentId,
     };
     worker.id = 'replacement-sync';
+    request.context.workerHistory = history([worker.id], [worker.replaces.id]);
     delete worker.group;
     for (const startup of ['failed', 'unverified', undefined]) {
       worker.startup = startup;
@@ -581,7 +657,6 @@ describe('skills/automation-sync/lib/sync-plan', () => {
         automationId: target.automationId,
         id: 'initialized-replacement',
         name: target.thread.name,
-        status: 'active',
         startup: 'passed',
         environmentId: target.execution.environmentId,
         replaces: {
@@ -591,6 +666,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
         },
       },
     ];
+    request.context.workerHistory = history(['initialized-replacement'], [retired.thread.id]);
     const plan = planSync(request);
     assert.equal(plan.operations.length, 1);
     const [update] = plan.operations;
@@ -639,6 +715,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       environmentId: worker.environmentId,
     };
     worker.id = 'replacement-sync';
+    request.context.workerHistory = history([worker.id], [worker.replaces.id]);
     const recovery = planSync(request);
     assert.deepEqual(
       recovery.operations.map(({ automationId, kind }) => [automationId, kind]),
@@ -659,10 +736,10 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     request.context.workers.push({
       automationId: 'cloud-update',
       id: 'worker-canon',
-      status: 'active',
       environmentId: 'test-environment',
       name: 'Test cloud-update',
     });
+    request.context.workerHistory.active.ids.push('worker-canon');
     const resumed = planSync(request);
     assert.deepEqual(
       resumed.operations.map(({ automationId, kind }) => [automationId, kind]),

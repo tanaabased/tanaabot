@@ -66,6 +66,20 @@ test('should verify readback and skip already-correct Cloud chats despite local 
   assert.equal(placementPlan(input).placements[0].status, 'move');
 });
 
+test('should leave a stale section item unverified without an exact live sidebar row', () => {
+  const input = fixture();
+  const sidebar = input.context.sidebar;
+  const [worker, other] = sidebar.threads;
+  sidebar.sections[0].itemKeys = [`codex:thread:local:${worker.id}`];
+  sidebar.threads = [other];
+  sidebar.pinnedThreads = [{ ...worker, id: `${worker.id}-different` }];
+  const [stale] = placementPlan(input).placements;
+  assert.equal(stale.status, 'unverified');
+  assert.equal(stale.move, undefined);
+  sidebar.pinnedThreads = [worker];
+  assert.equal(placementPlan(input).placements[0].status, 'verified');
+});
+
 test('should avoid moves without a sidebar or an unambiguous chat and section', () => {
   const input = fixture();
   delete input.context.sidebar;

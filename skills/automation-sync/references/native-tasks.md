@@ -38,10 +38,7 @@ diagnostic. Agent System's own omitted defaults remain unchanged.
 
 The returned targets describe desired environment and chat settings. Find an existing binding in
 the matching schedule's metadata (`worker.id`), or use an explicitly authored native thread ID.
-Inspect the exact worker in native active or archived history, following pagination as needed.
-An ID lookup or successful send does not establish active status. Supply `status: "active"` only
-for a confirmed active worker. Missing, inaccessible, ambiguous or offline results are unknown,
-not archive evidence. Unknown and archived workers cannot be assembled as ready bindings.
+Verify its exact ID using the procedure below before choosing to reuse or replace it.
 For initial seeding, inspect existing native chats before creating one; names alone do not establish
 automation ownership. If a prior create was uncertain, reconcile it before another create.
 
@@ -79,6 +76,24 @@ Test tap-through on iOS and desktop during the pilot; if a client cannot open th
 task card. If neither works, state that navigation is unavailable rather than silently dropping it.
 Native worker IDs and optional links live in the saved schedule prompt and current native
 responses, not a separate database.
+
+### Verify worker status
+
+Use the same exact-ID history check before dispatch and before assembly. Read the active and
+archived native Codex history views for the same verified account and chat host. Follow pagination
+before treating an ID as absent. For an active worker, the ID must appear in active history and
+be absent from the complete archived search. Reverse those views to confirm an archive. The same
+ID under both direct-child filters is ambiguous. Resolve it with native archive-aware history.
+An ID lookup, recent sidebar row or successful send does not establish archive status.
+
+For assembly, pass the history observations as `context.workerHistory.active` and
+`context.workerHistory.archived`. Use `source: "history"` only for the archive-aware native
+views above, and include only exact worker IDs found in each view. Set `complete: true` only
+when the search for all supplied IDs reached the end of that view. A partial view can establish
+presence for IDs it returned, but cannot establish absence. Omit unavailable views. If the
+evidence is missing or conflicts, report Unverified. Leave that binding alone and exclude it from
+placement. Use the same check for the retired ID and the replacement before rebinding. A lookup
+from before dispatch does not substitute for the pre-assembly check.
 
 ### Replace a confirmed archived worker
 
@@ -118,8 +133,8 @@ The owning dot handles Sync's archived binding for a manual `automation-sync`-on
 occurrence or Run now. For an occurrence, retain its original selection before recovery
 (normally `all`).
 
-1. Read the current native Sync schedule and confirm its exact bound worker is archived in native
-   history. Follow [the replacement procedure](#replace-a-confirmed-archived-worker) to reconcile
+1. Read the current native Sync schedule and [verify the archive](#verify-worker-status) of its
+   exact bound worker. Follow [the replacement procedure](#replace-a-confirmed-archived-worker) to reconcile
    prior attempts and check for in-flight recovery. Reuse a healthy replacement when available.
    If another run already saved the rebind, verify the saved dispatcher and binding, then finish
    according to the entry point below. Unknown status or a failed send does not qualify for replacement.
@@ -139,11 +154,12 @@ occurrence or Run now. For an occurrence, retain its original selection before r
    `model: target.model` and `thinking: target.effort` on its first turn. Request initialization
    only, following [Resolve workers](#resolve-workers). A rejected combination stops recovery.
    Report the requested model and effort separately from native turn observations. Mark missing
-   observations unverified. Before binding, verify passed startup, active status and the published
-   configuration through native launch or association evidence. Check the published setup/version
+   observations unverified. Before binding, verify passed startup and active history. Verify the
+   published configuration through native launch or association evidence. Check the published setup/version
    when available and report unavailable version evidence as unverified. Leave the old chat archived.
-4. From the same clean checkout, run `mode: "sync"` with `id: "automation-sync"`, current native tasks and
-   the verified replacement and `replaces` evidence. Follow the shared rebind procedure to apply
+4. From the same clean checkout, run `mode: "sync"` with `id: "automation-sync"`, current native tasks,
+   the verified replacement, `replaces` and fresh `workerHistory` for both IDs. If the planner
+   skips this rebind, report its reason and stop. Follow the shared rebind procedure to apply
    the exact prepared update to the existing schedule. Verify its saved dispatcher and worker ID,
    preserving schedule ID, cadence, enabled state, coordinator settings and destination. Reconcile
    an uncertain save before continuing and retain the healthy worker on retry. Desktop sidebar
@@ -185,7 +201,8 @@ another `CHAT CREATED` card. During final reporting, deliver the saved schedule'
 
 ## Assemble schedules
 
-Repeat with `mode: "sync"` (also the default), adding `existingTasks` and `context.workers`:
+Repeat with `mode: "sync"` (also the default), adding `existingTasks`, `context.workers` and
+`context.workerHistory`:
 
 ```json
 {
@@ -195,11 +212,14 @@ Repeat with `mode: "sync"` (also the default), adding `existingTasks` and `conte
     "timezone": "America/New_York",
     "environments": [{ "id": "verified-published-config-id", "name": "tanaabot" }],
     "destination": { "kind": "dot", "id": "verified-main-chat-id" },
+    "workerHistory": {
+      "active": { "source": "history", "ids": ["verified-worker-id"], "complete": true },
+      "archived": { "source": "history", "ids": [], "complete": true }
+    },
     "workers": [
       {
         "automationId": "automation-sync",
         "id": "verified-worker-id",
-        "status": "active",
         "startup": "passed",
         "environmentId": "verified-published-config-id",
         "name": "AUTOMATION SYNC",
@@ -300,6 +320,8 @@ If this optional pass itself fails, report placement as unverified and retain th
 2. On that Mac, obtain the native chat and sidebar listing. Resolve exact bound chat IDs, following
    pagination when needed. Retain each chat's reported `hostId`; a Cloud chat may be `durable`
    while its sidebar item key says `local`. Never derive routing from that key or match by title.
+   Verify placement only when the exact active binding appears in a live recent or pinned row
+   and in the intended section. A section item key by itself leaves placement unverified.
 3. Run the existing `sync-task.js` with `mode: "placement"`, the invocation's selected `id`, and
    `context.workers` containing only healthy saved bindings verified during this run, including
    unchanged schedules. Omit skipped or unverified bindings. This pass does not revalidate schedules

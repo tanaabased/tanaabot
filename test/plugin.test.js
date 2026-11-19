@@ -48,10 +48,17 @@ test('packed plugin retains canonical skills, assets and usable links', async ()
       context: {
         timezone: 'America/New_York',
         environments: [{ id: 'fixture-cloud', name: 'tanaabot' }],
+        workerHistory: {
+          active: {
+            source: 'history',
+            ids: definitions.manifest.automations.map((job) => `fixture-worker-${job.id}`),
+            complete: true,
+          },
+          archived: { source: 'history', ids: [], complete: true },
+        },
         workers: definitions.manifest.automations.map((job) => ({
           automationId: job.id,
           id: `fixture-worker-${job.id}`,
-          status: 'active',
           environmentId: 'fixture-cloud',
           name: job.thread?.name ?? job.displayName ?? job.id.replaceAll('-', ' '),
           url: `https://example.test/chats/${job.id}`,

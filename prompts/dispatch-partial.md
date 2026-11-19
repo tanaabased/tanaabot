@@ -8,18 +8,27 @@ Use the supported native Cloud-chat controls to continue the request's existing 
 its saved Cloud environment. A missing presentation URL does not prevent dispatch by `thread.id`.
 Use its saved native binding and successful launch information; do not compare the published
 configuration ID with an ephemeral machine ID inside the worker. Do not substitute local execution,
-another environment or a fresh chat during ordinary dispatch. Check native archive status before
-continuing. Only when this coordinator's `automationId` is `automation-sync` and native history confirms its
+another environment or a fresh chat during ordinary dispatch.
+
+Before sending, check the exact saved `thread.id` in separate native active and archived Codex
+history for the same verified account and chat host. Use the native account-level history views
+for that host. An exact match in one view and a complete
+search without that ID in the other establish its status. Follow pagination before concluding
+absence. A direct-child listing that returns the same ID under both filters is ambiguous. Use
+archive-aware history to resolve it. Child lists, sidebar membership, lookup by ID and send
+eligibility alone cannot settle archive status. If native history is unavailable, incomplete for
+the exact ID, or contradictory, report the worker as Unverified and stop without sending or linking it.
+
+Only when this coordinator's `automationId` is `automation-sync` and native history confirms its
 exact saved worker is archived, read and follow `skills/automation-sync/SKILL.md` and its
 `references/native-tasks.md` section “Recover the synchronizer before dispatch” from canonical
 `tanaabased/tanaabot` at the already selected sync source commit. Enter the recovery
-procedure here in the owning Dot;
-do not send the old request to the archived worker. It uses the same worker creation and schedule
+procedure here in the owning Dot. It uses the same worker creation and schedule
 rebinding procedure as ordinary synchronization, then returns a newly compiled request for this
-occurrence. Resume below only after its verified rebind, using that new request.
+occurrence. Resume below only after its verified rebind and the same history check for the new
+request's exact `thread.id`.
 For other automations, an archived worker needs synchronization; stop dispatch without replacement.
-An active worker follows normal dispatch. Stop on missing, inaccessible or unknown status without
-presenting the worker as ready or linking it. Check for an active turn in
+An active worker follows normal dispatch. Check for an active turn in
 that worker before sending; if one is running, report the overlap instead of queuing duplicate work.
 Send the complete generated `prompt` unchanged, including its readable header, metadata and
 instructions. When a sync source was selected, forward that exact `sourceSelection` from the

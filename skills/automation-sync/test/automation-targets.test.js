@@ -116,14 +116,22 @@ test('should require a verified reusable worker before preparing any schedule', 
     },
     source: { revision: 'a'.repeat(40), dirty: false },
     existingTasks: [],
-    context: { ...context, workers: [] },
+    context: {
+      ...context,
+      workers: [],
+      workerHistory: {
+        active: { source: 'history', ids: ['worker'], complete: true },
+        archived: { source: 'history', ids: [], complete: true },
+      },
+    },
     now: '2026-01-01T00:00:00Z',
   };
-  assert.throws(() => planSync(request), /reusable-worker-missing/);
+  assert.deepEqual(planSync(request).operations, [
+    { automationId: 'review', kind: 'skipped', reason: 'worker-status-unverified' },
+  ]);
   const worker = {
     automationId: 'review',
     id: 'worker',
-    status: 'active',
     environmentId: 'wrong-config',
     name: 'Calendar Review',
     url: 'https://example.test/chat',

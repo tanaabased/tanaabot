@@ -91,11 +91,14 @@ automations:
       context: {
         timezone: 'America/New_York',
         environments: [{ id: 'fixture-cloud', name: 'fixture' }],
+        workerHistory: {
+          active: { source: 'history', ids: ['fixture-worker'], complete: true },
+          archived: { source: 'history', ids: [], complete: true },
+        },
         workers: [
           {
             automationId: 'smoke',
             id: 'fixture-worker',
-            status: 'active',
             environmentId: 'fixture-cloud',
             name: 'Custom smoke',
             url: 'https://example.test/chat',
