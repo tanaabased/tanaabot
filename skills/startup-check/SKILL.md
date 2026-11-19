@@ -25,6 +25,8 @@ Verification never provisions, upgrades, switches revisions, binds Agent System 
 ## Required Reading
 
 - **Always:** Read and apply [Tanaboot usage](../../TANABOOT.md#usage) for check behavior and limits.
+- **Before continuing a fresh Cloud task:** Read and apply the installed
+  [global guidance](../../dotfiles/ai/.codex/AGENTS.md) after verifying its link in step 3.
 - **Before reporting:** Read and apply [Tanaabot Voice](../voice/SKILL.md).
 - **Before assigning results or composing the card:** Read and apply the
   [startup report contract](./references/startup-report.md).
@@ -62,9 +64,9 @@ separate operator-authorized scope. This skill inspects the saved installation o
 3. Assign Environment, Dependencies and Dotfiles results using the report contract. For the active
    dotpackages, also verify that Stow destinations link to the expected prepared source files; a
    matching copy alone does not prove correct Stow installation. The installed global `AGENTS.md`
-   belongs under Dotfiles. Automatic instruction delivery is outside this pilot's result;
-   [#16](https://github.com/tanaabased/tanaabot/issues/16) concerns main-Dot saved instructions, not
-   Cloud loading. Do not add a separate guidance row or warning.
+   belongs under Dotfiles. In a fresh Cloud task, explicitly read it through the verified link
+   at `~/.codex/AGENTS.md` and apply it in this chat. Follow its account guidance when a request
+   needs a connected service.
    If the combined command stops early, retain its completed checks and continue independent
    read-only inspection. A check prevented by missing prerequisites is unverified, not another failure.
    The independent environment check is
@@ -142,8 +144,8 @@ separate operator-authorized scope. This skill inspects the saved installation o
    repository permissions, live HTTPS access and local signing are distinct results. A public read
    may be anonymous or use platform authentication; it does not prove `GH_TOKEN` write access.
    Live transport and signing tests belong to the authorized Cloud pilot, not read-only startup.
-   Email configuration is identity, not proof of Google authentication; connected-account selection
-   remains [#11](https://github.com/tanaabased/tanaabot/issues/11).
+   Keep the configured email as identity metadata. Obtain Google authentication evidence from the
+   selected native connection when needed.
 7. Compose the startup card using the report contract. Show all six status rows together.
    Below them, list any notes by section, with ❌ errors first, then ⚠️ warnings, then ℹ️ information
    such as verified identity-only Git drift. Omit **NOTES** when empty. Append at most one selected
