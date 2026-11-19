@@ -85,7 +85,10 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       assert.match(dispatcher, /Only when this coordinator's `automationId` is `automation-sync`/);
       assert.match(dispatcher, /exact saved worker is archived or deleted/);
       assert.match(dispatcher, /Recover the synchronizer before dispatch/);
-      assert.match(dispatcher, /For other automations,[\s\S]*stop dispatch without replacement/);
+      assert.match(
+        dispatcher,
+        /For other automations,[\s\S]*?archived or deleted worker as needing Automation Sync\.\s+Stop dispatch without replacement/,
+      );
       assert.match(dispatcher, /An active worker follows normal dispatch/);
       assert.match(dispatcher, /report the worker as Unverified and stop without sending/);
       assert.match(
@@ -463,41 +466,48 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     assert.equal(smoke.kind, 'unchanged');
   });
 
-  test('should mark only Sync’s verified deleted binding as pending recovery', () => {
+  test('should mark verified deleted bindings as pending recovery for all selected automations', () => {
     const request = input({ existingTasks: saved() });
-    const id = 'worker-automation-sync';
     for (const workerHistory of [
-      history([`${id}-other`]),
-      { deleted: { source: 'native-deletion', ids: [id, 'worker-smoke'] } },
+      history(['worker-automation-sync-other']),
+      {
+        deleted: { source: 'native-deletion', ids: ['worker-automation-sync', 'worker-smoke'] },
+      },
     ]) {
       request.context.workerHistory = workerHistory;
-      const [sync, smoke] = planSync(request).operations;
-      assert.deepEqual(sync, {
-        automationId: 'automation-sync',
-        kind: 'skipped',
-        reason: 'worker-deleted',
-        nativeId: request.existingTasks[0].id,
-        task: request.existingTasks[0].task,
-      });
-      assert.equal(smoke.reason, 'worker-status-unverified');
+      assert.deepEqual(
+        planSync(request).operations.map(({ automationId, kind, reason }) => [
+          automationId,
+          kind,
+          reason,
+        ]),
+        [
+          ['automation-sync', 'skipped', 'worker-deleted'],
+          ['smoke', 'skipped', 'worker-deleted'],
+        ],
+      );
     }
   });
 
-  test('should use the same verified archive rebind for another selected automation', () => {
-    const request = input({ existingTasks: saved(), id: 'smoke' });
-    const original = request.existingTasks[1];
-    const worker = request.context.workers[1];
-    worker.replaces = { id: worker.id, status: 'archived', environmentId: worker.environmentId };
-    worker.id = 'replacement-smoke';
-    delete worker.url;
-    request.context.workerHistory = history([worker.id], [worker.replaces.id]);
-    const operations = planSync(request).operations;
-    assert.equal(operations.length, 1);
-    const [update] = operations;
-    assert.equal(update.kind, 'update');
-    assert.equal(update.nativeId, original.id);
-    assert.deepEqual(update.task.schedule, original.task.schedule);
-    assert.equal(workerRequest(update.task).thread.id, worker.id);
+  test('should use the same rebind for an archived or deleted worker during a full sync', () => {
+    for (const status of ['archived', 'deleted']) {
+      const request = input({ existingTasks: saved() });
+      const original = request.existingTasks[1];
+      const worker = request.context.workers[1];
+      worker.replaces = { id: worker.id, status, environmentId: worker.environmentId };
+      worker.id = 'replacement-smoke';
+      delete worker.url;
+      request.context.workerHistory = history(
+        ['worker-automation-sync', worker.id],
+        status === 'archived' ? [worker.replaces.id] : [],
+      );
+      const [sync, update] = planSync(request).operations;
+      assert.equal(sync.kind, 'unchanged');
+      assert.equal(update.kind, 'update');
+      assert.equal(update.nativeId, original.id);
+      assert.deepEqual(update.task.schedule, original.task.schedule);
+      assert.equal(workerRequest(update.task).thread.id, worker.id);
+    }
   });
 
   test('should refuse malformed worker identities', () => {

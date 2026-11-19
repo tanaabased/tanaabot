@@ -83,8 +83,8 @@ Use the same exact-ID check before dispatch and before assembly. Read the active
 native Codex account-level history views for the same verified account and chat host. Use views
 that include worker chats and follow every page before treating an ID as absent. For an active
 worker, the ID must appear in active history and be absent from the complete archived search.
-Reverse those views to confirm an archive. For Sync's own bound worker, either absence from both
-complete views or explicit native confirmation of deletion for the exact chat verifies deletion.
+Reverse those views to confirm an archive. Absence from both complete views or explicit native
+confirmation of deletion for the exact chat verifies deletion.
 Treat presence in either view alongside a deletion confirmation as conflicting evidence.
 Child lists, sidebar membership, failed lookups and send results cannot establish deletion.
 
@@ -102,9 +102,9 @@ rebinding, using current evidence for both.
 
 ### Replace a retired worker
 
-During synchronization, use this procedure for a managed worker confirmed archived or for Sync's
-own worker confirmed deleted. Leave any archived chat and history intact. Check the authored
-target before creating a replacement. An explicit worker pin requires an authorized source change
+During synchronization, use this procedure for a managed worker confirmed archived or deleted.
+Leave any archived chat and history intact. Check the authored target before creating a replacement.
+An explicit worker pin requires an authorized source change
 before replacement. Reconcile any prior replacement attempt through its native
 creation result and chat history before creating another worker; include the automation ID and retired
 worker ID in a replacement's initialization prompt so that recovery can identify it without guessing
@@ -119,7 +119,7 @@ Use the creation and initialization procedure in Resolve workers above for one r
 the same published Cloud configuration. Verify initialization and active status.
 Supply `startup: "passed"` and the ordinary worker fields plus
 `replaces: { "id": "retired-worker-id", "status": "archived", "environmentId": "verified-config-id" }`.
-For Sync's confirmed deleted worker, use `"status": "deleted"` with the same fields. Supply current
+For a confirmed deleted worker, use `"status": "deleted"` with the same fields. Supply current
 native observations for the retired ID and verify that it matches the schedule's saved binding.
 
 Rebind the same native schedule ID using the returned `expectedCurrent` and exact compiled task.

@@ -111,8 +111,8 @@ Use the ordinary workflow below for an active binding or initial seeding.
    using the reference's input shape. This validates Cloud cadence before worker creation and omits
    elapsed one-time targets. Resolve only its returned workers through native chat controls.
    [Verify the status](./references/native-tasks.md#verify-worker-status) of the exact saved ID.
-   Reuse the saved active worker. For a confirmed archived managed worker or Sync's confirmed deleted
-   worker, follow the [replacement procedure](./references/native-tasks.md#replace-a-retired-worker).
+   Reuse the saved active worker. For a managed worker confirmed archived or deleted, follow
+   the [replacement procedure](./references/native-tasks.md#replace-a-retired-worker).
    Unknown or inaccessible workers do not qualify. For every new chat, including bootstrap and
    recovery, pass the resolved `target.model` and `target.effort` to native creation as `model`
    and `thinking`, with the [initialization card instructions](./references/native-tasks.md#initialization-card).

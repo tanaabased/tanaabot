@@ -27,8 +27,8 @@ procedure here in the owning Dot. It uses the same worker creation and schedule
 rebinding procedure as ordinary synchronization, then returns a newly compiled request for this
 occurrence. Resume below only after its verified rebind and the same history check for the new
 request's exact `thread.id`.
-For other automations, report an archived worker as needing synchronization and a missing worker
-as Unverified. In either case, stop dispatch without replacement.
+For other automations, report a confirmed archived or deleted worker as needing Automation Sync.
+Stop dispatch without replacement.
 An active worker follows normal dispatch.
 When resuming an Automation Sync invocation, reconcile any prior send for that exact invocation
 even if the worker is already active. If the send was accepted, skip the send below and use the

@@ -179,9 +179,7 @@ export function planSync({
       const savedWorkerId = current?.parsed.metadata.worker?.id;
       const observed = findWorker(job.id, context.workers);
       const observedStatus = workerStatus(context.workerHistory, observed?.id);
-      const status = savedWorkerId && workerStatus(context.workerHistory, savedWorkerId);
-      const savedStatus =
-        status === 'deleted' && job.id !== 'automation-sync' ? 'unverified' : status;
+      const savedStatus = savedWorkerId && workerStatus(context.workerHistory, savedWorkerId);
       const replaceable = savedStatus === 'archived' || savedStatus === 'deleted';
       if (!observed || observedStatus !== 'active' || savedStatus === 'unverified') {
         const needsReplacement = replaceable && (!observed || observed.id === savedWorkerId);
