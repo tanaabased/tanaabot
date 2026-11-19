@@ -3,6 +3,7 @@
 Select the actual workspace revision with the packaged Cloud wrapper, then run that revision's
 Tanaboot on a disposable Linux runner. A local Git repository supplies the candidate revisions and tags.
 Version and preview commands prove selection and forwarding without repeating host installation.
+The local HTTPS fixture supplies GitHub release responses to curl without contacting GitHub.
 
 ## Setup
 
@@ -30,6 +31,40 @@ git -C "$TMPDIR/remote" checkout -qb no-installer
 git -C "$TMPDIR/remote" rm -q tanaboot.sh
 git -C "$TMPDIR/remote" -c user.name=Test -c user.email=test@example.invalid commit -qm missing-installer
 git -C "$TMPDIR/remote" checkout -q main
+
+# should prepare a checkout and https endpoint for channel selection
+mkdir "$TMPDIR/release-api"
+cp release-catalog.json "$TMPDIR/release-api/catalog.json"
+channel_remote="$TMPDIR/channel-remote"
+git clone -q --bare "$TMPDIR/remote" "$channel_remote"
+git clone -q "$channel_remote" "$TMPDIR/channel-workspace"
+git -C "$TMPDIR/channel-workspace" remote set-url origin https://github.com/tanaabased/tanaabot.git
+git -C "$TMPDIR/channel-workspace" config "url.file://$channel_remote.insteadOf" https://github.com/tanaabased/tanaabot.git
+first=$(cat "$TMPDIR/first")
+second=$(cat "$TMPDIR/second")
+git -C "$channel_remote" branch trunk "$first"
+git -C "$channel_remote" symbolic-ref HEAD refs/heads/trunk
+git -C "$channel_remote" branch dev "$second"
+git -C "$channel_remote" branch pilot "$second"
+git -C "$channel_remote" tag stable "$second"
+git -C "$channel_remote" tag edge "$second"
+git -C "$channel_remote" tag preview "$first"
+git -C "$channel_remote" tag unpromoted "$second"
+git -C "$channel_remote" tag without-installer no-installer
+openssl req -x509 -newkey rsa:2048 -nodes -days 1 -subj /CN=api.github.com \
+  -addext subjectAltName=DNS:api.github.com \
+  -keyout "$TMPDIR/release-api/key.pem" -out "$TMPDIR/release-api/cert.pem" >/dev/null 2>&1
+python3 release-api.py "$TMPDIR/release-api" > "$TMPDIR/release-api/log" 2>&1 &
+server_pid=$!
+printf '%s\n' "$server_pid" > "$TMPDIR/release-api/pid"
+for attempt in {1..50}; do
+  if test -s "$TMPDIR/release-api/port"; then break; fi
+  kill -0 "$server_pid"
+  sleep 0.1
+done
+test -s "$TMPDIR/release-api/port" || { cat "$TMPDIR/release-api/log"; exit 1; }
+printf 'connect-to = "api.github.com:443:127.0.0.1:%s"\ncacert = "%s"\nnoproxy = "api.github.com"\n' \
+  "$(cat "$TMPDIR/release-api/port")" "$TMPDIR/release-api/cert.pem" > "$TMPDIR/release-api/.curlrc"
 ```
 
 ## Testing
@@ -42,7 +77,7 @@ for input in '' --agent --ref=main; do
   output=$(bash "$TANABOOT_PACKAGE_ROOT/scripts/cloud-setup.sh" "$input" 2>&1) || status=$?
   printf '%s\n' "$output"
   test "$status" -eq 2
-  printf '%s\n' "$output" | grep -F 'Provide a branch, tag or full commit SHA'
+  printf '%s\n' "$output" | grep -F 'Provide a channel, branch, tag or full commit SHA'
 done
 
 # should select main and recover a reachable tag in a shallow workspace
@@ -171,4 +206,129 @@ test "$status" -eq 1
 printf '%s\n' "$output" | grep -F 'Could not fetch the resolved commit and tags'
 test "$(git rev-parse conflict)" = "$first"
 test "$(git rev-parse HEAD)" = "$(cat "$TMPDIR/second")"
+
+# should select the canonical default branch for dev regardless of local refs
+cd "$TMPDIR/channel-workspace"
+test "$(git symbolic-ref refs/remotes/origin/HEAD)" = refs/remotes/origin/main
+first=$(cat "$TMPDIR/first")
+output=$(bash "$TANABOOT_PACKAGE_ROOT/scripts/cloud-setup.sh" dev --version)
+printf '%s\n' "$output" | grep -F "Workspace revision: dev ($first)"
+test "$(git rev-parse HEAD)" = "$first"
+
+# should report a fallback for both aliases when no published release qualifies
+export CURL_HOME="$TMPDIR/release-api"
+cd "$TMPDIR/channel-workspace"
+first=$(cat "$TMPDIR/first")
+printf '%s\n' '{"pages":[[]]}' > "$CURL_HOME/responses.json"
+for alias in stable edge; do
+  output=$(bash "$TANABOOT_PACKAGE_ROOT/scripts/cloud-setup.sh" "$alias" --version 2>&1)
+  printf '%s\n' "$output" | grep -F "$alias has no eligible GitHub release. Falling back to dev."
+  printf '%s\n' "$output" | grep -F "Workspace revision: $alias ($first)"
+  test "$(git rev-parse HEAD)" = "$first"
+done
+
+# should use the latest release tag for stable even when a branch has the same name
+export CURL_HOME="$TMPDIR/release-api"
+cd "$TMPDIR/channel-workspace"
+jq '{latest:.latest}' "$CURL_HOME/catalog.json" > "$CURL_HOME/responses.json"
+release=$(cat "$TMPDIR/release")
+output=$(bash "$TANABOOT_PACKAGE_ROOT/scripts/cloud-setup.sh" stable --version)
+printf '%s\n' "$output" | grep -F "Workspace revision: stable ($release)"
+test "$(git rev-parse HEAD)" = "$release"
+
+# should limit prereleases and regular releases without latest status to edge
+export CURL_HOME="$TMPDIR/release-api"
+cd "$TMPDIR/channel-workspace"
+for release_type in preview regular; do
+  jq --arg release "$release_type" '{pages:[[.[$release]]]}' "$CURL_HOME/catalog.json" > "$CURL_HOME/responses.json"
+  output=$(bash "$TANABOOT_PACKAGE_ROOT/scripts/cloud-setup.sh" stable --version 2>&1)
+  printf '%s\n' "$output" | grep -F 'stable has no eligible GitHub release. Falling back to dev.'
+  test "$(git rev-parse HEAD)" = "$(cat "$TMPDIR/first")"
+  case "$release_type" in
+    preview) expected=$(cat "$TMPDIR/first") ;;
+    regular) expected=$(cat "$TMPDIR/second") ;;
+  esac
+  output=$(bash "$TANABOOT_PACKAGE_ROOT/scripts/cloud-setup.sh" edge --version 2>&1)
+  printf '%s\n' "$output" | grep -F "Workspace revision: edge ($expected)"
+  [[ "$output" != *'Falling back'* ]]
+  test "$(git rev-parse HEAD)" = "$expected"
+done
+
+# should choose edge by publication time across pages even when latest status differs
+export CURL_HOME="$TMPDIR/release-api"
+cd "$TMPDIR/channel-workspace"
+jq '{latest:.latest,pages:[[.latest],[.preview]]}' "$CURL_HOME/catalog.json" > "$CURL_HOME/responses.json"
+bash "$TANABOOT_PACKAGE_ROOT/scripts/cloud-setup.sh" stable --version
+test "$(git rev-parse HEAD)" = "$(cat "$TMPDIR/release")"
+bash "$TANABOOT_PACKAGE_ROOT/scripts/cloud-setup.sh" edge --version
+test "$(git rev-parse HEAD)" = "$(cat "$TMPDIR/first")"
+jq '.latest.published_at = "2026-10-10T12:00:00Z" | {latest:.latest,pages:[[.preview,.latest]]}' \
+  "$CURL_HOME/catalog.json" > "$CURL_HOME/responses.json"
+bash "$TANABOOT_PACKAGE_ROOT/scripts/cloud-setup.sh" edge --version
+test "$(git rev-parse HEAD)" = "$(cat "$TMPDIR/release")"
+
+# should use release id to break equal publication timestamps and exclude drafts
+export CURL_HOME="$TMPDIR/release-api"
+cd "$TMPDIR/channel-workspace"
+jq '{pages:[[.regular],[.draft,.preview]]}' "$CURL_HOME/catalog.json" > "$CURL_HOME/responses.json"
+bash "$TANABOOT_PACKAGE_ROOT/scripts/cloud-setup.sh" edge --version
+test "$(git rev-parse HEAD)" = "$(cat "$TMPDIR/second")"
+
+# should preserve the checkout when github cannot confirm a release selection
+export CURL_HOME="$TMPDIR/release-api"
+cd "$TMPDIR/channel-workspace"
+before=$(git rev-parse HEAD)
+while IFS='|' read -r alias query expected; do
+  jq "$query" "$CURL_HOME/catalog.json" > "$CURL_HOME/responses.json"
+  status=0
+  output=$(bash "$TANABOOT_PACKAGE_ROOT/scripts/cloud-setup.sh" "$alias" --version 2>&1) || status=$?
+  test "$status" -eq 1
+  printf '%s\n' "$output" | grep -F "$expected"
+  [[ "$output" != *'Falling back'* ]]
+  test "$(git rev-parse HEAD)" = "$before"
+done <<'CASES'
+stable|{latest:401}|HTTP 401
+stable|{pages:[404]}|Could not confirm
+edge|{pages:[[.preview],429]}|page 2 (HTTP 429)
+edge|{pages:[[.preview],{}]}|invalid data on page 2
+CASES
+
+# should fail release lookup on a tls error without using dev
+cd "$TMPDIR/channel-workspace"
+before=$(git rev-parse HEAD)
+mkdir "$TMPDIR/untrusted-api"
+sed '/^cacert =/d' "$TMPDIR/release-api/.curlrc" > "$TMPDIR/untrusted-api/.curlrc"
+status=0
+output=$(CURL_HOME="$TMPDIR/untrusted-api" bash "$TANABOOT_PACKAGE_ROOT/scripts/cloud-setup.sh" edge --version 2>&1) || status=$?
+test "$status" -eq 1
+printf '%s\n' "$output" | grep -F "GitHub 'edge' release lookup failed"
+[[ "$output" != *'Falling back'* ]]
+test "$(git rev-parse HEAD)" = "$before"
+
+# should fail selected releases with a missing tag or installer without using another revision
+export CURL_HOME="$TMPDIR/release-api"
+cd "$TMPDIR/channel-workspace"
+before=$(git rev-parse HEAD)
+while IFS='|' read -r tag expected; do
+  jq --arg tag "$tag" '{latest:(.latest | .tag_name = $tag)}' \
+    "$CURL_HOME/catalog.json" > "$CURL_HOME/responses.json"
+  status=0
+  output=$(bash "$TANABOOT_PACKAGE_ROOT/scripts/cloud-setup.sh" stable --version 2>&1) || status=$?
+  test "$status" -eq 1
+  printf '%s\n' "$output" | grep -F "$expected"
+  [[ "$output" != *'Falling back'* ]]
+  test "$(git rev-parse HEAD)" = "$before"
+done <<'CASES'
+missing-tag|Could not resolve the selected GitHub release tag
+without-installer|Selected revision has no tanaboot.sh entrypoint
+CASES
+```
+
+## Cleanup
+
+```bash
+# should stop the local release endpoint
+if test -s "$TMPDIR/release-api/pid"; then
+  kill "$(cat "$TMPDIR/release-api/pid")"
+fi
 ```

@@ -1,0 +1,30 @@
+{
+  "latest": {
+    "id": 30,
+    "tag_name": "pilot",
+    "draft": false,
+    "prerelease": false,
+    "published_at": "2026-10-08T12:00:00Z"
+  },
+  "preview": {
+    "id": 10,
+    "tag_name": "preview",
+    "draft": false,
+    "prerelease": true,
+    "published_at": "2026-10-09T12:00:00Z"
+  },
+  "regular": {
+    "id": 20,
+    "tag_name": "unpromoted",
+    "draft": false,
+    "prerelease": false,
+    "published_at": "2026-10-09T12:00:00Z"
+  },
+  "draft": {
+    "id": 40,
+    "tag_name": "unpublished",
+    "draft": true,
+    "prerelease": false,
+    "published_at": null
+  }
+}

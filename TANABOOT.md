@@ -15,11 +15,22 @@ from the existing workspace:
 
 ```sh
 bash scripts/cloud-setup.sh main
+bash scripts/cloud-setup.sh stable
 bash scripts/cloud-setup.sh v0.1.0 --host
 bash scripts/cloud-setup.sh <full-commit-sha> --agent
 ```
 
-The required first argument selects a canonical `tanaabased/tanaabot` branch, tag or full commit SHA.
+The required first argument selects a channel, branch, tag or full commit SHA from
+`tanaabased/tanaabot`.
+
+- `dev` uses the repository's current default branch.
+- `stable` uses the published regular release that GitHub marks Latest.
+- `edge` uses the most recently published GitHub release, including prereleases.
+
+When GitHub confirms that `stable` or `edge` has no eligible release, the wrapper reports why it uses
+`dev`. Failed lookups and broken releases stop setup. The three lowercase channel names are reserved.
+Use a full commit SHA for a branch or tag with one of those names.
+
 The wrapper fetches that commit, checks it out directly in the workspace, and runs its `tanaboot.sh`
 with the remaining arguments unchanged.
 A modified workspace, unexpected origin, missing reference or branch/tag collision fails without
