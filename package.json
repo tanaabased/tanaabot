@@ -16,7 +16,7 @@
   },
   "type": "module",
   "dependencies": {
-    "@tanaab/openclaw-agent-system": "github:tanaabased/openclaw-agent-system#17c70b7b018f65441b3a9b2e02bf91db6ec5d923"
+    "@tanaab/openclaw-agent-system": "github:tanaabased/openclaw-agent-system#977463314f1373938be6f737987d28794cde7572"
   },
   "scripts": {
     "automations:prepare": "bun skills/automation-sync/scripts/prepare-dependency.js",

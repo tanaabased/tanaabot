@@ -62,9 +62,12 @@ jobs:
       - name: Refresh Homebrew when needed
         run: HOMEBREW_NO_AUTO_UPDATE= brew update-if-needed
       - name: Set up OpenClaw
+        id: openclaw
         if: matrix.example == 'openclaw'
         uses: tanaabased/actions/setup-openclaw@v1
         with:
+          package-json: node_modules/@tanaab/openclaw-agent-system/package.json
+          package-field: devDependencies.openclaw
           agent-system: ./node_modules/@tanaab/openclaw-agent-system
       - name: Run Leia-backed example
         uses: tanaabased/actions/run-leia@v1
@@ -73,6 +76,7 @@ jobs:
           XDG_CACHE_HOME: ${{ runner.temp }}/tanaabot-cache
           CURL_HOME: ${{ runner.temp }}/tanaabot-curl
           NO_COLOR: '1'
+          OPENCLAW_CLI: ${{ steps.openclaw.outputs.executable-path }}
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.TANAABOTKEY }}
         with:
           scenarios: examples/${{ matrix.example }}/README.md
