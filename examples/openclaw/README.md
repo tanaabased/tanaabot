@@ -11,6 +11,6 @@ cd "$TANABOOT_PACKAGE_ROOT"
 
 # should discover the voice skill after installing the packaged plugin
 cd "$OPENCLAW_WORKSPACE"
-"$OPENCLAW_CLI" plugins install "$TANABOOT_PACKAGE_ROOT" --accept-capabilities
+"$OPENCLAW_CLI" plugins install "$TANABOOT_PACKAGE_ROOT" --force --accept-capabilities
 "$OPENCLAW_CLI" skills list --json | jq -e 'any(.skills[]; .name == "tanaabot-voice" and .eligible)'
 ```
