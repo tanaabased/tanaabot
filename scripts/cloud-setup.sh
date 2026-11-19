@@ -70,7 +70,14 @@ main() (
     sha="${branch:-${peeled:-${tag}}}"
   fi
   [[ "${sha}" =~ ^[a-f0-9]{40}$ ]] || fail 'Reference did not resolve to one commit.'
-  git fetch -q --no-tags --depth=1 "${url}" "${sha}" || fail 'Resolved commit could not be fetched. No other revision was selected.'
+  local shallow
+  local -a fetch_options=(--atomic --no-prune --tags)
+  shallow="$(git rev-parse --is-shallow-repository)" || fail 'Cannot determine workspace history depth.'
+  if [[ "${shallow}" == true ]]; then
+    fetch_options+=(--unshallow)
+  fi
+  git fetch --no-progress "${fetch_options[@]}" "${url}" "${sha}" ||
+    fail 'Could not fetch the resolved commit and tags. No other revision was selected.'
   [[ "$(git rev-parse FETCH_HEAD)" == "${sha}" && "$(git cat-file -t "${sha}")" == commit ]] || fail 'Fetched object is not the requested commit.'
   git cat-file -e "${sha}:tanaboot.sh" 2>/dev/null || fail 'Selected revision has no tanaboot.sh entrypoint.'
   require_clean_workspace
