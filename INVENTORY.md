@@ -9,7 +9,7 @@ Tanaabot's Codex Cloud sources and their current status. See [Tanaboot](./TANABO
 | [Automation Sync](./skills/automation-sync/SKILL.md)            | Prepare and synchronize hosted schedules from repository definitions | Prepared checkout, Bun and native scheduling controls            |
 | [Instruction Report](./skills/instruction-report/SKILL.md)      | Inspect accessible instructions and their evidence without changes   | Available read-only instruction sources                          |
 | [Instruction Sync](./skills/instruction-sync/SKILL.md)          | Propose main-Dot instruction changes and verify approved saves       | Main Dot's native instruction controls and repository access     |
-| [Record Publication](./skills/record-publication/SKILL.md)      | Record the source policy of a verified Cloud publication             | Fresh Cloud task, expected setup ID and authorized GitHub writer |
+| [Record Publication](./skills/record-publication/SKILL.md)      | Record the source policy after the operator publishes a setup        | Publisher chat, local setup receipt and authorized GitHub writer |
 | [Skill Author](./skills/skill-author/SKILL.md)                  | Create, maintain and validate tanaabot skills                        | Discoverable `tanaab-skill-author` and Bun                       |
 | [Spaceport Fortune Cookie](./skills/spaceport-fortune/SKILL.md) | Exercise local skill selection and required-reference loading        | Bundled fortune reference                                        |
 | [Startup Check](./skills/startup-check/SKILL.md)                | Verify a prepared Cloud environment without repairs                  | Prepared Tanaabot source and task catalog                        |

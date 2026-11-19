@@ -81,15 +81,18 @@ Tanaabot onboarding.
    [#16](https://github.com/tanaabased/tanaabot/issues/16) does not establish Cloud instruction delivery.
 
    Only during this pre-publication onboarding review, when the install succeeds, Startup Check
-   passes and its verified Setup ID matches the ID printed by this install, end the reply with
-   the separate card below. Replace `<setup-id>` in the command with that exact ID.
+   passes and its verified Setup ID matches the ID printed by this install, read
+   `cloud_environment_environment_status` before the operator publishes. Keep the current
+   `source_config_id` and `source_config_version_id` alongside this Setup ID in the publisher
+   chat. Mark unavailable observations as unknown. End the reply with this separate card,
+   substituting the verified Setup ID for `<setup-id>`.
 
    > **📦 NEXT STEP · RECORD PUBLICATION**
    >
-   > Click **Publish** (or **Republish** for a rebuild), then open a fresh task in that environment.
-   > Once its Setup ID matches the one below, send this command in the fresh task.
+   > Click **Publish** (or **Republish** for a rebuild). Once it succeeds, record setup
+   > `<setup-id>` by sending this command here in the publisher chat.
    >
-   > `Record Publication <setup-id>`
+   > `Record Publication`
 
 Use only the configured Tanaabot SSH key through Bootbox; do not generate a new identity or add inbound
 SSH access. Do not add accounts, Agent System binding or schedules during onboarding.
