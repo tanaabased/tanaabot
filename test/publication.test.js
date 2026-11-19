@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 
 import {
   preparePublication,
+  recordPublication,
   readRecordedPublication,
   receiptPath,
   repository,
@@ -181,5 +182,55 @@ test('repeating a recorded setup is a no-op and an old task cannot match a new s
   assert.throws(
     () => validateReceipt(branchReceipt, 'main-0123abcd'),
     /publication-setup-id-mismatch/,
+  );
+});
+
+for (const lostResponse of [false, true]) {
+  test(`record verifies the committed receipt when the response is ${lostResponse ? 'lost' : 'received'}`, async () => {
+    let read = githubFixture({ receipt: null });
+    let writes = 0;
+    const write = (input) => {
+      writes++;
+      assert.equal(input.expectedHeadOid, defaultHead);
+      const [file] = input.fileChanges.additions;
+      assert.equal(file.path, receiptPath);
+      read = githubFixture({ receipt: JSON.parse(Buffer.from(file.contents, 'base64')) });
+      if (lostResponse) throw new Error('connection reset');
+      return movingHead;
+    };
+    const record = () => recordPublication((path) => read(path), write, branchReceipt, defaultHead);
+    const result = await record();
+    assert.equal(result.status, 'recorded');
+    assert.equal(result.receiptCommit, lostResponse ? undefined : movingHead);
+    assert.equal((await record()).status, 'already-recorded');
+    assert.equal(writes, 1);
+  });
+}
+
+test('record reports GitHub rejection and does not resubmit after a head conflict', async () => {
+  const read = githubFixture({ receipt: null });
+  for (const reason of [
+    'Resource not accessible by integration',
+    'Expected branch head has changed',
+  ]) {
+    let writes = 0;
+    const rejection = new Error(reason);
+    await assert.rejects(
+      recordPublication(
+        read,
+        () => {
+          writes++;
+          throw rejection;
+        },
+        branchReceipt,
+        defaultHead,
+      ),
+      (error) => error === rejection,
+    );
+    assert.equal(writes, 1);
+  }
+  await assert.rejects(
+    recordPublication(read, assert.fail, branchReceipt, movingHead),
+    /publication-prepared-head-changed/,
   );
 });
