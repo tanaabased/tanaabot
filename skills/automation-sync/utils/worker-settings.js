@@ -1,7 +1,7 @@
 const profiles = ['default', 'low', 'medium', 'high'];
 const efforts = ['none', 'minimal', 'low', 'medium', 'high', 'xhigh', 'max', 'ultra'];
 
-/** Resolve desired worker settings; native controls still validate availability. */
+/** resolve desired worker settings; native controls still validate availability. */
 export default function workerSettings(job, models) {
   const override = job.overrides.codex;
   const selector = override?.model ?? job.model ?? 'default';

@@ -47,7 +47,7 @@ test('should match configured sections and exact desktop identities for verified
   assert.equal(placementPlan(input).placements[0].move.sectionId, 'checks-section');
   input.context.workers[0].id = 'same-title-different-chat';
   assert.equal(placementPlan(input).placements[0].reason, 'desktop-chat-missing-or-ambiguous');
-  // Skipped jobs have no verified binding and must not produce placement warnings.
+  // skipped jobs have no verified binding and must not produce placement warnings.
   input.context.workers = [before.context.workers[1]];
   assert.deepEqual(
     placementPlan(input).placements.map((p) => p.automationId),

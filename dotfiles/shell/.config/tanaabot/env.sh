@@ -1,4 +1,4 @@
-# Loaded by the Cloud user's login and interactive Bash shells.
+# loaded by the CLOUD user's login and interactive BASH shells.
 _tanaabot_brew="$(command -v brew 2>/dev/null || true)"
 if [ -z "$_tanaabot_brew" ]; then
   for _tanaabot_brew in "$HOME/.linuxbrew/bin/brew" /home/linuxbrew/.linuxbrew/bin/brew; do
@@ -12,7 +12,7 @@ if [ -x "$_tanaabot_brew" ]; then
 fi
 unset _tanaabot_brew
 
-# Keep secret values out of shell tracing. Values are data, never shell source.
+# keep secret values out of shell tracing. values are data, never shell source.
 _tanaabot_trace=0
 case $- in *x*) _tanaabot_trace=1; set +x ;; esac
 _tanaabot_source="$(readlink -f -- "${BASH_SOURCE[0]}")"

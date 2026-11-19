@@ -72,7 +72,7 @@ Keep a native-provided private chat link when available. Otherwise omit input `u
 generates `codex://threads/<worker-id>` from the verified active worker ID. Do not have the model
 invent links. After saving, confirm the schedule's worker ID matches before presenting its link.
 Only link the final active worker. Backend lookup or send eligibility does not prove client navigation.
-Test tap-through on iOS and desktop during the pilot; if a client cannot open the link, try its native
+If a client cannot open the link, try its native
 task card. If neither works, state that navigation is unavailable rather than silently dropping it.
 Native worker IDs and optional links live in the saved schedule prompt and current native
 responses, not a separate database.
@@ -251,8 +251,7 @@ The saved schedule prompt begins with its ownership metadata.
 The client owns preview length and collapse behavior; the template does not create an accordion.
 The coordinator continues that worker, waits for its
 result and returns the compact linked summary through normal main-chat delivery. Scheduling a
-coordinator does not itself bind a Cloud environment. Prompt guidance directs the supported native
-delegation established by the pilot; it does not create missing tools or native settings.
+coordinator does not itself bind a Cloud environment. Use the supported native delegation tools.
 
 For unrelated tasks, only `id`, `task.name` and `task.prompt` are needed. Read remaining fields for
 marker-matched tasks. Do not invent unavailable native values. The ownership marker identifies
@@ -264,11 +263,10 @@ The assembler translates Agent System schedules into native VEVENT fields. Recur
 must be at least one hour and use whole minutes; cron must also leave at least an hour between
 runs. Daily, weekly, monthly and seasonal selections are supported when their day constraints
 can be represented exactly. A restricted day-of-month OR weekday combination is rejected.
-Native acceptance and execution still require the Cloud pilot; local compilation is not proof of either.
 
 Use `schedule: {at: "<ISO timestamp with offset>"}` for a one-time run, with whole-second precision.
-Relative `in` schedules and recurrence bounds are not supported yet. Choose a future timestamp
-when preparing the pilot. Elapsed one-time definitions are skipped without creating workers,
+Relative `in` schedules and recurrence bounds are not supported yet. Choose a future timestamp.
+Elapsed one-time definitions are skipped without creating workers,
 changing saved tasks or claiming execution. To run again, explicitly author a new future time.
 The assembler preserves saved recurrence anchors across syncs and prompt edits. Copy native
 schedule fields directly; do not reconstruct them from a description or convert them back to cron.
@@ -276,7 +274,8 @@ schedule fields directly; do not reconstruct them from a description or convert 
 Apply exact compiled prompts and settings through the owning dot's native schedule controls.
 Apply returned operations in order: the synchronizer comes first when selected. For a manual
 seed use `id: "automation-sync"` in both targets and sync requests, resolving only its worker. Verify
-its saved prompt and binding before a separate Run now for the full sync.
+its saved prompt and binding. If the operator also requested a full sync, the owning Dot can
+then invoke Automation Sync once with selection `all` as a separate operation.
 Never use the contributor's local scheduler as a substitute or write scheduler files. Supply the
 native scheduler's IANA timezone as `context.timezone` in both modes. Omitted source timezones use
 the saved task's timezone, or this native default for a new task. Do not substitute the Cloud
@@ -296,7 +295,7 @@ All consumed partials participate in comparison, including coordinator dispatch.
 updates every affected task. Generated timestamps and source revision alone do not force updates;
 unchanged schedules retain their exact prompts, timestamps and native IDs. Successful native
 responses establish saved settings when returned; read back only missing values, uncertain effects
-and explicit pilot checks. Never repeat a denied or uncertain create.
+and values the operator explicitly asks to verify. Never repeat a denied or uncertain create.
 
 If the Cloud worker cannot save schedules, it returns prepared actions to the coordinator for
 application through this same workflow. Report the handoff as pending until application succeeds.

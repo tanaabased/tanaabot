@@ -39,8 +39,7 @@ running, leave delivery pending rather than interrupting it or launching duplica
 
 If delivery fails, retain the successful scheduler result and report receipt delivery separately.
 Do not repeat a verified schedule write to repair presentation. Reconcile uncertain delivery in
-the same worker before sending again. The live pilot must inspect actual worker rendering;
-saved scheduler state and a prepared Markdown card do not establish that the receipt was shown.
+the same worker before sending again. Verify visible delivery in the worker when testing receipt rendering.
 
 Keep preparation tables, transport details and raw metadata in tool results or private handoff
 artifacts. If a problem

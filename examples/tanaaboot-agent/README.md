@@ -20,44 +20,38 @@ cat bash-profile >> "$HOME/.bash_profile"
 cp "$HOME/.bash_profile" "$TMPDIR/bash-profile-before-agent"
 
 # should install agent dotfiles and the approved ssh key
-tanaboot.sh --agent
+TANABOOT_AGENT=1 TANABOOT_OP_TOKEN="$OP_SERVICE_ACCOUNT_TOKEN" OP_SERVICE_ACCOUNT_TOKEN=unused-ambient tanaboot.sh
 ```
 
 ## Testing
 
 ```bash
-# should satisfy agent readiness
-bash -lc 'bash "$TANABOOT_PACKAGE_ROOT/tanaboot.sh" --agent --check'
+# should satisfy agent readiness with the inherited check action
+TANABOOT_CHECK=1 bash -lc '"$TANABOOT_PACKAGE_ROOT/tanaboot.sh" --agent' | grep -F 'agent check complete.'
 
 # should read github over https with the installed transport configuration
-bash -l <<'SH'
-set -euo pipefail
+. "$HOME/.config/tanaabot/env.sh"
 test "$(gh config get git_protocol --host github.com)" = https
 for url in git@github.com:tanaabased/tanaabot.git ssh://git@github.com/tanaabased/tanaabot.git; do
   test "$(git ls-remote --get-url "$url")" = https://github.com/tanaabased/tanaabot.git
 done
 refs=$(GIT_TERMINAL_PROMPT=0 git ls-remote --exit-code https://github.com/tanaabased/tanaabot.git HEAD)
 grep -Eq '^[0-9a-f]+[[:space:]]+HEAD$' <<< "$refs"
-SH
 
 # should reject a conflicting github credential helper without revealing it
-bash -l <<'SH'
-set -euo pipefail
+. "$HOME/.config/tanaabot/env.sh"
 status=0
 output=$(GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=credential.https://github.com.helper GIT_CONFIG_VALUE_0=private-helper-marker bash "$TANABOOT_PACKAGE_ROOT/tanaboot.sh" --agent --check 2>&1) || status=$?
 test "$status" -eq 1
 grep -F 'GitHub HTTPS must select the gh credential helper' <<< "$output"
-! grep -F 'private-helper-marker' <<< "$output"
-SH
+[[ "$output" != *private-helper-marker* ]]
 
 # should sign and verify a local commit without ssh transport
-bash -l <<'SH'
-set -euo pipefail
+. "$HOME/.config/tanaabot/env.sh"
 signing_repo=$(mktemp -d "$TMPDIR/signing.XXXXXX")
 git init -q "$signing_repo"
 env -u SSH_AUTH_SOCK git -C "$signing_repo" -c core.hooksPath=/dev/null commit --allow-empty -m 'verify installed signing identity'
 git -C "$signing_repo" verify-commit HEAD
-SH
 
 # should keep the private key outside the source checkout
 test -f "$HOME/.ssh/id_tanaabot"
@@ -72,14 +66,12 @@ test "$(stat -c '%u' "$HOME/.ssh/id_tanaabot")" = "$(id -u)"
 ssh-keygen -y -P '' -f "$HOME/.ssh/id_tanaabot" | cut -d ' ' -f 1,2 | cmp - "$TANABOOT_PACKAGE_ROOT/dotfiles/ssh/.ssh/id_tanaabot.pub"
 
 # should verify the approved signing key belongs to the configured github account
-bash -l <<'SH'
-set -euo pipefail
+. "$HOME/.config/tanaabot/env.sh"
 expected=$(bun --no-env-file -e 'process.stdout.write(Bun.YAML.parse(await Bun.file(process.env.TANABOOT_PACKAGE_ROOT + "/.agent-system/agent.yaml").text()).github.username)')
 login=$(gh api --hostname github.com user --jq .login)
 test "$login" = "$expected"
 public=$(awk '{print $1 " " $2}' "$HOME/.ssh/id_tanaabot.pub")
 gh api --hostname github.com --paginate "users/$login/ssh_signing_keys" --jq '.[].key' | awk '{print $1 " " $2}' | grep -Fx -- "$public" >/dev/null
-SH
 
 # should keep the environment snapshot private and outside packaged sources
 test ! -L "$HOME/.local/state/tanaabot"
@@ -103,7 +95,7 @@ name=$(jq -r '.variables | keys[0]' "$HOME/.local/state/tanaabot/environment.jso
 status=0
 output=$(env -u "$name" bun --no-env-file "$TANABOOT_PACKAGE_ROOT/scripts/environment-task.js" --check 2>&1) || status=$?
 test "$status" -eq 1
-printf '%s\n' "$output" | grep -F 'missing or differ'
+grep -F 'missing or differ' <<< "$output"
 
 # should preserve the previous snapshot when refresh cannot launch 1password
 cp "$HOME/.local/state/tanaabot/environment.json" "$TMPDIR/environment-before-failure"
@@ -112,7 +104,7 @@ bun_path=$(command -v bun)
 status=0
 output=$(PATH="$TMPDIR/empty-path" "$bun_path" --no-env-file "$TANABOOT_PACKAGE_ROOT/scripts/environment-task.js" --refresh 2>&1) || status=$?
 test "$status" -eq 1
-printf '%s\n' "$output" | grep -F 'previous file was preserved'
+grep -F 'previous file was preserved' <<< "$output"
 cmp "$TMPDIR/environment-before-failure" "$HOME/.local/state/tanaabot/environment.json"
 
 # should refuse an explicit refresh without a token and preserve the snapshot
@@ -120,7 +112,7 @@ cp "$HOME/.local/state/tanaabot/environment.json" "$TMPDIR/environment-without-t
 status=0
 output=$(env -u OP_SERVICE_ACCOUNT_TOKEN bun --no-env-file "$TANABOOT_PACKAGE_ROOT/scripts/environment-task.js" --refresh 2>&1) || status=$?
 test "$status" -eq 1
-printf '%s\n' "$output" | grep -F 'Set OP_SERVICE_ACCOUNT_TOKEN'
+grep -F 'Set OP_SERVICE_ACCOUNT_TOKEN' <<< "$output"
 cmp "$TMPDIR/environment-without-token" "$HOME/.local/state/tanaabot/environment.json"
 
 # should reject a world-readable environment without repairing it
@@ -129,7 +121,7 @@ chmod 644 "$HOME/.local/state/tanaabot/environment.json"
 status=0
 output=$(bun --no-env-file "$TANABOOT_PACKAGE_ROOT/scripts/environment-task.js" --check 2>&1) || status=$?
 test "$status" -eq 1
-printf '%s\n' "$output" | grep -F 'unsafe ownership, permissions or a symlink'
+grep -F 'unsafe ownership, permissions or a symlink' <<< "$output"
 test "$(stat -c '%a' "$HOME/.local/state/tanaabot/environment.json")" = 644
 
 # should reject malformed saved data without exposing its contents
@@ -139,8 +131,8 @@ printf '{"variables":{"TANABOOT_SECRET":"private-parser-marker"' > "$HOME/.local
 status=0
 output=$(bun --no-env-file "$TANABOOT_PACKAGE_ROOT/scripts/environment-task.js" --check 2>&1) || status=$?
 test "$status" -eq 1
-printf '%s\n' "$output" | grep -F 'Cannot read or refresh'
-! printf '%s\n' "$output" | grep -F 'private-parser-marker'
+grep -F 'Cannot read or refresh' <<< "$output"
+[[ "$output" != *'private-parser-marker'* ]]
 
 # should refuse a symlinked environment without following or replacing it
 mv "$HOME/.local/state/tanaabot/environment.json" "$TMPDIR/environment-real"
@@ -149,7 +141,7 @@ ln -s "$TMPDIR/environment-real" "$HOME/.local/state/tanaabot/environment.json"
 status=0
 output=$(bun --no-env-file "$TANABOOT_PACKAGE_ROOT/scripts/environment-task.js" --refresh 2>&1) || status=$?
 test "$status" -eq 1
-printf '%s\n' "$output" | grep -F 'unsafe ownership, permissions or a symlink'
+grep -F 'unsafe ownership, permissions or a symlink' <<< "$output"
 test -L "$HOME/.local/state/tanaabot/environment.json"
 
 # should preserve existing login profile contents when adding initialization
@@ -164,9 +156,8 @@ env -u BASH_ENV PATH=/usr/bin:/bin bash -lc 'set -e; test "$TANABOOT_PROFILE_SEN
 # should reject a command environment missing homebrew rather than activating it during checks
 status=0
 output=$(PATH=/usr/bin:/bin /bin/bash "$TANABOOT_PACKAGE_ROOT/tanaboot.sh" --agent --check 2>&1) || status=$?
-printf '%s\n' "$output"
 test "$status" -eq 1
-printf '%s\n' "$output" | grep -F 'brew is required'
+grep -F 'brew is required' <<< "$output"
 
 # should detect a login profile that contains an unreachable initializer
 cp "$HOME/.bash_profile" "$TMPDIR/bash-profile-before"
@@ -174,9 +165,8 @@ trap 'cp "$TMPDIR/bash-profile-before" "$HOME/.bash_profile"' EXIT
 { printf 'return 0\n'; cat "$TMPDIR/bash-profile-before"; } > "$HOME/.bash_profile"
 status=0
 output=$(. "$HOME/.config/tanaabot/env.sh"; tanaboot.sh --agent --check 2>&1) || status=$?
-printf '%s\n' "$output"
 test "$status" -eq 1
-printf '%s\n' "$output" | grep -F 'Fresh Bash cannot discover'
+grep -F 'Fresh Bash cannot discover' <<< "$output"
 
 # should reject changed guidance without repairing it
 mv "$HOME/.codex/AGENTS.md" "$TMPDIR/guidance-link"
@@ -185,20 +175,18 @@ cp "$TANABOOT_PACKAGE_ROOT/dotfiles/ai/.codex/AGENTS.md" "$HOME/.codex/AGENTS.md
 printf '\nchanged for the readiness test\n' >> "$HOME/.codex/AGENTS.md"
 cp "$HOME/.codex/AGENTS.md" "$TMPDIR/changed-guidance"
 status=0
-output=$(bash -lc 'bash "$TANABOOT_PACKAGE_ROOT/tanaboot.sh" --agent --check' 2>&1) || status=$?
-printf '%s\n' "$output"
+output=$(bash -lc '"$TANABOOT_PACKAGE_ROOT/tanaboot.sh" --agent --check' 2>&1) || status=$?
 test "$status" -eq 1
-printf '%s\n' "$output" | grep -F 'Global guidance is missing or differs'
+grep -F 'Global guidance is missing or differs' <<< "$output"
 cmp "$TMPDIR/changed-guidance" "$HOME/.codex/AGENTS.md"
 
 # should refuse a missing key when no service token is supplied
 mv "$HOME/.ssh/id_tanaabot" "$TMPDIR/approved-key"
 trap 'mv "$TMPDIR/approved-key" "$HOME/.ssh/id_tanaabot"' EXIT
 status=0
-output=$(env -u OP_SERVICE_ACCOUNT_TOKEN tanaboot.sh --agent 2>&1) || status=$?
-printf '%s\n' "$output"
+output=$(env -u TANABOOT_OP_TOKEN -u OP_SERVICE_ACCOUNT_TOKEN tanaboot.sh --agent 2>&1) || status=$?
 test "$status" -eq 1
-printf '%s\n' "$output" | grep -F 'Set OP_SERVICE_ACCOUNT_TOKEN'
+grep -F 'Set TANABOOT_OP_TOKEN or OP_SERVICE_ACCOUNT_TOKEN' <<< "$output"
 test ! -e "$HOME/.ssh/id_tanaabot"
 
 # should preserve a mismatched private key instead of replacing it
@@ -207,10 +195,9 @@ trap 'rm -f "$HOME/.ssh/id_tanaabot"; mv "$TMPDIR/approved-key" "$HOME/.ssh/id_t
 ssh-keygen -q -t ed25519 -N '' -f "$TMPDIR/mismatched-key"
 cp "$TMPDIR/mismatched-key" "$HOME/.ssh/id_tanaabot"
 status=0
-output=$(env -u OP_SERVICE_ACCOUNT_TOKEN tanaboot.sh --agent 2>&1) || status=$?
-printf '%s\n' "$output"
+output=$(env -u TANABOOT_OP_TOKEN -u OP_SERVICE_ACCOUNT_TOKEN tanaboot.sh --agent 2>&1) || status=$?
 test "$status" -eq 1
-printf '%s\n' "$output" | grep -F 'does not match the approved public key'
+grep -F 'does not match the approved public key' <<< "$output"
 cmp "$TMPDIR/mismatched-key" "$HOME/.ssh/id_tanaabot"
 
 # should preserve and reject a symlinked private key
@@ -218,10 +205,9 @@ mv "$HOME/.ssh/id_tanaabot" "$TMPDIR/approved-key"
 trap 'rm -f "$HOME/.ssh/id_tanaabot"; mv "$TMPDIR/approved-key" "$HOME/.ssh/id_tanaabot"' EXIT
 ln -s "$TMPDIR/approved-key" "$HOME/.ssh/id_tanaabot"
 status=0
-output=$(env -u OP_SERVICE_ACCOUNT_TOKEN tanaboot.sh --agent 2>&1) || status=$?
-printf '%s\n' "$output"
+output=$(env -u TANABOOT_OP_TOKEN -u OP_SERVICE_ACCOUNT_TOKEN tanaboot.sh --agent 2>&1) || status=$?
 test "$status" -eq 1
-printf '%s\n' "$output" | grep -F 'unsafe path'
+grep -F 'unsafe path' <<< "$output"
 test -L "$HOME/.ssh/id_tanaabot"
 test "$(readlink "$HOME/.ssh/id_tanaabot")" = "$TMPDIR/approved-key"
 
@@ -236,7 +222,7 @@ done
 ln -s "$TANABOOT_PACKAGE_ROOT/dotfiles/shell/.local/bin/ssh" "$HOME/.local/bin/ssh"
 ln -s "$TANABOOT_PACKAGE_ROOT/dotfiles/shell/.local/bin/scp" "$HOME/.local/bin/scp"
 ln -s /usr/bin/sftp "$HOME/.local/bin/sftp"
-env -u OP_SERVICE_ACCOUNT_TOKEN tanaboot.sh --agent
+env -u TANABOOT_OP_TOKEN -u OP_SERVICE_ACCOUNT_TOKEN tanaboot.sh --agent
 test ! -L "$HOME/.local/bin/ssh"
 test ! -L "$HOME/.local/bin/scp"
 test "$(readlink "$HOME/.local/bin/sftp")" = /usr/bin/sftp
@@ -245,7 +231,7 @@ cmp "$TMPDIR/environment-before-rerun" "$HOME/.local/state/tanaabot/environment.
 for file in .bash_profile .bashrc; do
   test "$(grep -cF '. "$HOME/.config/tanaabot/env.sh"' "$HOME/$file")" -eq 1
 done
-bash -lc 'bash "$TANABOOT_PACKAGE_ROOT/tanaboot.sh" --agent --check'
+bash -lc '"$TANABOOT_PACKAGE_ROOT/tanaboot.sh" --agent --check'
 
 # should leave runtime plugin configuration alone
 test ! -e "$HOME/.codex/config.toml"

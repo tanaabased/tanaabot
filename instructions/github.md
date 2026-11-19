@@ -45,7 +45,7 @@ For GitHub work routed to Cloud, reuse a chat named exactly `TASK WORKER` once n
 verify that the main Dot created it, it is active and send-capable, and it is bound to the intended
 published Tanaabot configuration. A title alone establishes none of these. If no eligible worker
 exists, create and verify one in that configuration using supported Cloud environment selection.
-Keep it scoped to GitHub work. Leave the old pilot worker untouched. If `TASK WORKER` is busy, wait
+Keep it scoped to GitHub work. If `TASK WORKER` is busy, wait
 for it to finish.
 Reconcile an unresolved launch before creating another worker.
 

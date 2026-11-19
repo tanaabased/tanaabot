@@ -14,7 +14,7 @@ function recurrence(schedule) {
     throw new Error('cloud-schedule-kind-unsupported');
   if (schedule.times) throw new Error('cloud-schedule-times-unsupported');
   const f = schedule.fields;
-  // Two minute values within any selected hour necessarily violate the hourly limit.
+  // two minute values within any selected hour necessarily violate the hourly limit.
   if (f.minutes.length !== 1) throw new Error('cloud-schedule-minimum-interval:1h');
   if (!f.dayWildcard && !f.weekdayWildcard)
     throw new Error('cloud-schedule-day-union-unsupported:day-of-month-or-weekday');
@@ -55,7 +55,7 @@ function local(date, timezone) {
   return `${parts.year}${parts.month}${parts.day}T${parts.hour}${parts.minute}${parts.second}`;
 }
 
-/** Compile shared normalized schedules; the hosted scheduler owns execution and DST. */
+/** compile shared normalized schedules; the hosted scheduler owns execution and DST. */
 export default function cloudSchedule(schedule, { now, previous, timezone } = {}) {
   const rule = recurrence(schedule);
   const zone =
@@ -78,7 +78,7 @@ export default function cloudSchedule(schedule, { now, previous, timezone } = {}
   if (schedule.kind === 'at') {
     anchor = `DTSTART:${utc(schedule.at)}`;
   } else if (schedule.kind === 'every') {
-    // Intervals are elapsed time. Do not silently reinterpret an old wall-clock anchor.
+    // intervals are elapsed time. do not silently reinterpret an old wall-clock anchor.
     if (start && (start[1] || !start[3]))
       throw new Error('cloud-schedule-interval-anchor-unsupported:expected-UTC');
     const timestamp = start ? `${start[2]}Z` : utc(Math.ceil(Date.parse(now) / 60000) * 60000);

@@ -1,4 +1,4 @@
-name: Tanaboot Tests
+name: Example Tests
 
 on:
   pull_request:
@@ -11,18 +11,6 @@ env:
   STAMPED_VERSION: v9.9.9-ci.${{ github.event.pull_request.head.sha }}
 
 jobs:
-  components:
-    runs-on: ubuntu-24.04
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v7
-      - name: Install Bun
-        uses: tanaabased/actions/setup-bun@v1
-      - name: Install dependencies
-        run: bun install --frozen-lockfile --ignore-scripts
-      - name: Check package and automation behavior
-        run: bun run test
-
   examples:
     name: ${{ matrix.example }}
     runs-on: ubuntu-24.04
@@ -30,6 +18,7 @@ jobs:
       fail-fast: false
       matrix:
         example:
+          - codex-plugin
           - tanaaboot-inputs
           - tanaaboot-defaults
           - tanaaboot-host
@@ -74,6 +63,9 @@ jobs:
       - name: Run Leia-backed example
         uses: tanaabased/actions/run-leia@v1
         env:
+          CODEX_TOOLS_CODEX_HOME: ${{ runner.temp }}/tanaabot-codex
+          XDG_CACHE_HOME: ${{ runner.temp }}/tanaabot-cache
+          CURL_HOME: ${{ runner.temp }}/tanaabot-curl
           NO_COLOR: '1'
           OP_SERVICE_ACCOUNT_TOKEN: ${{ secrets.TANAABOTKEY }}
         with:

@@ -16,7 +16,7 @@
   },
   "type": "module",
   "dependencies": {
-    "@tanaab/openclaw-agent-system": "github:tanaabased/openclaw-agent-system#main"
+    "@tanaab/openclaw-agent-system": "github:tanaabased/openclaw-agent-system#17c70b7b018f65441b3a9b2e02bf91db6ec5d923"
   },
   "scripts": {
     "automations:prepare": "bun skills/automation-sync/scripts/prepare-dependency.js",
@@ -70,6 +70,7 @@
       "LICENSE",
       "README.md",
       "TANABOOT.md",
+      "CLOUD-SETUP.md",
       "INVENTORY.md",
       "package.json",
       "Brewfile",
@@ -106,6 +107,7 @@
     "LICENSE",
     "README.md",
     "TANABOOT.md",
+    "CLOUD-SETUP.md",
     "INVENTORY.md",
     "Brewfile",
     "CHANGELOG.md",

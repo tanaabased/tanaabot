@@ -6,18 +6,42 @@ fail() {
   exit "${2:-1}"
 }
 
+enabled() {
+  case "${1:-}" in
+    '' | 0 | false | FALSE | False | no | NO | No | off | OFF | Off) return 1 ;;
+    *) return 0 ;;
+  esac
+}
+
+debug() {
+  if [[ "${wrapper_debug}" == on ]]; then printf 'debug: cloud setup: %s\n' "$1" >&2; fi
+}
+
 usage() {
-  local dim="" reset=""
-  if { [[ -t 1 ]] || [[ -n "${FORCE_COLOR:-}" && "${FORCE_COLOR}" != 0 ]]; } && [[ -z "${NO_COLOR-}" ]]; then
+  local dim="" accent="" reset=""
+  if { [[ -t 1 ]] || enabled "${FORCE_COLOR:-}"; } && [[ -z "${NO_COLOR-}" ]]; then
     dim=$'\033[2m'
+    accent=$'\033[38;2;0;200;138m'
     reset=$'\033[0m'
   fi
-  printf 'Usage: cloud-setup.sh REF %s[tanaboot options...]%s\n\n' "${dim}" "${reset}"
-  printf '%s\n' 'Select dev (default branch), stable (GitHub Latest), or edge (newest published release).' \
-    'An empty release channel falls back to dev. Failed lookups stop setup.' \
-    'You can also select a branch, tag or full commit SHA. Use a SHA for names reserved by channels.' \
-    "Run that revision's tanaboot.sh with the remaining arguments." \
-    'Use tanaboot.sh --help for provisioning options.'
+  cat <<HELP
+Usage: bash scripts/cloud-setup.sh ${dim}[--debug]${reset} REF ${dim}[TANABOOT_OPTIONS...]${reset}
+       bash scripts/cloud-setup.sh --help
+
+${accent}Arguments:${reset}
+  REF                 Channel (dev, stable, edge), branch, tag or full commit SHA
+  TANABOOT_OPTIONS    Remaining arguments passed to the selected revision's tanaboot.sh
+
+${accent}Options:${reset}
+  --debug             Trace revision selection and checkout on stderr ${dim}[default: ${wrapper_debug}]${reset}
+  -h, --help          Show this help before selecting a revision
+
+${accent}Environment Variables:${reset}
+  CLOUD_SETUP_DEBUG   Same as --debug
+  CLOUD_SETUP_HELP    Same as --help
+
+An empty release channel falls back to dev. Failed lookups stop setup.
+HELP
 }
 
 require_clean_workspace() {
@@ -91,7 +115,7 @@ release_tag() (
     status="$(release_status "${api}/latest" "${temp}")" ||
       fail "GitHub '${channel}' release lookup failed. Check network access and retry."
     if [[ "${status}" == 404 ]]; then
-      # GitHub can also return 404 for an inaccessible repository. Verify the releases endpoint.
+      # GITHUB can also return 404 for an inaccessible repository. verify the releases endpoint.
       jq -es 'length == 1 and (.[0].message == "Not Found")' "${temp}/body" >/dev/null ||
         fail "GitHub '${channel}' release lookup returned an unexpected HTTP 404 response."
       status="$(release_status "${api}?per_page=1" "${temp}")" ||
@@ -184,13 +208,16 @@ write_publication_receipt() (
 )
 
 main() (
-  if [[ "${1:-}" == --help || "${1:-}" == -h ]]; then usage; return; fi
+  local wrapper_debug=off
+  if enabled "${CLOUD_SETUP_DEBUG:-${DEBUG:-${RUNNER_DEBUG:-}}}"; then wrapper_debug=on; fi
+  while [[ "${1:-}" == --debug ]]; do wrapper_debug=on; shift; done
+  if [[ "${1:-}" == --help || "${1:-}" == -h ]] || enabled "${CLOUD_SETUP_HELP:-}"; then usage; return; fi
   if [[ $# -eq 0 || -z "$1" || "$1" == -* ]]; then
     usage
     fail 'Provide a channel, branch, tag or full commit SHA before Tanaboot options.' 2
   fi
   command -v git >/dev/null 2>&1 || fail 'Git is required to select the Cloud workspace revision.'
-  local workspace script_dir ref url origin sha resolved option
+  local workspace script_dir ref url origin sha resolved setting
   local mode branch="" tag="" fallback=""
   workspace="$(git rev-parse --show-toplevel)" || fail 'Run Cloud setup from the existing Tanaabot workspace.'
   workspace="$(cd -- "${workspace}" && pwd -P)"
@@ -202,7 +229,7 @@ main() (
     trap 'rm -rf -- "${snapshot}"' EXIT
     [[ "${snapshot}" != "${workspace}/"* ]] || fail 'The temporary directory must be outside the workspace.'
     cp -- "${BASH_SOURCE[0]}" "${snapshot}/cloud-setup.sh"
-    bash "${snapshot}/cloud-setup.sh" "$@"
+    CLOUD_SETUP_DEBUG="${wrapper_debug}" bash "${snapshot}/cloud-setup.sh" "$@"
     return
   fi
   cd -- "${workspace}"
@@ -216,6 +243,7 @@ main() (
   ref="$1"
   shift
   if [[ "${1:-}" == -- ]]; then shift; fi
+  debug "resolving source revision in ${workspace}"
   case "${ref}" in
     dev)
       mode=branch
@@ -253,6 +281,7 @@ main() (
   if [[ "${shallow}" == true ]]; then
     fetch_options+=(--unshallow)
   fi
+  debug "fetching ${mode} commit ${sha} with tags (shallow checkout: ${shallow})"
   git fetch --no-progress "${fetch_options[@]}" "${url}" "${sha}" ||
     fail 'Could not fetch the resolved commit and tags. No other revision was selected.'
   [[ "$(git rev-parse FETCH_HEAD)" == "${sha}" && "$(git cat-file -t "${sha}")" == commit ]] || fail 'Fetched object is not the requested commit.'
@@ -260,12 +289,19 @@ main() (
   require_clean_workspace
   git checkout -q --detach "${sha}" || fail 'Cannot select the workspace revision. Preserve conflicting files before retrying.'
   printf 'note: Workspace revision: %s (%s)\n' "${ref}" "${sha}"
+  debug "starting Tanaboot at ${sha}"
   bash "${workspace}/tanaboot.sh" "$@"
-  for option in "$@"; do
-    case "${option}" in
-      --debug | --debug=*) ;;
+  # only a complete install produces a publication receipt.
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --debug | --debug=* | --op-token=*) ;;
+      --op-token) shift ;;
       *) return 0 ;;
     esac
+    shift
+  done
+  for setting in TANABOOT_HOST TANABOOT_AGENT TANABOOT_CHECK TANABOOT_DRY_RUN TANABOOT_HELP TANABOOT_VERSION; do
+    if enabled "${!setting:-}"; then return 0; fi
   done
   [[ "$(git rev-parse HEAD)" == "${sha}" ]] ||
     fail 'The checkout changed during setup. Run setup again before publishing.'

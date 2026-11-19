@@ -115,7 +115,7 @@ function compileTask(task, metadata, worker, body, dispatch, header) {
     ...worker,
     prompt: `${header}\n\n${taskPrompt({ ...metadata, role: 'worker' }, body)}`,
   };
-  // Escape nested markers so the outer task keeps one unambiguous ownership header.
+  // escape nested markers so the outer task keeps one unambiguous ownership header.
   const payload = JSON.stringify(request, null, 2).replaceAll('<', '\\u003c');
   return {
     ...task,
@@ -126,7 +126,7 @@ function compileTask(task, metadata, worker, body, dispatch, header) {
   };
 }
 
-/** Prepare effects only; native tools own publication, approval and saved-state reads. */
+/** prepare effects only; native tools own publication, approval and saved-state reads. */
 export function planSync({
   manifest,
   partials,
@@ -161,8 +161,8 @@ export function planSync({
       if (matches.length > 1) throw new Error(`native-task-ambiguous:${job.id}`);
       const current = matches[0];
       if (current) validateTask(current.task);
-      // An elapsed one-shot is history, even if the scheduler paused it after execution.
-      // Never recreate it or repair its enabled state during reconciliation.
+      // an elapsed one-shot is history, even if the scheduler paused it after execution.
+      // never recreate it or repair its enabled state during reconciliation.
       if (job.schedule.kind === 'at' && Date.parse(job.schedule.at) <= Date.parse(now)) {
         return {
           automationId: job.id,

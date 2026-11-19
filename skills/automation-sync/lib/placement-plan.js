@@ -1,4 +1,4 @@
-/** Match already-verified bindings to sidebar sections; native controls own moves and readback. */
+/** match already-verified bindings to sidebar sections; native controls own moves and readback. */
 export default function placementPlan({ manifest, context = {}, id = 'all' }) {
   const jobs = (manifest.automations ?? []).filter(
     (job) => job.runtimes.includes('codex') && (id === 'all' || job.id === id),
@@ -28,7 +28,7 @@ export default function placementPlan({ manifest, context = {}, id = 'all' }) {
     if (sections.length !== 1 || !sections[0].sectionId)
       return unavailable('sidebar-section-id-missing-or-ambiguous');
     const section = sections[0];
-    // Sidebar keys may say local for durable chats. Use them only for membership, never routing.
+    // sidebar keys may say local for durable chats. use them only for membership, never routing.
     const placed = (section.itemKeys ?? []).some(
       (key) =>
         /^codex:thread:[^:]+:/u.test(key) && key.split(':').slice(3).join(':') === result.threadId,

@@ -23,11 +23,11 @@ emoji and bold section name. Use the optional status report below for detailed r
 Use this same skill and card for post-install review and fresh-task startup. A saved environment
 file proves a snapshot was fetched; an offline check cannot prove it still matches current 1Password
 contents. Refresh belongs to installation or explicit maintenance, never startup verification.
-Automatic global-instruction delivery remains separate post-pilot work and does not create a warning.
+Automatic global-instruction delivery is outside this check.
 
 The Tanaabot row combines local receipt validation and explicit local skill loading. Verify
 automatic execution of the saved Start skill and selection of the applicable local skill in
-the fresh pilot. Receipt visibility in a task leaves publication recording to the operator.
+a fresh chat. Receipt visibility in a task leaves publication recording to the operator.
 
 ## Status rules
 

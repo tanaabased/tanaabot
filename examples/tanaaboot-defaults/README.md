@@ -9,12 +9,10 @@ fresh-task Codex Cloud startup remains a separate acceptance check.
 
 ```bash
 # should record existing github authentication state
-for file in .config/gh/hosts.yml; do
-  if test -f "$HOME/$file"; then sha256sum "$HOME/$file"; else printf 'missing %s\n' "$file"; fi
-done > "$TMPDIR/access-before"
+file="$HOME/.config/gh/hosts.yml"
+if test -f "$file"; then sha256sum "$file" > "$TMPDIR/hosts-before.sha256"; fi
 
 # should run the default setup once
-set -o pipefail
 workspace="$TMPDIR/setup-workspace"
 mkdir "$workspace"
 cp -a "$TANABOOT_PACKAGE_ROOT/." "$workspace"
@@ -52,28 +50,26 @@ bun --no-env-file "$workspace/scripts/publication-task.js" local "$setup_id"
 cd "$TMPDIR/setup-workspace"
 receipt="$HOME/.local/state/tanaabot/publication.json"
 before=$(sha256sum "$receipt")
-bash scripts/cloud-setup.sh main --dry-run
+TANABOOT_DRY_RUN=1 bash scripts/cloud-setup.sh main
+TANABOOT_HELP=1 bash scripts/cloud-setup.sh main
 status=0
 bash scripts/cloud-setup.sh main --host --agent || status=$?
 test "$status" -eq 2
 test "$(sha256sum "$receipt")" = "$before"
 
 # should verify installed tools and readable configuration
-bash -lc 'bash "$TANABOOT_PACKAGE_ROOT/tanaboot.sh" --check'
+bash -lc '"$TANABOOT_PACKAGE_ROOT/tanaboot.sh" --check'
 
 # should check offline with read-only home and homebrew
-bash -l <<'SH'
-set -euo pipefail
-sudo unshare --mount --net -- /bin/bash -s -- "$HOME" "$(brew --prefix)" "$PATH" "$(id -u)" "$TANABOOT_PACKAGE_ROOT" <<'ROOT'
-set -euo pipefail
+. "$HOME/.config/tanaabot/env.sh"
+sudo unshare --mount --net -- /bin/bash -es -- "$HOME" "$(brew --prefix)" "$PATH" "$(id -u)" "$TANABOOT_PACKAGE_ROOT" <<'ROOT'
 mount --make-rprivate /
 for directory in "$1" "$2"; do
   mount --bind "$directory" "$directory"
   mount -o remount,bind,ro "$directory"
 done
-exec sudo -u "#$4" env HOME="$1" PATH="$3" HISTFILE=/dev/null /bin/bash -lc 'bash "$1/tanaboot.sh" --check' _ "$5"
+exec sudo -u "#$4" env HOME="$1" PATH="$3" HISTFILE=/dev/null /bin/bash -lc '"$1/tanaboot.sh" --check' _ "$5"
 ROOT
-SH
 
 # should install the requested identity configuration
 test "$(git config --global user.email)" = tanaabot@tanaab.dev
@@ -84,8 +80,10 @@ test -f "$HOME/.ssh/id_tanaabot"
 test ! -L "$HOME/.ssh/id_tanaabot"
 
 # should preserve existing github authentication state
-for file in .config/gh/hosts.yml; do
-  if test -f "$HOME/$file"; then sha256sum "$HOME/$file"; else printf 'missing %s\n' "$file"; fi
-done > "$TMPDIR/access-after"
-cmp "$TMPDIR/access-before" "$TMPDIR/access-after"
+file="$HOME/.config/gh/hosts.yml"
+if test -f "$TMPDIR/hosts-before.sha256"; then
+  sha256sum --check "$TMPDIR/hosts-before.sha256"
+else
+  test ! -e "$file"
+fi
 ```

@@ -1,9 +1,11 @@
 # Tanaabot repository guidance
 
-## Scope and voice
+## Purpose and contributor identity
 
 This repository prepares tanaabot's Codex Cloud environment. Contributors retain their own trusted
 identity and accounts; editing this repository does not select tanaabot's persona or credentials.
+
+## Documentation house style
 
 Use [Tanaabot Voice](./skills/voice/SKILL.md) for repository prose: courteous, precise and concise,
 with normal sentence capitalization. Read the skill before writing; a requested voice takes precedence.
@@ -36,7 +38,7 @@ Tanaabot onboarding.
    intended setup operations when the operator requests this environment; do not substitute a
    development-tool bootstrap or stop after `bun install` and lint.
 
-3. Follow [Skills](./TANABOOT.md#skills) for explicit local loading and separate Canon delivery.
+3. See [Install](./README.md#install) for local skill loading and separate Canon delivery.
    Container-local plugin registration is not part of setup or acceptance.
 4. Save the following text in the actual environment's **Start skill** field. Use the verified
    prepared checkout's absolute path if it differs from `/workspace/tanaabot`; do not rely on the
@@ -74,11 +76,10 @@ Tanaabot onboarding.
 5. Run [Tanaabot Startup Check](./skills/startup-check/SKILL.md) after installation, using the actual
    task command launcher, and present its shared six-section card for operator review before publication. Report
    failed or unavailable checks; never recommend publishing after a failed install. After publication,
-   follow the [fresh-pilot checklist](./TANABOOT.md#cloud-verification). Verify startup runs without a
+   start a fresh chat. Verify startup runs without a
    manual bootstrap prompt and a subsequent request selects and reads the appropriate local skill.
    Record machine readiness, explicit Tanaabot loading and Canon availability separately.
-   Guidance readability does not prove automatic loading. Main-Dot saved-instruction sync in
-   [#16](https://github.com/tanaabased/tanaabot/issues/16) does not establish Cloud instruction delivery.
+   Guidance readability and saved instructions in the main Dot do not establish automatic loading in Cloud.
 
    Only during this pre-publication onboarding review, when the install succeeds, Startup Check
    passes and its verified Setup ID matches the ID printed by this install, read
@@ -99,93 +100,67 @@ SSH access. Do not add accounts, Agent System binding or schedules during onboar
 Keep the persistent shell initialization in the shell dotpackage. Do not edit repository sources to
 work around setup failures; report them for a coding task.
 
-## Contributor implementation
+## Sources of truth
 
-- Keep cross-cutting defaults in [global AGENTS.md](./dotfiles/ai/.codex/AGENTS.md). Put standing
-  topic guidance for the main Dot in top-level `instructions/*.md` files and detailed procedures
-  in their owning skills. Put GitHub routing, worker selection and issue cards in
-  [instructions/github.md](./instructions/github.md) and skill authoring defaults in
-  [instructions/skills.md](./instructions/skills.md).
-- Instruction Sync imports the global file first, then the topic files in path order, from one
-  commit. Removing a rule or file removes it from the next approved replacement. Keep protected
-  platform instructions, credentials, private bindings and personal information out of these files.
-- Keep `tanaboot.sh` as the setup entrypoint, with host and agent modes. Bootstrap missing Homebrew
-  with its official installer in the user's home, then delegate provisioning to Bootbox without
-  sudo. Account plugin delivery remains separate from machine setup.
-- Follow Agent System's manifest and setup YAML formats. Its runtime is not required here.
-- Keep installed global guidance in `dotfiles/ai/.codex/AGENTS.md`, separate from contributor guidance.
-- Use [Tanaabot Skill Author](./skills/skill-author/SKILL.md) when changing skills. Keep shared
-  implementations with Canon and Agent System. Local skills use owner `tanaab`, namespace `tanaabot`
-  and unprefixed folders under `skills/`; machine names retain `tanaabot-`. Maintain those files
-  directly; the optional plugin packages that same canonical tree. Use `--container codex-plugin`
-  for Canon's unprefixed-folder validation contract. Cloud startup explicitly loads local skills
-  without installing a Tanaabot plugin or registering them in the native catalog.
-- Keep package and Codex plugin versions aligned. Maintain explicit npm `files` and Codex Tools
-  `managedPaths`; ship regular assets rather than symlinks.
-- Keep changes small. Add folders and helpers when they have a concrete owner and use.
-- Maintain [the inventory](./INVENTORY.md) when adding, renaming or removing an entry. Put the
-  identifying name or ID in the first column and sort rows alphabetically by its visible text,
-  ignoring case. List every repository skill once by its linked base title and every automation
-  once by its manifest ID.
+- [Tanaboot](./tanaboot.sh) owns host and agent setup. Keep provisioning in Bootbox and
+  revision selection in the [Cloud wrapper](./scripts/cloud-setup.sh).
+- [Global guidance](./dotfiles/ai/.codex/AGENTS.md) is installed in the runtime. Top-level
+  `instructions/*.md` files hold main-Dot topic guidance. Put detailed procedures in the owning skill.
+- [The agent manifest](./.agent-system/agent.yaml) selects the setup declarations and automations.
+  Use Agent System’s manifest format and public loader.
+- The optional Codex plugin packages the canonical `skills/` tree. Keep the package and plugin
+  versions aligned, maintain explicit npm `files` and Codex Tools `managedPaths`, and ship regular files.
+- Update [the inventory](./INVENTORY.md) when adding, renaming or removing entries. List each skill
+  by its linked base title and each automation by ID. Sort each table by its first column, ignoring case.
+
+## Workflow routing
+
+- Use [Tanaabot Skill Author](./skills/skill-author/SKILL.md) for skill changes. It owns naming,
+  packaging and the Canon validator settings.
+- Put GitHub worker selection and issue cards in [GitHub guidance](./instructions/github.md).
+  Put skill authoring defaults for the main Dot in [Skills guidance](./instructions/skills.md).
 
 ## Automation authoring
 
-Before adding or changing an automation, read [Automation Sync](./skills/automation-sync/SKILL.md)
-and its required references, including the shared [execution](./prompts/execution-partial.md)
-and [presentation](./prompts/presentation-partial.md) guidance. Reuse their assembler,
-native scheduling and delivery behavior; keep task-specific instructions in the automation's prompt.
+Read [Automation Sync](./skills/automation-sync/SKILL.md) and its required references before editing
+an automation. Use the existing assembler, [execution](./prompts/execution-partial.md) and
+[presentation](./prompts/presentation-partial.md) rules.
 
-- Limit Automation Sync to synchronizing and repairing its own schedule and the other
-  repository-defined automations. It owns schedule configuration, worker bindings, sidebar
-  placement and reporting those results. Give every other recurring operation its own automation
-  ID, prompt and run report. Only that job performs its task, including any main-Dot actions.
-- Choose each worker’s sidebar group by what the operator opens it for. Use `REPORTS` for
-  results the operator routinely reviews, and `TANAABOT` for bot maintenance the operator
-  checks when something fails or needs approval. Keep `REPORTS` as the manifest default and override `group` for maintenance jobs.
-- Keep the definition, prompt and request metadata aligned. Declare the intended schedule,
-  timezone, enabled state and execution settings, preserving intentional native defaults.
-- State the purpose, inputs and source, prerequisites, approved account/actions and resource scope.
-  Keep credentials and private bindings outside repository files. Define safe behavior for no
-  changes, overlapping work, missing access and uncertain writes through the existing owners.
-- Specify both outputs in the prompt: the full worker result with its useful fields and a
-  representative layout, and the compact main-chat summary with outcome, action needed, verified
-  worker link and contextual final status. Report every run, including unchanged, blocked and
-  failed outcomes. Shared presentation owns formatting and delivery; each prompt owns its content.
-- Keep worker initialization and saved-configuration receipts distinct from run results. These
-  coordinator/worker cards are Tanaabot conventions; do not impose them on other runtimes.
-- Validate source loading, assembly and packaged resources through existing checks. Report source
-  validation, saved schedule settings, actual scheduled execution and visible delivery separately;
-  a template or successful manual run does not prove scheduled behavior.
+- Automation Sync owns schedule configuration, worker binding and sidebar placement. Give each
+  recurring task its own ID and prompt. Only that task performs its work.
+- Keep the definition, prompt and request metadata aligned on schedule, timezone, enabled state and
+  execution settings. Use the default `REPORTS` group for results the operator reviews routinely.
+  Use `TANAABOT` for maintenance workers.
+- State inputs, source, account, authorized actions and resource scope. Specify how to handle
+  unchanged results, overlap, missing access and uncertain writes.
+- Include a representative worker result and compact linked main-chat summary. Report every run,
+  including blocked or failed outcomes. Keep initialization and saved-schedule receipts distinct from run results.
 
-## Contributor validation
+## Test design
 
-These commands are for developing and changing this repository. They are not the Cloud environment's
-Install script or Start skill and do not replace the runtime onboarding above.
+Keep JavaScript parsing and planning tests with their owning code. Test shell behavior through
+the packaged public command in Leia, using real tools. Cover Tanaabot’s delegation and readiness
+contracts. Follow `examples/AGENTS.md` for scenario design and execution.
 
-Use the declared Bun version and `bun install --frozen-lockfile --ignore-scripts`. Run `bun run lint`,
-`bun run test` and `git diff --check`. Skills are packaged directly, without a build step.
-Check changed local links, manifest paths and packed resources.
+## Validation
 
-Follow `examples/AGENTS.md` for repository Leia scenarios. Run scenarios in CI or a
-disposable Cloud test environment; developer-machine execution requires explicit authorization.
-Report source checks separately from Cloud execution and live installation.
+Use the declared Bun version and run:
 
-Tanaboot shell behavior belongs in Leia scenarios under `examples/`, using the packaged entrypoint
-and real tools. Keep commands and assertions in each scenario's README. Do not add standalone shell
-test runners or fake tool helpers under `test/`, source the entrypoint to test its internal functions,
-or replace provisioning commands with mocks. Keep JavaScript parsing and planning tests with their
-owners; ShellCheck remains static validation rather than installation evidence.
+```sh
+bun install --frozen-lockfile --ignore-scripts
+bun run lint
+bun run test
+git diff --check
+```
 
-Keep a test only for a distinct repository-owned failure or contract. Check existing coverage and
-the upstream owner first; do not recreate Homebrew, Bootbox or 1Password's own test suites. Prefer a
-small delegation and readiness journey over costly machine fixtures or repeated success assertions.
+Check changed links and packed resources. Run Leia scenarios in CI or a disposable Cloud environment.
+Developer-machine execution requires explicit authorization. Report source checks, saved settings,
+live execution and visible delivery separately when applicable.
 
 ## Change boundaries
 
-Never commit credentials, private account bindings or generated runtime state. Outside an
-operator-requested Cloud onboarding run, do not provision or change installed plugin caches as
-routine contributor validation. Schedule activation always needs its own operator scope.
-
-Preserve unrelated edits. Follow the operator's branch, commit and publication instructions; otherwise
-use an isolated branch and do not push without authorization. Issue-backed commit subjects use
+Keep credentials, private account bindings and generated runtime state out of commits. Provisioning,
+installed plugin cache changes and schedule activation need their own operator scope.
+Preserve unrelated edits. Follow the operator’s branch, commit and publication instructions;
+otherwise use an isolated branch and do not push. Issue-backed commit subjects use
 `#<issue>: <lowercase description>`.

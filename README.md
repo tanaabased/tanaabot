@@ -5,79 +5,70 @@
 </p>
 
 <p align="center">
-  <img src="https://img.shields.io/badge/environment-Codex_Cloud-00c88a" alt="Environment: Codex Cloud" />
-  <a href="https://github.com/tanaabased/tanaabot/issues/5"><img src="https://img.shields.io/badge/status-Cloud_verification_pending-00ebfd" alt="Status: Cloud verification pending" /></a>
-  <a href="./LICENSE"><img src="https://img.shields.io/badge/license-MIT-111827" alt="License: MIT" /></a>
+  <a href="https://github.com/tanaabased/tanaabot/releases"><img src="https://img.shields.io/github/v/release/tanaabased/tanaabot?include_prereleases&sort=semver" alt="Latest release" /></a>
+  <img src="https://img.shields.io/badge/Linux-64--bit-111827" alt="64-bit Linux" />
+  <img src="https://img.shields.io/badge/Codex-tanaabot-00c88a" alt="Codex plugin: tanaabot" />
 </p>
 
-tanaabot prepares a Codex Cloud environment with its tools, guidance and skills for managed and
-scheduled tasks. Its assistant has a courteous protocol-droid voice, with a little grandmotherly concern.
-
-Tanaboot provisions its source checkout through Bootbox. Fresh-task Cloud verification
-remains pending in [#5](https://github.com/tanaabased/tanaabot/issues/5).
+tanaabot is a custom Codex Dot for managed and scheduled tasks. This repository defines its identity,
+instructions, tools, skills and schedules. It works primarily in its own Codex Cloud environment and
+speaks with the courtesy of a protocol droid and a little grandmotherly concern.
 
 ## What ships
 
-- [Tanaboot](./TANABOOT.md): The setup entrypoint, with host and agent modes.
-- [Dependencies](./INVENTORY.md#dependencies): The Brewfile and shared provisioning tools.
-- [Dotpackages](./INVENTORY.md#dotpackages): Global guidance and runtime configuration.
-- [Skills](./INVENTORY.md#skills): Voice, skill authoring, startup checks and instruction reporting/sync.
-- [Configuration files](./INVENTORY.md#configuration-files): Setup declarations and Codex plugin sources.
-- [Automations](./INVENTORY.md#automations): Scheduled automation inventory.
+- [Identity](./.agent-system/agent.yaml) defines the Dot’s name and avatar.
+- The [global guidance](./dotfiles/ai/.codex/AGENTS.md) and [topic instructions](./instructions) are the source for the Dot’s saved instructions.
+- [Tanaboot](./TANABOOT.md) installs the [tools](./INVENTORY.md#dependencies) and [dotpackages](./INVENTORY.md#dotpackages). [Cloud setup](./CLOUD-SETUP.md) selects the revision to install.
+- The [skills](./INVENTORY.md#skills) are also available as an installable [Codex plugin](./.codex-plugin/plugin.json).
+- The [automations](./INVENTORY.md#automations) define the Dot’s scheduled tasks.
+
+## Prerequisites
+
+Startup Check requires Canon skills in the ChatGPT account that runs tanaabot. To install Canon,
+open ChatGPT in that personal account and paste this prompt into a chat with **Plugin Creator**.
+
+```text
+Install Tanaab Canon as a private personal plugin in this ChatGPT account.
+If my Canon plugin is already installed, show me its link and version.
+Otherwise, import the stable npm release of @tanaab/canon tagged latest.
+Preserve its tanaab namespace, skills and supporting files. Verify the saved
+version and give me the plugin link and any remaining enablement step.
+```
+
+In a fresh chat, ask “Is `tanaab-skill-author` available in this chat’s skill catalog?”
 
 ## Install
 
-To run the installer yourself, use a Tanaabot source checkout on 64-bit Linux as its non-root user:
+1. Create a Codex Cloud environment named `tanaabot` from `tanaabased/tanaabot` on `main`. Ask the builder to follow [Cloud environment onboarding](./AGENTS.md#cloud-environment-onboarding).
+2. Review and save **Enable all public internet access**. In the Cloud environment settings, open **Edit environment variables**, add `OP_SERVICE_ACCOUNT_TOKEN` with your 1Password service account token as its value, and save it before the first install.
+3. The builder should automatically configure the **Install script** and **Start skill** from the repository’s onboarding instructions. The Install script prepares the environment, and the Start skill loads the checkout’s Tanaabot skills into each new chat.
+4. When **Startup Check** passes, click **Publish**. After publication succeeds, copy the `Record Publication <setup-id>` command from the **📦 NEXT STEP · RECORD PUBLICATION** card into the same builder chat. It includes this install’s Setup ID.
+5. Verify startup in a fresh chat in the published environment, then [seed Automation Sync](#first-time-setup) in the main Tanaabot Dot.
 
-```sh
-bash tanaboot.sh
-```
+> [!NOTE]
+> A manual install on your own Linux machine is unsupported. See [Tanaboot](./TANABOOT.md) for the installer and its options.
 
-This installs the current checkout's tools, guidance and shell configuration. Tanaabot skills live
-in `skills/` and are loaded explicitly by the environment's Start skill. Canon is delivered separately
-through your ChatGPT account. See [Skills](./TANABOOT.md#skills) for startup configuration.
-See [Tanaboot](./TANABOOT.md) for prerequisites, previews and recovery.
+## First-time setup
 
-To create a reusable Codex Cloud environment, select this repository at `main` and ask the setup
-agent to follow [Cloud environment onboarding](./AGENTS.md#cloud-environment-onboarding). Review the
-setup result, publish the environment and start a fresh task to verify it.
-
-## Synchronize scheduled tasks
-
-Follow the [Cloud rollout steps](./TANABOOT.md#cloud-verification), then paste this into the
-designated tanaabot dot to seed or update the synchronizer:
+Paste this prompt into the main Tanaabot Dot after recording the publication.
 
 ```text
 Read and follow skills/automation-sync/SKILL.md and its required references
 from the latest main revision of https://github.com/tanaabased/tanaabot.
 
-Synchronize only automation-sync in the existing published Tanaabot Cloud
-environment. Verify the saved schedule, dispatcher and worker binding, then
-report the result and stop without running the automation.
+First, synchronize only automation-sync in the published tanaabot Cloud
+environment. Verify the saved schedule, dispatcher prompt and worker binding.
+If any of those checks fails, stop and tell me what needs attention.
+
+Once verified, invoke Automation Sync manually from this Dot with selection
+all, once. Apply and verify the repository’s schedules and report the result.
 ```
 
-After verifying the saved synchronizer, select **Run now** on **🤖 AUTOMATION SYNC** for the full sync.
+## Worker chat
 
-The [definitions](./.agent-system/automations.yaml) enable `automation-sync` at midnight and both
-`cloud-update` and `instruction-sync` at 1 a.m. in the native scheduler’s timezone (Eastern for this deployment).
-Existing schedules retain their saved timezone. Sync updates itself first and leaves unchanged
-tasks alone. A final best-effort desktop pass places workers in their configured sidebar sections.
-Workers receive configuration and run-results cards, and the main chat receives compact linked
-summaries. Debug is opt-in through `debug: true` in
-[agent.yaml](./.agent-system/agent.yaml), followed by synchronization.
-
-Cloud Update reports the Canon result, then runs Startup Check for the worker’s current status report.
-
-## Inspect or refresh saved instructions
-
-In the main tanaabot Dot, ask it to read and follow
-[`skills/instruction-report/SKILL.md`](./skills/instruction-report/SKILL.md) from a resolved
-repository revision for a read-only inventory, or
-[`skills/instruction-sync/SKILL.md`](./skills/instruction-sync/SKILL.md) to propose a refresh.
-Use supported repository reads if these skills are absent from the host catalog.
-The separate [Instruction Sync automation](./prompts/instruction-sync.md) runs the
-read-only comparison. To save a change, approve the exact proposal in a later main-chat reply.
-Unchanged checks need no approval.
+The Dot uses worker chats for some automations and other operations. To pick up a newly published
+Cloud environment, archive the worker chat after its current run finishes and wait for the Dot to
+recreate it.
 
 ## Contributing
 
@@ -89,15 +80,10 @@ Use the runtimes declared in [`.bun-version`](./.bun-version) and [`.node-versio
 ```sh
 bun install --frozen-lockfile --ignore-scripts
 bun run lint
+bun run test
 ```
 
-Lint runs ESLint, Prettier and ShellCheck. The [Leia examples](https://github.com/tanaabased/tanaabot/tree/main/examples) exercise the packaged CLI, revision selection, failure handling and Linux setup in CI; fresh-task
-Cloud verification remains pending.
-
-The [release workflow](https://github.com/tanaabased/tanaabot/blob/main/.github/workflows/release.yml) publishes independently to npm and the
-repository. Before the first release, configure npm trusted publishing and grant the repository
-access to `TANAAB_COAXIUM_INJECTOR`. See [CHANGELOG.md](./CHANGELOG.md)
-for unreleased changes.
+The [Leia examples](https://github.com/tanaabased/tanaabot/tree/main/examples) exercise the packaged installer and optional Codex plugin on disposable CI runners.
 
 ## Support
 

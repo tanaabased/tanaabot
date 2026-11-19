@@ -166,7 +166,7 @@ or rollback.
 
 ## Validation
 
-In the authorized main-Dot pilot, review the legacy text, then verify that the exact approved
+When testing an approved main-Dot update, verify that the exact approved
 addition, modification and deletion appear in the complete readback. Confirm that identical
 source is a no-op and an incomplete listing or file read cannot propose a removal. Check both
 sync layouts and the read-only report against what was actually delivered. Check later behavior

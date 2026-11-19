@@ -1,4 +1,4 @@
-# Common sys files
+# common sys files
 .*.swp
 ._*
 .git
@@ -14,7 +14,7 @@
 *.jxp
 *.sublime-*
 
-# Private assistant context
+# private assistant context
 /MEMORY.md
 /DREAMS.md
 /memory/
@@ -27,7 +27,7 @@
 /.agent-system/repositories/
 /.agent-system/worktrees/
 
-# Authenticated runtime state
+# authenticated runtime state
 .codex/config.toml
 /.openclaw/
 /openclaw.json
@@ -37,7 +37,7 @@
 /credentials/
 /sessions/
 
-# Secrets and credentials
+# secrets and credentials
 **/.env
 **/.env.*
 !**/.env.example
@@ -51,19 +51,19 @@
 **/id_*
 !**/id_*.pub
 
-# Logs
+# logs
 *.log
 logs
 
-# JavaScript package manager files
+# JAVASCRIPT package manager files
 node_modules
 
-# lando config
+# LANDO config
 env.yaml
 env.yml
 lando.env
 
-# Build dirs
+# build dirs
 build
 
 # coverage reporting

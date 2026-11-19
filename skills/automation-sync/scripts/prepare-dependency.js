@@ -9,8 +9,8 @@ const metadata = JSON.parse(await readFile(resolve(dependency, 'package.json'), 
 const target = metadata.exports?.['./manifest']?.import;
 if (target !== './dist/manifest.js') throw new Error('Unsupported Agent System manifest export.');
 
-// Build the upstream manifest entrypoint with its owning build-task.ts settings.
-// Git dependencies omit dist; consumers still import only the public package export.
+// build the upstream manifest entrypoint with its owning build-task.ts settings.
+// GIT dependencies omit dist; consumers still import only the public package export.
 const result = await globalThis.Bun.build({
   entrypoints: [resolve(dependency, 'manifest/public.ts')],
   outdir: dirname(resolve(dependency, target)),

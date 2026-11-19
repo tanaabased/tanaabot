@@ -1,7 +1,7 @@
 import cloudSchedule from '../utils/cloud-schedule.js';
 import workerSettings from '../utils/worker-settings.js';
 
-/** Resolve Tanaabot policy without changing Agent System's omitted defaults. */
+/** resolve TANAABOT policy without changing AGENT SYSTEM's omitted defaults. */
 export default function automationTargets(
   manifest,
   context,
@@ -18,7 +18,7 @@ export default function automationTargets(
     .filter((job) => job.runtimes.includes('codex') && (id === 'all' || job.id === id))
     .flatMap((job) => {
       if (job.payload.kind !== 'prompt') throw new Error(`prompt-automation-required:${job.id}`);
-      // Validate cadence before the caller creates any workers.
+      // validate cadence before the caller creates any workers.
       cloudSchedule(job.schedule, { now, timezone: context.timezone });
       if (job.schedule.kind === 'at' && Date.parse(job.schedule.at) <= Date.parse(now)) return [];
       const selector = job.overrides.codex?.environment ?? { type: 'cloud', name: 'tanaabot' };

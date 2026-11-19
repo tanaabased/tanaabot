@@ -81,7 +81,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     );
     for (const { task } of planSync(request).operations) {
       const dispatcher = readTaskPrompt(task.prompt).body.split('## Worker request')[0];
-      // The prompt owns this permission boundary; this does not test native tool execution.
+      // the prompt owns this permission boundary; this does not test native tool execution.
       assert.match(dispatcher, /Only when this coordinator's `automationId` is `automation-sync`/);
       assert.match(dispatcher, /exact saved worker is archived/);
       assert.match(dispatcher, /Recover the synchronizer before dispatch/);
@@ -181,7 +181,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       'BEGIN:VEVENT\nDTSTART:20260102T040000Z\nEND:VEVENT',
     );
     const previous = structuredClone(request.existingTasks);
-    // A completed task may be paused and its chat archived. Neither needs repair.
+    // a completed task may be paused and its chat archived. neither needs repair.
     request.existingTasks[0].task.enabled = false;
     request.context.workers = [];
     request.partials.presentation += '\nNew instructions.';
@@ -651,7 +651,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     assert.equal(target.execution.environmentId, retired.execution.environmentId);
     assert.deepEqual([target.model, target.effort], ['fixture-new', 'medium']);
 
-    // Native startup and save results are fixtures. Only the dot has a computer at preflight.
+    // native startup and save results are fixtures. only the DOT has a computer at preflight.
     request.context.workers = [
       {
         automationId: target.automationId,
@@ -683,7 +683,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       [['automation-sync', 'unchanged']],
     );
 
-    // The native dispatch decision belongs to the skill, outside the read-only planner.
+    // the native dispatch decision belongs to the skill, outside the read-only planner.
     const guidance = readFileSync(
       new URL('../references/native-tasks.md', import.meta.url),
       'utf8',
@@ -723,7 +723,7 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     );
     assert.deepEqual(planSync(request), recovery, 'an unapplied rebind remains the same update');
 
-    // Native saving is external: only feed its observed result into the resumed planning pass.
+    // native saving is external: only feed its observed result into the resumed planning pass.
     const update = recovery.operations[0];
     request.existingTasks = [{ id: update.nativeId, task: update.task }];
     delete worker.replaces;
