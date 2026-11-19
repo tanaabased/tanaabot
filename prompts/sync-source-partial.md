@@ -1,7 +1,7 @@
 # Resolve the synchronization source
 
 The owning Dot uses this procedure for Automation Sync and Instruction Sync before dispatch
-or archived-worker recovery. It also applies when the Dot runs the workflow directly. Use
+or worker recovery. It also applies when the Dot runs the workflow directly. Use
 the verified account's GitHub reads. Source selection requires no Cloud worker or checkout.
 
 Retain the complete `sourceSelection` in the native run or private tool-backed handoff. For a

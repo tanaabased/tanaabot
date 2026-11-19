@@ -11,25 +11,31 @@ configuration ID with an ephemeral machine ID inside the worker. Do not substitu
 another environment or a fresh chat during ordinary dispatch.
 
 Before sending, check the exact saved `thread.id` in separate native active and archived Codex
-history for the same verified account and chat host. Use the native account-level history views
-for that host. An exact match in one view and a complete
-search without that ID in the other establish its status. Follow pagination before concluding
-absence. A direct-child listing that returns the same ID under both filters is ambiguous. Use
-archive-aware history to resolve it. Child lists, sidebar membership, lookup by ID and send
-eligibility alone cannot settle archive status. If native history is unavailable, incomplete for
-the exact ID, or contradictory, report the worker as Unverified and stop without sending or linking it.
+history for the same verified account and chat host. Use account-level views that include worker
+chats. An exact match in one view and a complete search without that ID in the other establish
+active or archived status. Verify deletion through an explicit native confirmation for the exact
+chat or absence from both complete views. Follow every page before concluding absence. Presence in
+either view conflicts with an explicit deletion confirmation. Child lists, sidebar membership,
+failed lookups and send results cannot establish deletion. If the evidence is inconclusive or
+contradictory, report the worker as Unverified and stop without sending or linking it.
 
-Only when this coordinator's `automationId` is `automation-sync` and native history confirms its
-exact saved worker is archived, read and follow `skills/automation-sync/SKILL.md` and its
+Only when this coordinator's `automationId` is `automation-sync` and native evidence confirms its
+exact saved worker is archived or deleted, read and follow `skills/automation-sync/SKILL.md` and its
 `references/native-tasks.md` section “Recover the synchronizer before dispatch” from canonical
 `tanaabased/tanaabot` at the already selected sync source commit. Enter the recovery
 procedure here in the owning Dot. It uses the same worker creation and schedule
 rebinding procedure as ordinary synchronization, then returns a newly compiled request for this
 occurrence. Resume below only after its verified rebind and the same history check for the new
 request's exact `thread.id`.
-For other automations, an archived worker needs synchronization; stop dispatch without replacement.
-An active worker follows normal dispatch. Check for an active turn in
-that worker before sending; if one is running, report the overlap instead of queuing duplicate work.
+For other automations, report an archived worker as needing synchronization and a missing worker
+as Unverified. In either case, stop dispatch without replacement.
+An active worker follows normal dispatch.
+When resuming an Automation Sync invocation, reconcile any prior send for that exact invocation
+even if the worker is already active. If the send was accepted, skip the send below and use the
+existing native turn and its result.
+If the send remains uncertain, report it as pending and stop without sending again.
+Before a new send, check for an active turn in that worker. If one is running, report the overlap
+and stop without queuing duplicate work.
 Send the complete generated `prompt` unchanged, including its readable header, metadata and
 instructions. When a sync source was selected, forward that exact `sourceSelection` from the
 retained result as separate context in the same send, including after recovery. Do not reconstruct

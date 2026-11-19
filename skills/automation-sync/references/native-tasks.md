@@ -42,7 +42,7 @@ Verify its exact ID using the procedure below before choosing to reuse or replac
 For initial seeding, inspect existing native chats before creating one; names alone do not establish
 automation ownership. If a prior create was uncertain, reconcile it before another create.
 
-For every new worker, including initial seeding and archive recovery, first run targets assembly
+For every new worker, including initial seeding and recovery, first run targets assembly
 and use its resolved `target`. Pass `model: target.model` and `thinking: target.effort` explicitly
 to native chat creation, along with `target.execution.environmentId` and an
 initialization-only prompt that requests the [initialization card](#initialization-card).
@@ -52,8 +52,8 @@ Wait for initialization to finish and record its result as `startup: "passed"`, 
 `"unverified"`; failed or incomplete startup blocks binding. Reuse an already initialized, active
 and healthy replacement rather than creating another chat to pick up source changes.
 Apply authorized title changes to an existing worker without replacing its ID. Verify its Cloud configuration from native
-association or the original launch receipt, not a name or repository claim. A missing existing worker
-or a known native configuration mismatch stops the affected action; do not create a replacement automatically.
+association or the original launch receipt, not a name or repository claim. Stop the affected
+action if the binding is unverified or its published Cloud configuration differs from the target.
 Use the saved binding and successful native launch. `environmentId` below is the published
 configuration ID from those controls, never a machine ID reported inside the container.
 Do not require the worker to independently reproduce the configuration ID.
@@ -79,26 +79,33 @@ responses, not a separate database.
 
 ### Verify worker status
 
-Use the same exact-ID history check before dispatch and before assembly. Read the active and
-archived native Codex history views for the same verified account and chat host. Follow pagination
-before treating an ID as absent. For an active worker, the ID must appear in active history and
-be absent from the complete archived search. Reverse those views to confirm an archive. The same
-ID under both direct-child filters is ambiguous. Resolve it with native archive-aware history.
-An ID lookup, recent sidebar row or successful send does not establish archive status.
+Use the same exact-ID check before dispatch and before assembly. Read the active and archived
+native Codex account-level history views for the same verified account and chat host. Use views
+that include worker chats and follow every page before treating an ID as absent. For an active
+worker, the ID must appear in active history and be absent from the complete archived search.
+Reverse those views to confirm an archive. For Sync's own bound worker, either absence from both
+complete views or explicit native confirmation of deletion for the exact chat verifies deletion.
+Treat presence in either view alongside a deletion confirmation as conflicting evidence.
+Child lists, sidebar membership, failed lookups and send results cannot establish deletion.
 
 For assembly, pass the history observations as `context.workerHistory.active` and
 `context.workerHistory.archived`. Use `source: "history"` only for the archive-aware native
 views above, and include only exact worker IDs found in each view. Set `complete: true` only
-when the search for all supplied IDs reached the end of that view. A partial view can establish
-presence for IDs it returned, but cannot establish absence. Omit unavailable views. If the
-evidence is missing or conflicts, report Unverified. Leave that binding alone and exclude it from
-placement. Use the same check for the retired ID and the replacement before rebinding. A lookup
-from before dispatch does not substitute for the pre-assembly check.
+when the search for all supplied IDs reached the end of that view. A partial view establishes
+presence for the IDs it returned. Omit unavailable or incorrectly scoped views. If the host
+explicitly confirms deletion for any of the exact IDs in that account and host, pass
+`context.workerHistory.deleted: { "source": "native-deletion", "ids": ["retired-worker-id"] }`.
+Leave this field out when inferring deletion from the two history views.
+If the evidence is inconclusive or conflicts, report Unverified, leave the binding alone and
+exclude it from placement. Repeat the check for the retired ID and the replacement before
+rebinding, using current evidence for both.
 
-### Replace a confirmed archived worker
+### Replace a retired worker
 
-During synchronization only, treat a managed worker confirmed archived by native history as retired.
-Leave its archived chat and history intact. Reconcile any prior replacement attempt through its native
+During synchronization, use this procedure for a managed worker confirmed archived or for Sync's
+own worker confirmed deleted. Leave any archived chat and history intact. Check the authored
+target before creating a replacement. An explicit worker pin requires an authorized source change
+before replacement. Reconcile any prior replacement attempt through its native
 creation result and chat history before creating another worker; include the automation ID and retired
 worker ID in a replacement's initialization prompt so that recovery can identify it without guessing
 from its title. Reuse a verified active replacement if creation succeeded but schedule saving did not.
@@ -112,9 +119,8 @@ Use the creation and initialization procedure in Resolve workers above for one r
 the same published Cloud configuration. Verify initialization and active status.
 Supply `startup: "passed"` and the ordinary worker fields plus
 `replaces: { "id": "retired-worker-id", "status": "archived", "environmentId": "verified-config-id" }`.
-These are current native observations, not an authorization flag or a persisted replacement ledger.
-The retired ID must match the schedule's saved binding. Explicit authored thread targets remain
-binding; change that source through operator authorization before replacing an explicitly pinned chat.
+For Sync's confirmed deleted worker, use `"status": "deleted"` with the same fields. Supply current
+native observations for the retired ID and verify that it matches the schedule's saved binding.
 
 Rebind the same native schedule ID using the returned `expectedCurrent` and exact compiled task.
 Preserve destination, coordinator settings, cadence and enabled state; the assembler rejects a
@@ -129,12 +135,12 @@ No schedule is deleted.
 
 ### Recover the synchronizer before dispatch
 
-The owning dot handles Sync's archived binding for a manual `automation-sync`-only update, a scheduled
-occurrence or Run now. For an occurrence, retain its original selection before recovery
-(normally `all`).
+The owning Dot handles Sync's archived or deleted binding for a manual `automation-sync`-only
+update, a full manual sync, a scheduled occurrence or Run now. Retain the original invocation
+and its selection before recovery.
 
-1. Read the current native Sync schedule and [verify the archive](#verify-worker-status) of its
-   exact bound worker. Follow [the replacement procedure](#replace-a-confirmed-archived-worker) to reconcile
+1. Read the current native Sync schedule and [verify the status](#verify-worker-status) of its
+   exact bound worker. Follow [the replacement procedure](#replace-a-retired-worker) to reconcile
    prior attempts and check for in-flight recovery. Reuse a healthy replacement when available.
    If another run already saved the rebind, verify the saved dispatcher and binding, then finish
    according to the entry point below. Unknown status or a failed send does not qualify for replacement.
@@ -156,7 +162,7 @@ occurrence or Run now. For an occurrence, retain its original selection before r
    Report the requested model and effort separately from native turn observations. Mark missing
    observations unverified. Before binding, verify passed startup and active history. Verify the
    published configuration through native launch or association evidence. Check the published setup/version
-   when available and report unavailable version evidence as unverified. Leave the old chat archived.
+   when available and report unavailable version evidence as unverified.
 4. From the same clean checkout, run `mode: "sync"` with `id: "automation-sync"`, current native tasks,
    the verified replacement, `replaces` and fresh `workerHistory` for both IDs. If the planner
    skips this rebind, report its reason and stop. Follow the shared rebind procedure to apply
@@ -170,8 +176,11 @@ The entry point determines what happens after verification.
 - **Manual `automation-sync`-only update.** After verifying the saved Sync configuration, report it and stop.
   Do not dispatch the worker request, queue Run now or touch other automations.
 - **Scheduled occurrence or Run now.** Resume that same occurrence once with the newly saved worker
-  request and its model and effort. Pass the original selection as separate coordinator context
-  alongside the unchanged request.
+  request and its model and effort. A full manual sync resumes its original invocation in the same way.
+  Pass the original selection as separate coordinator context alongside the unchanged request.
+  On retry, reconcile any earlier send for that exact invocation through its native receipt or
+  worker turn. If a turn was already accepted, use its status and result. If the send remains
+  uncertain, report it as pending and stop without sending again.
   Carry the verified rebind into final placement and reporting even if the resumed pass finds
   Sync unchanged. Do not send the old payload, repeat the save or queue another occurrence.
 
@@ -274,8 +283,8 @@ schedule fields directly; do not reconstruct them from a description or convert 
 Apply exact compiled prompts and settings through the owning dot's native schedule controls.
 Apply returned operations in order: the synchronizer comes first when selected. For a manual
 seed use `id: "automation-sync"` in both targets and sync requests, resolving only its worker. Verify
-its saved prompt and binding. If the operator also requested a full sync, the owning Dot can
-then invoke Automation Sync once with selection `all` as a separate operation.
+its saved prompt and binding. When the operator requests a full sync after initial seeding, the
+owning Dot can invoke Automation Sync once with selection `all`.
 Never use the contributor's local scheduler as a substitute or write scheduler files. Supply the
 native scheduler's IANA timezone as `context.timezone` in both modes. Omitted source timezones use
 the saved task's timezone, or this native default for a new task. Do not substitute the Cloud
