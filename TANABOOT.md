@@ -153,6 +153,14 @@ invalid arguments. A selected revision's entrypoint retains its failure status.
 
 ## Cloud verification
 
+Use a revision that includes Record Publication. After a successful full Cloud setup, keep
+the displayed **Setup ID**. Publish or republish the
+environment and start a fresh task in it. Check that Startup Check shows the same ID, then ask
+the fresh task to [Record Publication](./skills/record-publication/SKILL.md) with that ID.
+After the receipt is verified on GitHub, manually synchronize the existing schedules to pick up
+the new source policy. The local receipt is kept outside the checkout. Record Publication
+commits that receipt as `tanaabot-publication.json` through your authorized GitHub workflow.
+
 Allow GitHub source/raw/release downloads and the package hosts needed by Bootbox, Homebrew and Bun
 in the environment's network policy. Access failures must be resolved in the selected environment;
 Tanaboot does not select credentials or bypass its proxy.

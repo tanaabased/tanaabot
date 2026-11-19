@@ -3,6 +3,7 @@ import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 
+import { validateSyncSource } from '../../../lib/publication.js';
 import definitions from '../lib/definitions.js';
 import automationTargets from '../lib/automation-targets.js';
 import placementPlan from '../lib/placement-plan.js';
@@ -11,8 +12,8 @@ import syncReport from '../utils/sync-report.js';
 
 try {
   const input = JSON.parse(readFileSync(0, 'utf8'));
+  const selection = validateSyncSource(input.sourceSelection);
   const workspaceDir = input.workspaceDir ?? fileURLToPath(new URL('../../../', import.meta.url));
-  const loaded = await definitions(workspaceDir);
   const git = (...args) =>
     execFileSync('git', args, { cwd: workspaceDir, encoding: 'utf8' }).trim();
   const origin = git('remote', 'get-url', 'origin');
@@ -24,7 +25,11 @@ try {
   const source = {
     revision: git('rev-parse', 'HEAD'),
     dirty: git('status', '--porcelain').length > 0,
+    installedRevision: selection.receipt.installedCommit,
+    setupId: selection.receipt.setupId,
   };
+  if (source.revision !== selection.sourceCommit) throw new Error('sync-source-checkout-mismatch');
+  const loaded = await definitions(workspaceDir);
   const now = new Date().toISOString();
   if (input.mode !== undefined && !['targets', 'sync', 'placement'].includes(input.mode))
     throw new Error('sync-mode-invalid');
@@ -53,7 +58,7 @@ try {
             now,
           });
   process.stdout.write(
-    `${JSON.stringify({ ...result, ...(result.operations && loaded.manifest.debug ? { presentation: syncReport(result, true) } : {}) }, null, 2)}\n`,
+    `${JSON.stringify({ ...result, sourceSelection: selection, ...(result.operations && loaded.manifest.debug ? { presentation: syncReport(result, true) } : {}) }, null, 2)}\n`,
   );
 } catch (error) {
   process.stderr.write(

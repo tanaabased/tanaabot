@@ -12,10 +12,14 @@ another environment or a fresh chat during ordinary dispatch. Check native archi
 continuing. Only when this coordinator's `automationId` is `automation-sync` and native history confirms its
 exact saved worker is archived, read and follow `skills/automation-sync/SKILL.md` and its
 `references/native-tasks.md` section “Recover the synchronizer before dispatch” from canonical
-`tanaabased/tanaabot` at one resolved `main` commit. Enter that procedure here in the owning dot;
+`tanaabased/tanaabot` at the selected sync source commit. Use `prompts/sync-source.md` from this
+dispatcher revision, or reuse the verified selection from this occurrence. Enter the recovery
+procedure here in the owning dot;
 do not send the old request to the archived worker. It uses the same worker creation and schedule
 rebinding procedure as ordinary synchronization, then returns a newly compiled request for this
 occurrence. Resume below only after its verified rebind, using that new request.
+Include the exact verified recovery selection as separate native handoff context in that send.
+Preserve the generated worker prompt unchanged and have the worker reuse that selection.
 For other automations, an archived worker needs synchronization; stop dispatch without replacement.
 An active worker follows normal dispatch. Stop on missing, inaccessible or unknown status without
 presenting the worker as ready or linking it. Check for an active turn in
@@ -54,7 +58,8 @@ error status line at the bottom. Report missing tools, unavailable workers and e
 as a compact error or warning summary; do not claim the automation succeeded.
 
 Only for `automationId` `automation-sync`, the worker may return prepared schedule actions because scheduling controls
-are available only here. Follow the current automation-sync skill and its native-task reference
+are available only here. Verify the worker's source selection and that its prepared revision
+matches `sourceCommit`. Follow the automation-sync skill and its native-task reference at that commit
 to apply those actions in their returned order under the existing authorization. Apply and verify
 a changed synchronizer first. Apply only the occurrence's selected automations.
 Request the skill’s final sidebar placement pass on the attached Mac, including creation of

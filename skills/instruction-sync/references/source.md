@@ -2,10 +2,10 @@
 
 ## Resolve the desired source
 
-Use canonical `tanaabased/tanaabot`. Resolve `main` once per run to a full commit SHA. The
-scheduled worker performs this resolution for the owning Dot. Direct sync resolves it in the main
-Dot. Use supported GitHub reads or committed Git objects from a verified canonical checkout.
-Use the resulting commit for source reads and for the scheduled skill and its required resources.
+Use the [shared sync source procedure](../../../prompts/sync-source.md) for the canonical
+`tanaabased/tanaabot` policy. The scheduled worker resolves it for the owning Dot. Direct sync
+resolves it in the main Dot. Use `sourceCommit` for the complete source inventory and the
+scheduled skill and its required resources.
 
 1. Read the complete, nonblank `dotfiles/ai/.codex/AGENTS.md` file.
 2. Inspect the commit tree for `instructions/` and list all its immediate children. A complete

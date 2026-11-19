@@ -14,7 +14,10 @@ export default function syncReport(result, debug = false) {
     '',
     ...rows.map((row) => `- **${text(row.automationId)}:** ${text(row.kind)}`),
     '',
-    `- Revision: ${text(result.source.revision)}`,
+    `- Sync revision: ${text(result.source.revision)}`,
+    ...(result.source.installedRevision
+      ? [`- Installed revision: ${text(result.source.installedRevision)}`]
+      : []),
     `- Uncommitted source changes: ${result.source.dirty}`,
   ];
   if (!rows.length) lines.push('- No selected automation definitions.');

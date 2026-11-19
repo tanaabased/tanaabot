@@ -1,7 +1,7 @@
 {
   "automation-sync": {
     "emoji": "🔄",
-    "request": "Synchronize the repository automations from the latest main revision."
+    "request": "Synchronize the repository automations using the recorded publication policy."
   },
   "instruction-sync": {
     "emoji": "🔄",

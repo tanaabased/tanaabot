@@ -2,30 +2,32 @@
 
 Start the quoted card with its overall result, followed by all six rows in the order below.
 Each row contains only the bold section name and status. Use normal sentence capitalization.
-After the last row, include **NOTES** only when there is something to explain. Keep the heading
+After the last row, include **NOTES** only when there is something to explain. During Cloud setup
+review and fresh published startup, include the validated Tanaabot setup ID in an information
+note. Keep the heading
 and its bullet list inside the quote. Order notes by severity: ❌ errors, ⚠️ warnings, then ℹ️
 information. Within a severity, follow the order of the checks. Start each bullet with its
 emoji and bold section name. Use the optional status report below for detailed results.
 
 ## Sections
 
-| Section         | Required evidence                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
-| --------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Environment     | Prepared Tanaabot checkout, canonical origin and source revision identified; supported Linux and actual task command launcher established. The saved environment selects the manifest's 1Password Environment, contains valid variables and all its values match the actual exported environment. Derive the variables from the file; never print secret values.                                                                                                                                                                                                                                                                                                       |
-| Dependencies    | Brewfile executables discoverable on the task's effective PATH, usable version output, and declared Node/Bun major versions satisfied. Homebrew maintenance permissions are not required.                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
-| Dotfiles        | The `ai`, `shell`, `git`, `gh` and `ssh` dotpackages link to the prepared sources and match them. Git source drift meets the assessment rules below; identity-only drift with verified overrides may pass. Shell initialization supplies tools and saved variables in fresh shells. The private environment file is outside the checkout, owned by this user with mode 600 in a real mode-700 directory; private storage and key paths are not symlinks.                                                                                                                                                                                                               |
-| Tanaabot skills | All local `SKILL.md` files beneath the prepared checkout's `skills/` are readable, have nonempty instructions and valid frontmatter with unique names and nonempty descriptions. Their names, descriptions and absolute paths are retained in chat context. This is explicit local loading; native catalog registration is not required or implied.                                                                                                                                                                                                                                                                                                                    |
-| Canon skills    | The task catalog contains machine names starting with `tanaab-`, allowing host qualification. Use ownership metadata when available to exclude unrelated matches. This establishes basic availability, not a complete release inventory or ownership from names alone. Installation and updates belong to the ChatGPT account.                                                                                                                                                                                                                                                                                                                                         |
-| Identity        | After saved environment loading is verified, actual Git author/committer names and emails match the committed Git configuration, including environment overrides. Source drift is assessed separately under Dotfiles. Agent email binding, SSH signing configuration, public key and allowed signers match the prepared configuration; the private key matches the approved public key. GitHub CLI and Git select HTTPS with the intended credential helper and URL rewrites; inspect platform authentication separately. The GitHub CLI credential returns the manifest's username, and that account's complete public signing-key listing contains the matching key. |
+| Section      | Required evidence                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
+| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Environment  | Prepared Tanaabot checkout, canonical origin and source revision identified; supported Linux and actual task command launcher established. The saved environment selects the manifest's 1Password Environment, contains valid variables and all its values match the actual exported environment. Derive the variables from the file; never print secret values.                                                                                                                                                                                                                                                                                                       |
+| Tanaabot     | The local setup receipt is readable and valid. All local `SKILL.md` files beneath the prepared checkout's `skills/` are readable, have nonempty instructions and valid frontmatter with unique names and nonempty descriptions. Retain their names, descriptions and absolute paths in chat context.                                                                                                                                                                                                                                                                                                                                                                   |
+| Dependencies | Brewfile executables discoverable on the task's effective PATH, usable version output, and declared Node/Bun major versions satisfied. Homebrew maintenance permissions are not required.                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
+| Dotfiles     | The `ai`, `shell`, `git`, `gh` and `ssh` dotpackages link to the prepared sources and match them. Git source drift meets the assessment rules below; identity-only drift with verified overrides may pass. Shell initialization supplies tools and saved variables in fresh shells. The private environment file is outside the checkout, owned by this user with mode 600 in a real mode-700 directory; private storage and key paths are not symlinks.                                                                                                                                                                                                               |
+| Canon skills | The task catalog contains machine names starting with `tanaab-`, allowing host qualification. Use ownership metadata when available to exclude unrelated matches. This establishes basic availability, not a complete release inventory or ownership from names alone. Installation and updates belong to the ChatGPT account.                                                                                                                                                                                                                                                                                                                                         |
+| Identity     | After saved environment loading is verified, actual Git author/committer names and emails match the committed Git configuration, including environment overrides. Source drift is assessed separately under Dotfiles. Agent email binding, SSH signing configuration, public key and allowed signers match the prepared configuration; the private key matches the approved public key. GitHub CLI and Git select HTTPS with the intended credential helper and URL rewrites; inspect platform authentication separately. The GitHub CLI credential returns the manifest's username, and that account's complete public signing-key listing contains the matching key. |
 
 Use this same skill and card for post-install review and fresh-task startup. A saved environment
 file proves a snapshot was fetched; an offline check cannot prove it still matches current 1Password
 contents. Refresh belongs to installation or explicit maintenance, never startup verification.
 Automatic global-instruction delivery remains separate post-pilot work and does not create a warning.
 
-A passed Tanaabot skills row establishes local loading in this chat. It does not prove that the
-environment automatically ran its saved Start skill or that a later request selected the right
-local skill; verify those behaviors in the fresh pilot.
+The Tanaabot row combines local receipt validation and explicit local skill loading. Verify
+automatic execution of the saved Start skill and selection of the applicable local skill in
+the fresh pilot. Receipt visibility in a task leaves publication recording to the operator.
 
 ## Status rules
 
@@ -83,14 +85,16 @@ state the failure or mark missing fields **Unverified**, and keep independently 
   checkout path. Report saved 1Password loading and the names returned by a successful
   `--check-names` in that launcher. Render each name in its own backticks. On failure, mark
   loading and names accordingly. Never dump the process environment or print variable values.
+- **Tanaabot:** Lead with setup ID, selector, installed commit and sync target from the validated
+  local receipt. Render the target as “Follow branch” or “Use commit” with its value and include
+  the selected tag or fallback when present. Report missing receipt fields as **Unverified**.
+  Run `git -C <prepared-checkout> describe --tags --always --dirty` and report its exact output
+  as the checkout revision. Include the verified local skill count and directory.
 - **Dependencies:** Use one bullet per Brewfile executable, with its observed version from
   Tanaboot’s host check. If the check stopped early, use the remaining executables’ read-only
   `--version` output on the same PATH. Derive the list from the prepared Brewfile.
 - **Dotfiles:** List the packages whose expected links and contents were verified. Identify
   incomplete packages separately when applicable.
-- **Tanaabot skills:** Run `git -C <prepared-checkout> describe --tags --always --dirty`.
-  Report its exact tag, tag plus commit distance and hash, or fallback commit, including the
-  dirty suffix when present. Use the verified local inventory count and its actual directory.
 - **Canon skills:** Report catalog availability. Use version metadata exposed by the current host
   for the loaded Canon plugin, listing distinct versions if applicable. Label an operator-supplied
   version **reported**; absent evidence, show **Unverified**. Version visibility is independent of
@@ -114,6 +118,16 @@ Illustrative requested report (debug uses the same body with the 🔬 heading):
 > - **1Password environment** Loaded and verified in the task shell
 > - **Loaded variables** `EMAIL` `GH_TOKEN`
 >
+> ### TANAABOT
+>
+> - **Setup ID** `main-921f3ae1`
+> - **Setup selector** `main`
+> - **Installed commit** `1234567890abcdef1234567890abcdef12345678`
+> - **Sync target** Follow branch `main`
+> - **Checkout revision** `v0.1.0-3-g1234567`
+> - **Local skills loaded** 8
+> - **Skill directory** `/workspace/tanaabot/skills`
+>
 > ### DEPENDENCIES
 >
 > - **Bun** `1.4.4`
@@ -127,12 +141,6 @@ Illustrative requested report (debug uses the same body with the 🔬 heading):
 > ### DOTFILES
 >
 > - **Verified packages** `ai` `gh` `git` `shell` `ssh`
->
-> ### TANAABOT SKILLS
->
-> - **Source revision** `v0.1.0-3-gabc1234`
-> - **Local skills loaded** 7
-> - **Skill directory** `/workspace/tanaabot/skills`
 >
 > ### CANON SKILLS
 >
@@ -159,9 +167,9 @@ Preserve the quoted H2 heading and blank quoted line before the rows.
 > ## ✅ STARTUP CHECK · PASSED
 >
 > - **Environment — passed**
+> - **Tanaabot — passed**
 > - **Dependencies — passed**
 > - **Dotfiles — passed**
-> - **Tanaabot skills — passed**
 > - **Canon skills — passed**
 > - **Identity — passed**
 
@@ -170,9 +178,9 @@ Preserve the quoted H2 heading and blank quoted line before the rows.
 > ## ⚠️ STARTUP CHECK · INCOMPLETE
 >
 > - **Environment — passed**
+> - **Tanaabot — passed**
 > - **Dependencies — passed**
 > - **Dotfiles — passed**
-> - **Tanaabot skills — passed**
 > - **Canon skills — unverified**
 > - **Identity — passed**
 >
@@ -185,9 +193,9 @@ Preserve the quoted H2 heading and blank quoted line before the rows.
 > ## ❌ STARTUP CHECK · FAILED
 >
 > - **Environment — passed**
+> - **Tanaabot — passed**
 > - **Dependencies — passed**
 > - **Dotfiles — passed**
-> - **Tanaabot skills — passed**
 > - **Canon skills — unverified**
 > - **Identity — failed**
 >

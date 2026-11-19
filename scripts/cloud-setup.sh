@@ -38,7 +38,7 @@ resolve_default_branch() {
     fi
   done <<< "${rows}"
   [[ -n "${branch}" ]] || fail 'The canonical repository HEAD does not point to a default branch.'
-  printf '%s\n' "${sha}"
+  printf '%s\t%s\n' "${sha}" "${branch#refs/heads/}"
 }
 
 resolve_named_ref() {
@@ -64,7 +64,11 @@ resolve_named_ref() {
   done <<< "${rows}"
   [[ -z "${branch}" || -z "${tag}" ]] ||
     fail 'Reference is ambiguous: both a branch and tag have that name. Use a full commit SHA.'
-  printf '%s\n' "${branch:-${peeled:-${tag}}}"
+  if [[ -n "${branch}" ]]; then
+    printf '%s\tbranch\n' "${branch}"
+  else
+    printf '%s\ttag\n' "${peeled:-${tag}}"
+  fi
 }
 
 release_status() {
@@ -139,6 +143,46 @@ release_tag() (
     fail "The selected GitHub '${channel}' release has a missing or invalid tag."
 )
 
+write_publication_receipt() (
+  local workspace="$1" selector="$2" sha="$3" mode="$4" branch="$5" tag="$6" fallback="$7"
+  local folder receipt temporary prefix suffix setup_id jq_bin
+  umask 077
+  folder="$(realpath -m -- "${HOME}/.local/state/tanaabot")"
+  case "${folder}" in
+    "${workspace}" | "${workspace}/"*) fail 'The setup receipt must live outside the checkout.' ;;
+  esac
+  receipt="${folder}/publication.json"
+  [[ ! -L "${receipt}" && ( ! -e "${receipt}" || -f "${receipt}" ) ]] ||
+    fail 'The setup receipt path must be a regular file.'
+  if ! jq_bin="$(command -v jq)"; then
+    for jq_bin in "${HOME}/.linuxbrew/bin/jq" /home/linuxbrew/.linuxbrew/bin/jq; do
+      [[ ! -x "${jq_bin}" ]] || break
+    done
+  fi
+  [[ -x "${jq_bin}" ]] || fail 'jq is required to write the setup receipt.'
+  prefix="$(printf '%s' "${tag:-${branch:-commit}}" | LC_ALL=C tr -cs 'a-zA-Z0-9._-' '-' | cut -c 1-24)"
+  suffix="$(od -An -N4 -tx1 /dev/urandom | tr -d '[:space:]')"
+  [[ "${suffix}" =~ ^[a-f0-9]{8}$ ]] || fail 'Could not generate a setup ID.'
+  setup_id="${prefix}-${suffix}"
+  mkdir -p -- "${folder}"
+  temporary="$(mktemp "${folder}/.publication.XXXXXX")"
+  trap 'rm -f -- "${temporary}"' EXIT
+  # jq resolves the named bindings inside the filter.
+  # shellcheck disable=SC2016
+  "${jq_bin}" -n --arg setupId "${setup_id}" --arg selector "${selector}" --arg mode "${mode}" \
+    --arg installedCommit "${sha}" --arg branch "${branch}" --arg tag "${tag}" --arg fallback "${fallback}" '
+    {
+      version: 1, repository: "tanaabased/tanaabot", $setupId, $selector, $mode, $installedCommit,
+      branch: ($branch | select(length > 0) // null),
+      tag: ($tag | select(length > 0) // null),
+      fallback: ($fallback | select(length > 0) // null),
+      target: (if $mode == "branch" then {branch: $branch} else {commit: $installedCommit} end)
+    }
+  ' > "${temporary}"
+  mv -fT -- "${temporary}" "${receipt}"
+  printf 'note: Setup ID: %s\n' "${setup_id}"
+)
+
 main() (
   if [[ "${1:-}" == --help || "${1:-}" == -h ]]; then usage; return; fi
   if [[ $# -eq 0 || -z "$1" || "$1" == -* ]]; then
@@ -146,7 +190,8 @@ main() (
     fail 'Provide a channel, branch, tag or full commit SHA before Tanaboot options.' 2
   fi
   command -v git >/dev/null 2>&1 || fail 'Git is required to select the Cloud workspace revision.'
-  local workspace script_dir ref url origin sha tag
+  local workspace script_dir ref url origin sha resolved option
+  local mode branch="" tag="" fallback=""
   workspace="$(git rev-parse --show-toplevel)" || fail 'Run Cloud setup from the existing Tanaabot workspace.'
   workspace="$(cd -- "${workspace}" && pwd -P)"
   script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
@@ -172,21 +217,32 @@ main() (
   shift
   if [[ "${1:-}" == -- ]]; then shift; fi
   case "${ref}" in
-    dev) sha="$(resolve_default_branch "${url}")" ;;
+    dev)
+      mode=branch
+      resolved="$(resolve_default_branch "${url}")"
+      IFS=$'\t' read -r sha branch <<< "${resolved}"
+      ;;
     stable|edge)
+      mode=channel
       tag="$(release_tag "${ref}")"
       if [[ -n "${tag}" ]]; then
-        sha="$(resolve_named_ref "${url}" "${tag}" release)"
+        resolved="$(resolve_named_ref "${url}" "${tag}" release)"
+        sha="${resolved%%$'\t'*}"
       else
         printf 'note: %s has no eligible GitHub release. Falling back to dev.\n' "${ref}" >&2
-        sha="$(resolve_default_branch "${url}")"
+        fallback=dev
+        resolved="$(resolve_default_branch "${url}")"
+        IFS=$'\t' read -r sha branch <<< "${resolved}"
       fi
       ;;
     *)
       if [[ "${ref}" =~ ^[a-fA-F0-9]{40}$ ]]; then
+        mode=commit
         sha="$(printf '%s' "${ref}" | tr '[:upper:]' '[:lower:]')"
       else
-        sha="$(resolve_named_ref "${url}" "${ref}")"
+        resolved="$(resolve_named_ref "${url}" "${ref}")"
+        IFS=$'\t' read -r sha mode <<< "${resolved}"
+        if [[ "${mode}" == branch ]]; then branch="${ref}"; else tag="${ref}"; fi
       fi
       ;;
   esac
@@ -205,6 +261,15 @@ main() (
   git checkout -q --detach "${sha}" || fail 'Cannot select the workspace revision. Preserve conflicting files before retrying.'
   printf 'note: Workspace revision: %s (%s)\n' "${ref}" "${sha}"
   bash "${workspace}/tanaboot.sh" "$@"
+  for option in "$@"; do
+    case "${option}" in
+      --debug | --debug=*) ;;
+      *) return 0 ;;
+    esac
+  done
+  [[ "$(git rev-parse HEAD)" == "${sha}" ]] ||
+    fail 'The checkout changed during setup. Run setup again before publishing.'
+  write_publication_receipt "${workspace}" "${ref}" "${sha}" "${mode}" "${branch}" "${tag}" "${fallback}"
 )
 
 main "$@"
