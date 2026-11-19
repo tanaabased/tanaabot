@@ -1,6 +1,6 @@
 ---
 name: tanaabot-record-publication
-description: Record the verified setup of a newly published Tanaabot Cloud environment. Use only when the operator explicitly requests Record Publication with the expected setup ID.
+description: Record a Tanaabot Cloud setup on the operator’s explicit request in the publisher chat after Publish or Republish.
 license: MIT
 metadata:
   type: integration
@@ -20,7 +20,7 @@ metadata:
 
 ## Overview
 
-Record the receipt from a fresh task in the intended published Tanaabot environment. That
+Record the setup receipt from the Cloud environment builder chat where the operator publishes. That
 receipt supplies the source policy for Automation Sync and Instruction Sync.
 
 ## Required Reading
@@ -31,26 +31,28 @@ receipt supplies the source policy for Automation Sync and Instruction Sync.
 
 ## When to Use
 
-- The operator explicitly requests `Record Publication <setup-id>` after Publish or Republish.
+- The operator requests `Record Publication` in the publisher chat after Publish or Republish.
+  An explicit Setup ID is optional.
 - The operator checks the outcome of an already attempted receipt write.
 
 ## When Not to Use
 
-- During installation, startup, scheduled work, draft setup, or in a reusable sync worker.
+- During installation, ordinary startup, scheduled work, or from any other chat or worker.
 - To publish an environment, update a schedule, or grant repository access.
 
 ## Prerequisites
 
-Use the fresh task's native launch or association evidence to verify the intended published
-configuration and successful launch from it. A machine ID, chat title, repository mount or
-setup ID alone cannot establish that association. A draft, failed publish, existing worker
-or unavailable evidence stops recording. Verify the selected GitHub account and route for
-each action. Use a read connection in the Cloud task and the operator-authorized GitHub
-write path for the repository commit. Keep write credentials out of sync workers.
+Identify the publisher chat through the host's environment builder context and this chat’s
+own successful setup output for the selected configuration. Take the expected Setup ID from
+that install. A copied transcript, chat title or local receipt alone cannot establish the
+request’s origin. Stop if the origin is unavailable, a later setup failed, or the operator
+reports publication failed or was cancelled. Verify the selected GitHub account and route
+for each action. Keep the existing authorized writer and keep write credentials out of workers.
 
 ## Inputs
 
-- The expected setup ID displayed at the end of the install you published.
+- The Setup ID displayed by the latest successful install in this publisher chat. If the
+  operator supplied an ID, it must match.
 - The validated local receipt and the canonical repository's current default branch and head.
 
 ## Outputs
@@ -68,25 +70,41 @@ report the conflict or uncertainty. Never rebase or retry an old proposal onto a
 
 ## Workflow
 
-1. Verify the fresh native launch, published configuration and current operator request.
+1. Verify the publisher chat and its direct operator request as described above.
    Through the task's usual launcher, run
    `bun --no-env-file scripts/publication-task.js prepare <setup-id>` from the prepared checkout
    using the verified read account. The read-only result contains the validated local receipt,
    the current default branch and an exact conditional commit request, or `already-recorded`.
-   For `already-recorded`, show that verified result and end the operation.
-2. Hand the exact prepared result to the explicitly authorized repository writer through the
+   For `already-recorded`, report “This setup is already recorded” and end the operation.
+2. For a new receipt, compare this setup's pre-publication observation in the publisher chat
+   with a fresh `cloud_environment_environment_status` read. Stop if the Setup ID or
+   `source_config_id` identifies a different setup or configuration. When current observations
+   show the same configuration and a changed `source_config_version_id`, read
+   `cloud_environment_onboarding_read_environment_config_draft`. If its `base_version_id`
+   matches the new version, proceed on the operator's request.
+
+   If the version is unchanged or the comparison is inconclusive (including a missing baseline,
+   stale or unavailable observation, or unconfirmed draft base), ask “Did Publish or Republish
+   finish for setup `<setup-id>`?” using the verified ID. Wait for a direct yes in this chat
+   before handing off that setup. If another install has occurred, the confirmation no longer
+   applies. A no or uncertain answer leaves GitHub untouched. Version
+   changes are supporting evidence only. Keep these observations in the chat.
+
+3. Hand the exact prepared result to the explicitly authorized repository writer through the
    existing private workflow. Show the setup ID, source selector, installed SHA and branch or
-   commit target. The writer verifies its selected account, target and operator authorization,
+   commit target. The writer verifies the direct operator request originated in the publisher
+   chat through trusted context or a publisher-only write route. If it cannot verify that
+   origin, stop before writing. The writer verifies its selected account, target and authorization,
    retaining the prepared branch head. This handoff does not authorize a different actor or
    an unrelated write.
-3. If normal repository policy allows a direct commit, use GitHub's
+4. If normal repository policy allows a direct commit, use GitHub's
    [`createCommitOnBranch`](https://docs.github.com/en/graphql/reference/commits#createcommitonbranch)
    with the returned `commitInput` unchanged, including `expectedHeadOid`. Only submit the
    receipt file. If repository policy requires a PR, use the normal authorized PR route from
-   the prepared head. Preserve the one-file diff, recheck the publication and original receipt
+   the prepared head. Preserve the one-file diff, recheck the publisher request and original receipt
    before merge, and report pending until the default branch has the verified receipt. Never
    change a branch rule or bypass review.
-4. Independently read the receipt on the current default branch. With the verified read
+5. Independently read the receipt on the current default branch. With the verified read
    connection, `bun --no-env-file scripts/publication-task.js recorded` reports the branch SHA
    and complete receipt. Verify it matches the prepared receipt. Use the GitHub write result for
    the receipt commit, or link the immutable readback when the receipt commit is unknown.
@@ -99,7 +117,7 @@ report the conflict or uncertainty. Never rebase or retry an old proposal onto a
 
 ## Validation
 
-Verify the current publication and exact setup ID before preparing a write and read the full
-receipt back after recording it. In the operator-led Cloud check, confirm that two successful
-publications yield distinct IDs, a fresh task sees its own receipt, and the old task cannot
-record the new ID. Verify same-receipt retries and branch-head conflicts without repeated writes.
+In an operator-led Cloud check, record from the publisher chat and verify the full receipt on
+GitHub. Repeat the request for the same setup and verify a no-op. Check that a fresh task or
+worker with a copy of the same receipt cannot initiate recording. A new install of the same
+commit has its own Setup ID. Verify mismatched IDs and branch-head conflicts stop the write.
