@@ -14,7 +14,7 @@
   "interface": {
     "displayName": "tanaabot",
     "shortDescription": "Courteous assistance, with a little protocol-droid fussing",
-    "longDescription": "Write in tanaabot's courteous protocol-droid voice and author its skills using Canon's shared methods. Verify a prepared Tanaabot Cloud environment without applying repairs. The bundle also includes global guidance sources; automatic guidance delivery remains unverified.",
+    "longDescription": "Write in tanaabot's courteous protocol-droid voice, author skills with Canon, and check a prepared Tanaabot Cloud environment. Inspect saved instructions and synchronize scheduled tasks.",
     "developerName": "Tanaab",
     "category": "Productivity",
     "capabilities": ["Interactive", "Write"],

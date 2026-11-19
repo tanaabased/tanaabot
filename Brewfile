@@ -1,5 +1,5 @@
-# Linux Cloud tools.
-# Each formula's basename, without @version, must support --version for offline checks.
+# LINUX CLOUD tools.
+# each formula's basename, without @version, must support --version for offline checks.
 tap "oven-sh/bun", trusted: true
 
 brew "curl"

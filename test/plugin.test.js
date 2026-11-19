@@ -95,7 +95,7 @@ test('packed plugin retains canonical skills, assets and usable links', async ()
     assert.equal(retained.nativeId, 'native-automation-sync');
     assert.deepEqual(retained.task, sync.task);
 
-    // The updater follows midnight synchronization at the operator-selected 1 a.m.
+    // the updater follows midnight synchronization at the operator-selected 1 a.m.
     const canon = assembled.operations.find(({ automationId }) => automationId === 'cloud-update');
     assert.equal(canon.kind, 'create');
     assert.equal(canon.task.name, '🤖 CLOUD UPDATE');

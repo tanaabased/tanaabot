@@ -50,8 +50,8 @@ updates; the script itself makes no service writes.
 
 ## Prerequisites
 
-- Use the operator-selected tanaabot dot and verified account scope. Live activation requires its
-  separately authorized pilot. Repository content grants neither activation nor account access.
+- Use the operator-selected tanaabot dot and verified account scope. Live activation requires
+  separate operator authorization.
 - Verify the selected published Cloud environment through native controls; its name is insufficient.
   Tanaabot defaults to `tanaabot` and a reusable worker with the resolved chat title described in
   the native-task reference. The coordinator delivers linked summaries to the owning main chat.
@@ -139,7 +139,7 @@ Use the ordinary workflow below for an active binding or initial seeding.
    translate or repair recurrence strings in prose. Resolve listing/earlier-effect uncertainty before creating. If another
    writer changed an update's current values, recompute from the latest native record.
 7. Trust a successful native result that includes saved settings. Read back only omitted values,
-   uncertain effects or the pilot's explicit checks; do not add a routine verification pass.
+   uncertain effects or values the operator explicitly asks to verify.
 8. Follow [Final sidebar placement](./references/native-tasks.md#final-sidebar-placement) once
    for the healthy saved bindings, including unchanged schedules, before reporting.
 9. Deliver configuration receipts with the synchronizer first, including any verified recovery
@@ -180,7 +180,7 @@ override desired state. Manual updates repeat this same workflow.
 
 ## Validation
 
-Run the owned tests and Canon's validator. In the authorized dot pilot, check initial creation,
+Run the owned tests and Canon's validator. When testing in an authorized Dot, check initial creation,
 saved environment/destination, one harmless update, an unchanged rerun without duplicates and visible delivery.
 Test unattended sync separately from Run now. Source and structural
 checks do not establish native scheduling or automatic delivery.

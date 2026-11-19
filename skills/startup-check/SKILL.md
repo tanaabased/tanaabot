@@ -24,7 +24,7 @@ Verification never provisions, upgrades, switches revisions, binds Agent System 
 
 ## Required Reading
 
-- **Always:** Read and apply [Tanaboot usage](../../TANABOOT.md#usage) for check behavior and limits.
+- **Always:** Read and apply [Tanaboot CLI options](../../TANABOOT.md#cli-options) for check behavior and limits.
 - **Before continuing a fresh Cloud task:** Read and apply the installed
   [global guidance](../../dotfiles/ai/.codex/AGENTS.md) after verifying its link in step 3.
 - **Before reporting:** Read and apply [Tanaabot Voice](../voice/SKILL.md).
@@ -150,7 +150,7 @@ separate operator-authorized scope. This skill inspects the saved installation o
    binding, HTTPS configuration and local signing identity for the optional status report. API identity,
    repository permissions, live HTTPS access and local signing are distinct results. A public read
    may be anonymous or use platform authentication; it does not prove `GH_TOKEN` write access.
-   Live transport and signing tests belong to the authorized Cloud pilot, not read-only startup.
+   Run live transport and signing tests only during a separately authorized identity check.
    Keep the configured email as identity metadata. Obtain Google authentication evidence from the
    selected native connection when needed.
 7. Compose the startup card using the report contract. Show all six status rows together.

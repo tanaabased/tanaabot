@@ -18,8 +18,7 @@ metadata:
 
 ## Overview
 
-Dispense one fixed fortune from the spaceport vending machine. This small pilot skill exercises
-selection from the local inventory and reading a required reference.
+Dispense one fixed fortune from the spaceport vending machine.
 
 ## Required Reading
 
@@ -52,7 +51,7 @@ merely because startup enumerated this skill.
 ## Validation
 
 - Compare the reply with the reference response before sending it.
-- For the fresh Cloud pilot, request a spaceport fortune without naming the skill or revealing its
+- To check skill selection in a fresh Cloud chat, request a spaceport fortune without naming the skill or revealing its
   output. Where file-read evidence is available, confirm both this skill and its reference were read.
 - Exact output supports the loading test; it does not prove native catalog registration. Packaging
   and structural checks do not establish automatic selection in a fresh chat.

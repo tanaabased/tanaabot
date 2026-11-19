@@ -1,6 +1,6 @@
 #!/bin/bash
 set -euo pipefail
-# Prepare tanaabot's Codex Cloud environment through Bootbox.
+# prepare TANAABOT's CODEX CLOUD environment through BOOTBOX.
 
 # shellcheck disable=SC2292
 if [ -z "${BASH_VERSION:-}" ]; then
@@ -18,9 +18,15 @@ BOOTBOX_URL="https://bootbox.tanaab.sh/bootbox.sh"
 SSH_KEY_SPEC="io7gvjejiyau6my2xasglxbydy/id_tanaabot"
 DATA_DIR="${XDG_DATA_HOME:-${HOME}/.local/share}/tanaabot"
 DEBUG="${TANABOOT_DEBUG:-${DEBUG:-${RUNNER_DEBUG:-}}}"
+op_token="${OP_SERVICE_ACCOUNT_TOKEN:-}"
+token_source="OP_SERVICE_ACCOUNT_TOKEN"
+if [[ -n "${TANABOOT_OP_TOKEN:-}" ]]; then
+  op_token="${TANABOOT_OP_TOKEN}"
+  token_source="TANABOOT_OP_TOKEN"
+fi
 TARGET="bootstrap"
 ACTION="apply"
-# The receiving shell expands HOME when it loads this line.
+# the receiving shell expands HOME when it loads this line.
 # shellcheck disable=SC2016
 SHELL_INIT_LINE='[ ! -r "$HOME/.config/tanaabot/env.sh" ] || . "$HOME/.config/tanaabot/env.sh"'
 
@@ -77,8 +83,9 @@ plan_command() {
 }
 
 usage() {
-  local debug_display="off"
+  local debug_display="off" token_display="unset"
   if value_enabled "${DEBUG}"; then debug_display="on"; fi
+  if [[ -n "${op_token}" ]]; then token_display="${token_source}"; fi
   cat <<HELP
 Usage: ${tty_bold}tanaboot.sh${tty_reset} ${tty_dim}[TANABOOT_*...] [options]${tty_reset}
 
@@ -90,13 +97,20 @@ ${tty_tp}Options:${tty_reset}
   --agent             Select dotfiles, environment and the Tanaabot SSH key
   --check             Check installed tools and configuration offline
   --dry-run           Preview delegation without downloads or changes
+  --op-token TOKEN    Use a 1Password service account token ${tty_dim}[default: ${token_display}]${tty_reset}
   --debug             Show diagnostics ${tty_dim}[default: ${debug_display}]${tty_reset}
   --version           Show the script version
   -h, --help          Show this help
 
 ${tty_tp}Environment Variables:${tty_reset}
-  TANABOOT_DEBUG            Same as --debug
-  OP_SERVICE_ACCOUNT_TOKEN  1Password service account for environment refresh and SSH key retrieval
+  TANABOOT_HOST       Same as --host
+  TANABOOT_AGENT      Same as --agent
+  TANABOOT_CHECK      Same as --check
+  TANABOOT_DRY_RUN    Same as --dry-run
+  TANABOOT_OP_TOKEN   Same as --op-token; falls back to OP_SERVICE_ACCOUNT_TOKEN
+  TANABOOT_DEBUG      Same as --debug
+  TANABOOT_VERSION    Same as --version
+  TANABOOT_HELP       Same as --help
 
 HELP
 }
@@ -118,6 +132,17 @@ parse_args() {
         [[ "${ACTION}" == apply ]] || option_error 'Choose only one of --check or --dry-run.'
         if [[ "$1" == --check ]]; then ACTION="check"; else ACTION="plan"; fi
         ;;
+      --op-token | --op-token=*)
+        if [[ "$1" == --op-token ]]; then
+          [[ -n "${2:-}" && "$2" != -* ]] || option_error '--op-token requires a token value.'
+          shift
+          op_token="$1"
+        else
+          op_token="${1#*=}"
+          [[ -n "${op_token}" ]] || option_error '--op-token requires a token value.'
+        fi
+        token_source="command line"
+        ;;
       --debug) DEBUG="1" ;;
       --debug=*) DEBUG="${1#*=}" ;;
       -h | --help | --version)
@@ -128,10 +153,31 @@ parse_args() {
     esac
     shift
   done
+  if [[ -z "${info}" ]]; then
+    if value_enabled "${TANABOOT_HELP:-}"; then info=--help; fi
+    if value_enabled "${TANABOOT_VERSION:-}"; then
+      [[ -z "${info}" ]] || option_error 'Choose only one of --help or --version.'
+      info=--version
+    fi
+  fi
   case "${info}" in
     -h | --help) usage; exit 0 ;;
     --version) printf '%s\n' "${SCRIPT_VERSION}"; exit 0 ;;
   esac
+  if [[ "${TARGET}" == bootstrap ]]; then
+    if value_enabled "${TANABOOT_HOST:-}"; then TARGET=host; fi
+    if value_enabled "${TANABOOT_AGENT:-}"; then
+      [[ "${TARGET}" == bootstrap ]] || option_error 'Choose only one setup mode.'
+      TARGET=agent
+    fi
+  fi
+  if [[ "${ACTION}" == apply ]]; then
+    if value_enabled "${TANABOOT_CHECK:-}"; then ACTION=check; fi
+    if value_enabled "${TANABOOT_DRY_RUN:-}"; then
+      [[ "${ACTION}" == apply ]] || option_error 'Choose only one of --check or --dry-run.'
+      ACTION=plan
+    fi
+  fi
 }
 
 plan_host() {
@@ -180,9 +226,9 @@ prepare_bootbox() {
 
 run_bootbox() (
   local variable prefix key_token="" script="${BOOTBOX_SCRIPT}"
-  if [[ "${1:-}" == --ssh-key ]]; then key_token="${OP_SERVICE_ACCOUNT_TOKEN:-}"; fi
-  # Inherited profile inputs must not add secrets, SSH keys or overwrite behavior.
-  for variable in ${!BOOTBOX_@} ${!TANAAB_@} OP_SERVICE_ACCOUNT_TOKEN INTERACTIVE; do
+  if [[ "${1:-}" == --ssh-key ]]; then key_token="${op_token}"; fi
+  # inherited profile inputs must not add secrets, SSH keys or overwrite behavior.
+  for variable in ${!BOOTBOX_@} ${!TANAAB_@} TANABOOT_OP_TOKEN OP_SERVICE_ACCOUNT_TOKEN INTERACTIVE; do
     unset "${variable}"
   done
   prefix="$(brew --prefix)" || fail 'Cannot determine the selected Homebrew prefix.'
@@ -207,7 +253,7 @@ install_ssh_key() {
     note 'Reusing the approved SSH private key.'
     return
   fi
-  [[ -n "${OP_SERVICE_ACCOUNT_TOKEN:-}" ]] || fail 'Set OP_SERVICE_ACCOUNT_TOKEN through private Cloud configuration before initial SSH key setup.'
+  [[ -n "${op_token}" ]] || fail 'Set TANABOOT_OP_TOKEN or OP_SERVICE_ACCOUNT_TOKEN before initial SSH key setup.'
   run_bootbox --ssh-key "${SSH_KEY_SPEC}" || return
   check_ssh_key
 }
@@ -273,7 +319,7 @@ check_host() {
   [[ -r "${REPO_DIR}/Brewfile" ]] || fail 'The dependency inventory is not readable.'
   version="$(HOMEBREW_NO_AUTO_UPDATE=1 brew --version)" || fail 'Cannot read Homebrew version.'
   note "Homebrew: ${version}"
-  # The Brewfile is the dependency inventory; tap and version suffixes are not binary names.
+  # the Brewfile is the dependency inventory; tap and version suffixes are not binary names.
   while IFS= read -r formula; do
     tool="${formula##*/}"
     tool="${tool%%@*}"
@@ -308,7 +354,7 @@ remove_retired_ssh_wrappers() {
   [[ ! -L "${HOME}/.local" && ! -L "${HOME}/.local/bin" ]] || return 0
   for client in ssh scp sftp; do
     wrapper="${HOME}/.local/bin/${client}"
-    # Remove only this checkout's retired Stow links, including dangling links.
+    # remove only this checkout's retired STOW links, including dangling links.
     if [[ -L "${wrapper}" && "$(readlink -m -- "${wrapper}")" == "${REPO_DIR}/dotfiles/shell/.local/bin/${client}" ]]; then
       rm -- "${wrapper}"
     fi
@@ -318,7 +364,7 @@ remove_retired_ssh_wrappers() {
 check_shells() {
   local mode name
   local -a fresh_environment=(env -u BASH_ENV)
-  # Remove saved variables as well as tool paths so inherited values cannot hide a broken loader.
+  # remove saved variables as well as tool paths so inherited values cannot hide a broken loader.
   while IFS= read -r name; do
     fresh_environment+=(-u "${name}")
   done < <(jq -r '.variables | keys[]' "${HOME}/.local/state/tanaabot/environment.json")
@@ -326,7 +372,7 @@ check_shells() {
   bash -c 'source "$1"; check_tools; check_git_transport; bun --no-env-file "${REPO_DIR}/scripts/environment-task.js" --check' _ "${REPO_DIR}/tanaboot.sh" || fail 'Non-interactive Bash cannot discover the declared tools or environment. Check the Cloud command launcher environment.'
   for mode in -lc -ic; do
     note "Shell: fresh Bash ${mode} from system PATH"
-    # Remove inherited tool paths so startup files must supply them.
+    # remove inherited tool paths so startup files must supply them.
     # shellcheck disable=SC2016
     "${fresh_environment[@]}" HISTFILE=/dev/null PATH=/usr/bin:/bin bash "${mode}" 'source "$1"; check_tools; check_git_transport; bun --no-env-file "${REPO_DIR}/scripts/environment-task.js" --check' _ "${REPO_DIR}/tanaboot.sh" || fail 'Fresh Bash cannot discover the declared tools or environment. Check the active login file and .bashrc initialization.'
   done
@@ -365,11 +411,11 @@ apply_agent() {
   [[ ! -e "${HOME}/.ssh" || -O "${HOME}/.ssh" ]] || fail 'The .ssh directory must be owned by this user.'
   require_tool stow
   stow --simulate --dir "${REPO_DIR}/dotfiles" --target "${HOME}" ai shell git gh ssh >/dev/null || fail 'Dotfiles conflict with existing configuration. Preserve it and resolve the conflict before retrying.'
-  # Prevent Stow directory folding from sending private runtime writes into Git sources.
+  # prevent STOW directory folding from sending private runtime writes into GIT sources.
   mkdir -p -- "${HOME}/.codex" "${HOME}/.config/git" "${HOME}/.config/gh" "${HOME}/.ssh"
   chmod 700 "${HOME}/.ssh"
   install_ssh_key
-  bun --no-env-file "${REPO_DIR}/scripts/environment-task.js" --ensure
+  OP_SERVICE_ACCOUNT_TOKEN="${op_token}" bun --no-env-file "${REPO_DIR}/scripts/environment-task.js" --ensure
   remove_retired_ssh_wrappers
   run_bootbox --dotpkg "${REPO_DIR}/dotfiles/ai" --dotpkg "${REPO_DIR}/dotfiles/shell" --dotpkg "${REPO_DIR}/dotfiles/git" --dotpkg "${REPO_DIR}/dotfiles/gh" --dotpkg "${REPO_DIR}/dotfiles/ssh"
   while IFS= read -r file; do
@@ -377,7 +423,7 @@ apply_agent() {
       printf '\n%s\n' "${SHELL_INIT_LINE}" >> "${HOME}/${file}"
     fi
   done < <(shell_startup_files)
-  # Load the same installed initialization that fresh task shells will use.
+  # load the same installed initialization that fresh task shells will use.
   # shellcheck source=dotfiles/shell/.config/tanaabot/env.sh
   source "${HOME}/.config/tanaabot/env.sh"
   check_agent

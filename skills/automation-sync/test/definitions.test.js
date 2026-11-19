@@ -77,7 +77,7 @@ automations:
         destination: { kind: 'dot', id: 'test-dot' },
       },
     );
-    // Targets are resolved before any worker exists, including its first-turn settings.
+    // targets are resolved before any worker exists, including its first-turn settings.
     assert.equal(loaded.manifest.automations[0].group, 'CHECKS');
     assert.equal(Object.hasOwn(target.thread, 'group'), false);
     assert.equal(target.model, 'fixture-override');

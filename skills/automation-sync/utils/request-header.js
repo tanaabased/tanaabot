@@ -1,4 +1,4 @@
-/** Render the shared worker opening from each automation's authored presentation. */
+/** render the shared worker opening from each automation's authored presentation. */
 export default function requestHeader(template, title, presentation) {
   const fields = {
     emoji: presentation?.emoji,

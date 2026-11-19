@@ -51,7 +51,7 @@ function commitReceipt(input) {
   try {
     response = JSON.parse(result.stdout);
   } catch {
-    // A transport failure can leave gh with only a diagnostic on stderr.
+    // a transport failure can leave gh with only a diagnostic on stderr.
   }
   if (result.status !== 0 || response?.errors?.length) {
     const reason =
