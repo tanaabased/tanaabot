@@ -25,9 +25,6 @@ try {
   const source = {
     revision: git('rev-parse', 'HEAD'),
     dirty: git('status', '--porcelain').length > 0,
-    ...(selection.receipt
-      ? { installedRevision: selection.receipt.installedCommit, setupId: selection.receipt.setupId }
-      : { bootstrapBranch: selection.bootstrapBranch }),
   };
   if (source.revision !== selection.sourceCommit) throw new Error('sync-source-checkout-mismatch');
   const loaded = await definitions(workspaceDir);
@@ -58,9 +55,9 @@ try {
             id: input.id,
             now,
           });
-  process.stdout.write(
-    `${JSON.stringify({ ...result, sourceSelection: selection, ...(result.operations && loaded.manifest.debug ? { presentation: syncReport(result, true) } : {}) }, null, 2)}\n`,
-  );
+  const output = { ...result, sourceSelection: selection };
+  if (result.operations && loaded.manifest.debug) output.presentation = syncReport(output, true);
+  process.stdout.write(`${JSON.stringify(output, null, 2)}\n`);
 } catch (error) {
   process.stderr.write(
     `${JSON.stringify({

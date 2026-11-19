@@ -18,7 +18,8 @@ test('should keep preparation silent by default and label optional debug as unsa
 test('should label first-publication fallback without an installed revision', () => {
   const preview = syncReport(
     {
-      source: { revision: 'a'.repeat(40), dirty: false, bootstrapBranch: 'main' },
+      source: { revision: 'a'.repeat(40), dirty: false },
+      sourceSelection: { receipt: null, bootstrapBranch: 'main' },
       operations: [],
     },
     true,

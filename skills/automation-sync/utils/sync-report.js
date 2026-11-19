@@ -7,6 +7,7 @@ function text(value) {
 export default function syncReport(result, debug = false) {
   if (!debug) return '';
   const rows = result.operations;
+  const { receipt, bootstrapBranch } = result.sourceSelection ?? {};
   const lines = [
     '## 🔬 DEBUG · SYNCHRONIZATION PREPARATION',
     '',
@@ -15,13 +16,9 @@ export default function syncReport(result, debug = false) {
     ...rows.map((row) => `- **${text(row.automationId)}:** ${text(row.kind)}`),
     '',
     `- Sync revision: ${text(result.source.revision)}`,
-    ...(result.source.installedRevision
-      ? [`- Installed revision: ${text(result.source.installedRevision)}`]
-      : []),
-    ...(result.source.bootstrapBranch
-      ? [
-          `- First-publication fallback: ${text(result.source.bootstrapBranch)} (no recorded publication)`,
-        ]
+    ...(receipt ? [`- Installed revision: ${text(receipt.installedCommit)}`] : []),
+    ...(bootstrapBranch
+      ? [`- First-publication fallback: ${text(bootstrapBranch)} (no recorded publication)`]
       : []),
     `- Uncommitted source changes: ${result.source.dirty}`,
   ];

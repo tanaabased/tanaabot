@@ -9,7 +9,6 @@ import {
   preparePublication,
   readRecordedPublication,
   repository,
-  resolveSyncSource,
 } from '../lib/publication.js';
 
 function readLocal(expectedSetupId) {
@@ -53,9 +52,6 @@ try {
     case 'prepare':
       if (!expectedSetupId) throw new Error('publication-expected-setup-id-required');
       result = await preparePublication(readGitHub, readLocal(expectedSetupId));
-      break;
-    case 'resolve':
-      result = await resolveSyncSource(readGitHub);
       break;
     default:
       throw new Error('publication-arguments-invalid');
