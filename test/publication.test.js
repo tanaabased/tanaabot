@@ -46,13 +46,13 @@ const fallbackReceipt = {
   fallback: 'dev',
 };
 
-function githubFixture({ receipt = branchReceipt, treeOverrides } = {}) {
+function githubFixture({ defaultBranch = 'main', receipt = branchReceipt, treeOverrides } = {}) {
   const content = Buffer.from(JSON.stringify(receipt));
   const calls = [];
   const routes = {
-    '': { full_name: repository, default_branch: 'main' },
-    '/branches/main': {
-      name: 'main',
+    '': { full_name: repository, default_branch: defaultBranch },
+    [`/branches/${defaultBranch}`]: {
+      name: defaultBranch,
       commit: { sha: defaultHead, commit: { tree: { sha: treeSha } } },
     },
     '/branches/topic%2Fsync': { name: 'topic/sync', commit: { sha: movingHead } },
@@ -81,6 +81,33 @@ function githubFixture({ receipt = branchReceipt, treeOverrides } = {}) {
   };
 }
 
+test('confirmed absence falls back to the observed default branch head once', async () => {
+  const { read, calls } = githubFixture({
+    defaultBranch: 'trunk',
+    receipt: null,
+    treeOverrides: { tree: [{ path: 'README.md', type: 'blob', mode: '100644', sha: blobSha }] },
+  });
+  const selection = await resolveSyncSource(read);
+  assert.deepEqual(selection, {
+    receiptAt: defaultHead,
+    receipt: null,
+    sourceCommit: defaultHead,
+    bootstrapBranch: 'trunk',
+  });
+  assert.deepEqual(calls, ['', '/branches/trunk', `/git/trees/${treeSha}`]);
+  assert.deepEqual(validateSyncSource(selection), selection);
+  for (const unverified of [
+    { ...selection, receipt: undefined },
+    { ...selection, bootstrapBranch: undefined },
+    { ...selection, sourceCommit: movingHead },
+  ]) {
+    assert.throws(
+      () => validateSyncSource(unverified),
+      /sync-source-selection-invalid|publication-receipt-invalid/,
+    );
+  }
+});
+
 test('a branch run keeps its recorded branch and resolves it only once', async () => {
   const receipt = {
     ...branchReceipt,
@@ -99,6 +126,10 @@ test('a branch run keeps its recorded branch and resolves it only once', async (
     '/branches/topic%2Fsync',
   ]);
   assert.deepEqual(validateSyncSource(selection), selection);
+  assert.throws(
+    () => validateSyncSource({ ...selection, bootstrapBranch: 'main' }),
+    /sync-source-selection-invalid/,
+  );
 });
 
 test('a default branch run reuses the same head that supplied the receipt', async () => {
@@ -127,11 +158,11 @@ test('tag and channel receipts pin the installed SHA without looking up tags or 
   }
 });
 
-test('a contradictory or incomplete receipt blocks sync without falling back to main', async () => {
+test('an invalid receipt or incomplete tree blocks sync', async () => {
   for (const [options, error] of [
-    [{ receipt: null }, /publication-receipt-missing/],
     [{ receipt: { ...fallbackReceipt, target: { branch: 'main' } } }, /publication-policy-invalid/],
     [{ treeOverrides: { truncated: true } }, /publication-tree-unverified/],
+    [{ treeOverrides: { tree: [{ type: 'blob' }] } }, /publication-tree-unverified/],
     [
       { treeOverrides: { tree: [{ path: receiptPath, type: 'blob', mode: '120000' }] } },
       /publication-receipt-file-invalid/,
@@ -141,9 +172,29 @@ test('a contradictory or incomplete receipt blocks sync without falling back to 
   }
 });
 
+test('GitHub read failures block sync even when the receipt path or target cannot be read', async () => {
+  for (const failedPath of [
+    '',
+    '/branches/main',
+    `/git/trees/${treeSha}`,
+    `/git/blobs/${blobSha}`,
+    `/git/commits/${installed}`,
+  ]) {
+    const { read } = githubFixture({ receipt: tagReceipt });
+    const accessError = new Error('GitHub access failed');
+    await assert.rejects(
+      resolveSyncSource((path) => {
+        if (path === failedPath) throw accessError;
+        return read(path);
+      }),
+      (error) => error === accessError,
+    );
+  }
+});
+
 test('recording prepares only the validated receipt against the observed default branch head', async () => {
   const { read } = githubFixture({ receipt: null });
-  assert.equal((await readRecordedPublication(read, { allowMissing: true })).receipt, null);
+  assert.equal((await readRecordedPublication(read)).receipt, null);
   const prepared = await preparePublication(read, branchReceipt);
   assert.equal(prepared.status, 'prepared');
   assert.equal(prepared.previousSetupId, null);

@@ -48,7 +48,7 @@ try {
       result = readLocal(expectedSetupId);
       break;
     case 'recorded':
-      result = await readRecordedPublication(readGitHub, { allowMissing: true });
+      result = await readRecordedPublication(readGitHub);
       break;
     case 'prepare':
       if (!expectedSetupId) throw new Error('publication-expected-setup-id-required');

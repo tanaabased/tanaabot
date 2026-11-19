@@ -63,7 +63,7 @@ updates its editable document. An unavailable or incomplete handoff leaves synch
 ## Inputs
 
 - The fixed [source set](./references/source.md#resolve-the-desired-source) at the canonical commit
-  selected by the recorded publication policy. Scheduled runs use the worker's verified source
+  selected by the shared sync source procedure. Scheduled runs use the worker's verified source
   selection and complete ordered inventory.
   A scheduled prompt still requesting a marked-section sync or lacking that handoff must stop
   and report that the Instruction Sync schedule needs synchronization.
@@ -94,7 +94,8 @@ or rollback.
 2. Read the complete [source set](./references/source.md#resolve-the-desired-source). On a
    manual check, resolve the shared policy once via GitHub. On a scheduled run, use the worker's
    verified source selection and read every listed file at that commit. Report the recorded
-   installed commit separately from the sync source. Retain the selection for retries.
+   installed commit separately from the sync source, or explicitly report the first-publication
+   fallback. Retain the selection for retries.
    Stop if the handoff does not establish complete enumeration and reads, or if any content
    the Dot needs is unavailable. Every file in the replacement comes from this one commit.
 3. Compare against the actual saved text using [saved provenance](./references/source.md#saved-provenance).

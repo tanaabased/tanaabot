@@ -73,6 +73,8 @@ not establish that it ran. For example, after verified application:
 
 Use a contextual final status reflecting failures, pending actions or missing evidence. Do not
 duplicate this aggregate in the main chat; retain its individual compact linked summaries.
+If this run used the first-publication fallback, state that and name the default branch in the
+run-results note and compact summary, including when the schedules were unchanged.
 If the coordinator owns native writes, return the verified outcomes to the sync worker for this
 report without rerunning synchronization. Raw preparation JSON stays in tool results or private
 handoff artifacts.

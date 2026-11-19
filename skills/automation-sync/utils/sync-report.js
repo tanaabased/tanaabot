@@ -18,6 +18,11 @@ export default function syncReport(result, debug = false) {
     ...(result.source.installedRevision
       ? [`- Installed revision: ${text(result.source.installedRevision)}`]
       : []),
+    ...(result.source.bootstrapBranch
+      ? [
+          `- First-publication fallback: ${text(result.source.bootstrapBranch)} (no recorded publication)`,
+        ]
+      : []),
     `- Uncommitted source changes: ${result.source.dirty}`,
   ];
   if (!rows.length) lines.push('- No selected automation definitions.');

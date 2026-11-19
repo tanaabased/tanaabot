@@ -157,9 +157,16 @@ Use a revision that includes Record Publication. After a successful full Cloud s
 the displayed **Setup ID**. Publish or republish the
 environment and start a fresh task in it. Check that Startup Check shows the same ID, then ask
 the fresh task to [Record Publication](./skills/record-publication/SKILL.md) with that ID.
-After the receipt is verified on GitHub, manually synchronize the existing schedules to pick up
-the new source policy. The local receipt is kept outside the checkout. Record Publication
-commits that receipt as `tanaabot-publication.json` through your authorized GitHub workflow.
+The local receipt is kept outside the checkout. Record Publication commits it as
+`tanaabot-publication.json` through your authorized GitHub workflow. Before the first receipt
+is recorded, sync can use the default branch if GitHub confirms the file is absent.
+
+Replace existing Automation Sync and Instruction Sync workers whose prepared checkout lacks the
+updated `scripts/publication-task.js` reader. Archive those workers, start replacements in the republished
+environment, and rebind and verify their existing schedules through the owning Dot. The fallback
+requires the reader in the new checkout. If republishing changes the native configuration ID,
+use an explicit operator-approved binding change through native controls. Ordinary archived-worker
+recovery requires the saved configuration ID.
 
 Allow GitHub source/raw/release downloads and the package hosts needed by Bootbox, Homebrew and Bun
 in the environment's network policy. Access failures must be resolved in the selected environment;

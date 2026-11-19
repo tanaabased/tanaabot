@@ -25,8 +25,9 @@ try {
   const source = {
     revision: git('rev-parse', 'HEAD'),
     dirty: git('status', '--porcelain').length > 0,
-    installedRevision: selection.receipt.installedCommit,
-    setupId: selection.receipt.setupId,
+    ...(selection.receipt
+      ? { installedRevision: selection.receipt.installedCommit, setupId: selection.receipt.setupId }
+      : { bootstrapBranch: selection.bootstrapBranch }),
   };
   if (source.revision !== selection.sourceCommit) throw new Error('sync-source-checkout-mismatch');
   const loaded = await definitions(workspaceDir);

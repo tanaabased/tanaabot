@@ -60,7 +60,7 @@ updates; the script itself makes no service writes.
 
 ## Inputs
 
-- Canonical Tanaabot at the commit selected for this run by the recorded publication policy.
+- Canonical Tanaabot at the commit selected by the shared sync source procedure.
 - One automation `id` or `all`, the published environment inventory, worker bindings and dot destination.
 - Current native tasks from a complete relevant listing, normalized as described in the reference.
   This is ordinary tool output, not a persisted snapshot or second state store.
@@ -121,8 +121,8 @@ Use the ordinary workflow below for an active binding or initial seeding.
 5. Run the script with `mode: "sync"`, the same `sourceSelection`, current tasks and verified worker records. It reads the
    manifest, external definitions, prompts and shared partials, and resolves Git revision/dirty
    state itself and requires HEAD to match `sourceCommit`. Dirty source is preview-only; use a
-   clean checkout before applying. Report the recorded installed revision and the sync source
-   revision separately in the worker's result. The compiled scheduled prompt coordinates the worker; its embedded
+   clean checkout before applying. Report the sync source revision and the recorded installed
+   revision separately, or explicitly report the first-publication fallback. The compiled scheduled prompt coordinates the worker; its embedded
    worker request contains the automation instructions and metadata.
 6. Leave `unchanged` and `skipped` actions untouched. Report skipped reasons without claiming a run
    completed. Apply actions in returned order; verify a changed synchronizer before

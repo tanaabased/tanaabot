@@ -44,8 +44,8 @@ setup result, publish the environment and start a fresh task to verify it.
 
 ## Synchronize scheduled tasks
 
-[Record the published environment](./TANABOOT.md#cloud-verification), then paste this into the
-designated tanaabot dot to seed or update the synchronizer:
+Follow the [Cloud rollout steps](./TANABOOT.md#cloud-verification) for existing workers, then paste
+this into the designated tanaabot dot to seed or update the synchronizer:
 
 ```text
 Read and follow skills/automation-sync/SKILL.md and its required references
@@ -60,8 +60,9 @@ After verifying the saved synchronizer, select **Run now** on **🤖 AUTOMATION 
 
 The [definitions](./.agent-system/automations.yaml) enable `automation-sync` at midnight and both
 `cloud-update` and `instruction-sync` at 1 a.m. in the native scheduler’s timezone (Eastern for this deployment).
-Existing schedules retain their saved timezone. Each sync uses the recorded source policy, updates itself first and
-leaves unchanged tasks alone. A final best-effort desktop pass places workers in their configured sidebar sections;
+Existing schedules retain their saved timezone. Each sync uses the recorded source policy, or the
+default branch when GitHub confirms no receipt has been recorded yet. Sync updates itself first
+and leaves unchanged tasks alone. A final best-effort desktop pass places workers in their configured sidebar sections;
 configuration and run-results cards are separate from
 the compact linked main-chat summaries. Debug is opt-in through `debug: true` in
 [agent.yaml](./.agent-system/agent.yaml), followed by synchronization.
