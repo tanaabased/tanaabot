@@ -876,6 +876,67 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     assert.equal(result.operations[1].task.enabled, false);
   });
 
+  test('should update a known schedule without its saved prompt and continue with the next job', () => {
+    const existingTasks = saved();
+    const [first, second] = existingTasks;
+    const { prompt, ...settings } = first.task;
+    const { metadata } = readTaskPrompt(prompt);
+    existingTasks[0] = { id: first.id, task: settings, metadata };
+
+    const run = () => planSync(input({ existingTasks, now: later })).operations;
+    const [repair, match] = run();
+    assert.equal(repair.kind, 'update');
+    assert.equal(repair.nativeId, first.id);
+    assert.deepEqual(repair.expectedCurrent, settings);
+    assert.deepEqual(repair.expectedMetadata, metadata);
+    const { prompt: desired, ...retained } = repair.task;
+    assert.deepEqual(retained, settings);
+    assert.deepEqual(readTaskPrompt(desired).metadata.worker, metadata.worker);
+    assert.equal(match.kind, 'unchanged');
+
+    existingTasks[0].task = { ...settings, prompt: null };
+    second.task.prompt += '\nManual edit.';
+    const [unavailable, changed] = run();
+    assert.deepEqual(unavailable, repair);
+    assert.equal(changed.kind, 'update');
+    assert.equal(changed.nativeId, second.id);
+    assert.ok(!changed.task.prompt.includes('Manual edit.'));
+  });
+
+  test('should reject ambiguous ownership, incomplete settings and missing saved bindings in Cloud input', () => {
+    const request = input({ id: 'smoke' });
+    const [
+      {
+        id,
+        task: { prompt, ...task },
+      },
+    ] = saved(request);
+    const { metadata } = readTaskPrompt(prompt);
+    const plan = (...existingTasks) => planSync({ ...request, existingTasks });
+    assert.throws(() => plan({ id, task }), /ownership-unverified/);
+    assert.throws(() => plan({ id, task, metadata: null }), /name-collision/);
+    assert.throws(
+      () => plan({ id, task, metadata }, { id: 'duplicate', task, metadata }),
+      /task-ambiguous/,
+    );
+    assert.throws(
+      () => plan({ id, task, metadata: { ...metadata, role: 'worker' } }),
+      /ownership-unverified/,
+    );
+    assert.throws(
+      () => plan({ id, task, metadata: { ...metadata, worker: null } }),
+      /binding-unverified/,
+    );
+    assert.throws(
+      () => plan({ id, task: { ...task, schedule: null }, metadata }),
+      /settings-unverified/,
+    );
+    assert.throws(
+      () => plan({ id, task: { ...task, prompt }, metadata: null }),
+      /ownership-ambiguous/,
+    );
+  });
+
   test('should propagate debug and destination changes through task comparison', () => {
     const request = input({ existingTasks: saved(), now: later });
     request.manifest.debug = true;

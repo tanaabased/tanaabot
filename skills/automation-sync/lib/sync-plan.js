@@ -91,27 +91,52 @@ function bindWorker(target, worker) {
   };
 }
 
+function nonemptyString(value) {
+  return typeof value === 'string' && value.trim().length > 0;
+}
+
 function existingRecords(tasks) {
   if (!Array.isArray(tasks)) throw new Error('existing-native-tasks-required');
   const ids = tasks.map((record) => record.id);
-  if (ids.some((id) => typeof id !== 'string' || !id.trim()) || new Set(ids).size !== ids.length) {
+  if (!ids.every(nonemptyString) || new Set(ids).size !== ids.length) {
     throw new Error('native-task-id-invalid');
   }
-  return tasks.map((record) => ({ ...record, parsed: readTaskPrompt(record.task?.prompt) }));
+  return tasks.map(({ id, task, metadata }) => {
+    if (!nonemptyString(task?.name)) throw new Error('native-task-name-required');
+    const { prompt, ...settings } = task;
+    if (prompt != null) {
+      if (metadata !== undefined) throw new Error('native-task-ownership-ambiguous');
+      return { id, task, metadata: readTaskPrompt(prompt)?.metadata };
+    }
+    // Null means the native reader confirmed there is no ownership marker. Missing is unknown.
+    if (
+      metadata !== null &&
+      (metadata?.schema !== 'tanaabot.automation/v1' ||
+        metadata.role !== 'coordinator' ||
+        ![metadata.repository, metadata.agentId, metadata.automationId].every(nonemptyString))
+    )
+      throw new Error('native-task-ownership-unverified');
+    return { id, task: settings, metadata };
+  });
 }
 
 function validateTask(task) {
-  for (const key of [
-    'name',
-    'enabled',
-    'schedule',
-    'execution',
-    'destination',
-    'model',
-    'effort',
-  ]) {
+  for (const key of ['model', 'effort', 'enabled', 'schedule', 'execution', 'destination']) {
     if (!Object.hasOwn(task, key)) throw new Error(`native-task-field-required:${key}`);
   }
+  if (
+    typeof task.enabled !== 'boolean' ||
+    ![
+      task.destination?.kind,
+      task.destination?.id,
+      task.execution?.kind,
+      task.schedule?.schedule,
+      task.schedule?.default_timezone,
+      task.schedule?.timing_mode,
+    ].every(nonemptyString) ||
+    ![task.model, task.effort].every((value) => value === null || nonemptyString(value))
+  )
+    throw new Error('native-task-settings-unverified');
 }
 
 function compileTask(task, metadata, worker, body, dispatch, header) {
@@ -158,9 +183,8 @@ export function planSync({
     .map((job) => {
       const identity = { repository, agentId: manifest.agent.id, automationId: job.id };
       const matches = records.filter(
-        ({ parsed }) =>
-          parsed &&
-          Object.entries(identity).every(([key, value]) => parsed.metadata[key] === value),
+        ({ metadata }) =>
+          metadata && Object.entries(identity).every(([key, value]) => metadata[key] === value),
       );
       if (matches.length > 1) throw new Error(`native-task-ambiguous:${job.id}`);
       const current = matches[0];
@@ -176,7 +200,12 @@ export function planSync({
         };
       }
       const target = targets.find((target) => target.automationId === job.id);
-      const savedWorkerId = current?.parsed.metadata.worker?.id;
+      const savedWorkerId = current?.metadata.worker?.id;
+      if (
+        current &&
+        ![savedWorkerId, current.metadata.execution?.environmentId].every(nonemptyString)
+      )
+        throw new Error(`native-task-binding-unverified:${job.id}`);
       const observed = findWorker(job.id, context.workers);
       const observedStatus = workerStatus(context.workerHistory, observed?.id);
       const savedStatus = savedWorkerId && workerStatus(context.workerHistory, savedWorkerId);
@@ -224,8 +253,13 @@ export function planSync({
       };
       const contentHash = fingerprint({ ...identity, task: semantic });
       if (current) {
-        const previous = current.parsed.metadata;
-        if (previous.worker?.id && previous.worker.id !== worker.thread.id) {
+        const previous = current.metadata;
+        if (
+          previous.worker.id === worker.thread.id &&
+          previous.execution.environmentId !== worker.execution.environmentId
+        )
+          throw new Error(`reusable-worker-target-mismatch:${job.id}`);
+        if (previous.worker.id !== worker.thread.id) {
           if (observed.startup !== 'passed')
             throw new Error(`reusable-worker-startup-not-passed:${job.id}`);
           const retired = observed.replaces;
@@ -261,8 +295,8 @@ export function planSync({
         destination: worker.destination,
         worker: worker.thread,
       };
-      if (current && current.parsed.metadata.contentHash === contentHash) {
-        const previousMetadata = current.parsed.metadata;
+      if (current?.task.prompt && current.metadata.contentHash === contentHash) {
+        const previousMetadata = current.metadata;
         const unchanged = compileTask(
           task,
           {
@@ -288,6 +322,9 @@ export function planSync({
         automationId: job.id,
         kind: current ? 'update' : 'create',
         ...(current ? { nativeId: current.id, expectedCurrent: current.task } : {}),
+        ...(current && !Object.hasOwn(current.task, 'prompt')
+          ? { expectedMetadata: current.metadata }
+          : {}),
         task: compileTask(task, metadata, worker, body, dispatch, header),
       };
     });

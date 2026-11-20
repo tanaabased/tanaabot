@@ -122,6 +122,8 @@ Use the ordinary workflow below for an active binding or initial seeding.
    native controls. An unknown or differently bound existing worker requires intervention,
    not an automatic replacement or local fallback.
 5. Before assembly, verify the exact saved worker IDs and any replacements in native history.
+   In Cloud, supply the [saved ownership metadata](./references/native-tasks.md#assemble-schedules)
+   and omit the old prompt. An unavailable comparison calls for an in-place update.
    Run the script with `mode: "sync"`, the same `sourceSelection`, current tasks, worker records and
    `context.workerHistory`. It reads the manifest, external definitions, prompts and shared
    partials, and resolves Git revision/dirty
