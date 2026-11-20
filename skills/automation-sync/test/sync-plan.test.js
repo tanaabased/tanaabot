@@ -1,6 +1,5 @@
 import { describe, test } from 'bun:test';
 import assert from 'node:assert/strict';
-import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 
 import automationTargets from '../lib/automation-targets.js';
@@ -877,54 +876,31 @@ describe('skills/automation-sync/lib/sync-plan', () => {
     assert.equal(result.operations[1].task.enabled, false);
   });
 
-  test('should prepare an in-place repair without transferring the saved prompt to Cloud', () => {
-    const request = input({ id: 'automation-sync' });
-    const [native] = saved(request);
-    const { prompt, ...settings } = native.task;
-    const {
-      schema,
-      repository,
-      agentId,
-      automationId,
-      role,
-      worker,
-      execution,
-      updatedAt,
-      sourceRevision,
-      sourceDirty,
-    } = readTaskPrompt(prompt).metadata;
-    const metadata = {
-      schema,
-      repository,
-      agentId,
-      automationId,
-      role,
-      worker: { id: worker.id },
-      execution: { environmentId: execution.environmentId },
-      updatedAt,
-      sourceRevision,
-      sourceDirty,
-    };
-    const compact = { id: native.id, task: settings, metadata };
-    request.existingTasks = [compact, { id: 'other', task: { name: 'Other' }, metadata: null }];
-    request.now = later;
-    request.source.revision = 'b'.repeat(40);
-    const [repair] = planSync(request).operations;
+  test('should update a known schedule without its saved prompt and continue with the next job', () => {
+    const existingTasks = saved();
+    const [first, second] = existingTasks;
+    const { prompt, ...settings } = first.task;
+    const { metadata } = readTaskPrompt(prompt);
+    existingTasks[0] = { id: first.id, task: settings, metadata };
+
+    const run = () => planSync(input({ existingTasks, now: later })).operations;
+    const [repair, match] = run();
     assert.equal(repair.kind, 'update');
-    assert.equal(repair.nativeId, native.id);
+    assert.equal(repair.nativeId, first.id);
     assert.deepEqual(repair.expectedCurrent, settings);
     assert.deepEqual(repair.expectedMetadata, metadata);
     const { prompt: desired, ...retained } = repair.task;
     assert.deepEqual(retained, settings);
-    assert.deepEqual(workerRequest(repair.task).thread, workerRequest(native.task).thread);
-    assert.equal(readTaskPrompt(desired).metadata.sourceRevision, request.source.revision);
-    const digest = (text) => createHash('sha256').update(text).digest('hex');
-    assert.equal(repair.unchangedPromptSha256, digest(prompt));
-    assert.notEqual(repair.unchangedPromptSha256, digest(prompt + '\nManual edit.'));
-    delete metadata.updatedAt;
-    const [unproven] = planSync(request).operations;
-    assert.equal(unproven.kind, 'update');
-    assert.equal(unproven.unchangedPromptSha256, undefined);
+    assert.deepEqual(readTaskPrompt(desired).metadata.worker, metadata.worker);
+    assert.equal(match.kind, 'unchanged');
+
+    existingTasks[0].task = { ...settings, prompt: null };
+    second.task.prompt += '\nManual edit.';
+    const [unavailable, changed] = run();
+    assert.deepEqual(unavailable, repair);
+    assert.equal(changed.kind, 'update');
+    assert.equal(changed.nativeId, second.id);
+    assert.ok(!changed.task.prompt.includes('Manual edit.'));
   });
 
   test('should reject ambiguous ownership, incomplete settings and missing saved bindings in Cloud input', () => {
@@ -959,9 +935,6 @@ describe('skills/automation-sync/lib/sync-plan', () => {
       () => plan({ id, task: { ...task, prompt }, metadata: null }),
       /ownership-ambiguous/,
     );
-    const [changed] = plan({ id, task: { ...task, name: 'Changed' }, metadata }).operations;
-    assert.equal(changed.nativeId, id);
-    assert.equal(changed.unchangedPromptSha256, undefined);
   });
 
   test('should propagate debug and destination changes through task comparison', () => {

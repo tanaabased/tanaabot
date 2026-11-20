@@ -1,5 +1,3 @@
-import { createHash } from 'node:crypto';
-
 import {
   canonical,
   fingerprint,
@@ -105,9 +103,10 @@ function existingRecords(tasks) {
   }
   return tasks.map(({ id, task, metadata }) => {
     if (!nonemptyString(task?.name)) throw new Error('native-task-name-required');
-    if (Object.hasOwn(task, 'prompt')) {
+    const { prompt, ...settings } = task;
+    if (prompt != null) {
       if (metadata !== undefined) throw new Error('native-task-ownership-ambiguous');
-      return { id, task, metadata: readTaskPrompt(task.prompt)?.metadata };
+      return { id, task, metadata: readTaskPrompt(prompt)?.metadata };
     }
     // Null means the native reader confirmed there is no ownership marker. Missing is unknown.
     if (
@@ -117,31 +116,23 @@ function existingRecords(tasks) {
         ![metadata.repository, metadata.agentId, metadata.automationId].every(nonemptyString))
     )
       throw new Error('native-task-ownership-unverified');
-    return { id, task, metadata };
+    return { id, task: settings, metadata };
   });
 }
 
 function validateTask(task) {
-  for (const key of [
-    'name',
-    'enabled',
-    'schedule',
-    'execution',
-    'destination',
-    'model',
-    'effort',
-  ]) {
+  for (const key of ['model', 'effort', 'enabled', 'schedule', 'execution', 'destination']) {
     if (!Object.hasOwn(task, key)) throw new Error(`native-task-field-required:${key}`);
   }
   if (
     typeof task.enabled !== 'boolean' ||
     ![
+      task.destination?.kind,
+      task.destination?.id,
+      task.execution?.kind,
       task.schedule?.schedule,
       task.schedule?.default_timezone,
       task.schedule?.timing_mode,
-      task.execution?.kind,
-      task.destination?.kind,
-      task.destination?.id,
     ].every(nonemptyString) ||
     ![task.model, task.effort].every((value) => value === null || nonemptyString(value))
   )
@@ -304,14 +295,7 @@ export function planSync({
         destination: worker.destination,
         worker: worker.thread,
       };
-      let unchangedPromptSha256;
-      // Render the previously stamped target from source. A marker hash alone cannot prove equality.
-      if (
-        current &&
-        Number.isFinite(Date.parse(current.metadata.updatedAt)) &&
-        /^[a-f0-9]{40}$/.test(current.metadata.sourceRevision) &&
-        typeof current.metadata.sourceDirty === 'boolean'
-      ) {
+      if (current?.task.prompt && current.metadata.contentHash === contentHash) {
         const previousMetadata = current.metadata;
         const unchanged = compileTask(
           task,
@@ -326,18 +310,13 @@ export function planSync({
           dispatch,
           header,
         );
-        const { prompt: savedPrompt, ...settings } = current.task;
-        if (canonical(settings) === canonical(task)) {
-          if (savedPrompt === undefined)
-            unchangedPromptSha256 = createHash('sha256').update(unchanged.prompt).digest('hex');
-          if (savedPrompt === unchanged.prompt)
-            return {
-              automationId: job.id,
-              kind: 'unchanged',
-              nativeId: current.id,
-              task: current.task,
-            };
-        }
+        if (canonical(current.task) === canonical(unchanged))
+          return {
+            automationId: job.id,
+            kind: 'unchanged',
+            nativeId: current.id,
+            task: current.task,
+          };
       }
       return {
         automationId: job.id,
@@ -346,7 +325,6 @@ export function planSync({
         ...(current && !Object.hasOwn(current.task, 'prompt')
           ? { expectedMetadata: current.metadata }
           : {}),
-        ...(unchangedPromptSha256 ? { unchangedPromptSha256 } : {}),
         task: compileTask(task, metadata, worker, body, dispatch, header),
       };
     });

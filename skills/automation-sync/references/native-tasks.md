@@ -240,18 +240,10 @@ Repeat with `mode: "sync"` (also the default), adding `existingTasks`, `context.
 }
 ```
 
-For Cloud assembly, send one `existingTasks` record per listed schedule with its native
-`id`, verified ownership `metadata` and observed `task` settings. Read ownership from the
-single leading coordinator marker on that native record. Copy its `schema`, `role`,
-`repository`, `agentId`, `automationId`, `worker.id` and `execution.environmentId`.
-Include the marker's `updatedAt`, `sourceRevision` and `sourceDirty` when available so the
-assembler can render the target as it would look with the original stamps. Keep the saved
-prompt in the native context. The worker needs neither its text nor a length check.
-
-For a confirmed unmarked task, send `metadata: null`. For an unrelated task, only its
-identity and `task.name` are needed. If marker evidence is missing, malformed, misplaced
-or ambiguous, stop affected work before resolving a new worker or creating a schedule.
-Never infer an unmarked task from a truncated preview. For a matched task, supply:
+For each native `id`, copy its observed settings into `task`. In Cloud, omit the saved prompt.
+Supply the verified leading marker's `schema`, `role`, `repository`, `agentId`, `automationId`,
+`worker.id` and `execution.environmentId` in the record's `metadata` field. Use `metadata: null`
+only for a confirmed unmarked task. An incomplete preview cannot establish ownership.
 
 | `task` field      | Value                                                                                      |
 | ----------------- | ------------------------------------------------------------------------------------------ |
@@ -272,32 +264,13 @@ The coordinator continues that worker, waits for its
 result and returns the compact linked summary through normal main-chat delivery. Scheduling a
 coordinator does not itself bind a Cloud environment. Use the supported native delegation tools.
 
-### Apply a prepared update
-
-The owning Dot reads the prepared `nativeId` under the original account and destination.
-Reconcile any pending write at its original ID first. If the native record already matches
-the full prepared task exactly, keep it as Unchanged or confirm the pending write.
-Confirm that its current settings match `expectedCurrent`, its ownership and saved binding
-match the supplied fields in `expectedMetadata` (or the exact local record), and its worker
-history still supports the action. If another writer changed these values, recompute.
-Use native conditional updates when supported.
-
-When the settings match the desired settings, the assembler may return
-`unchangedPromptSha256`. Compare it locally with the SHA-256 of the exact saved coordinator
-prompt's UTF-8 bytes, including whitespace, when native data can be hashed directly. A match
-means Unchanged. Skip the write and update receipt. A preview, a manually copied string or
-the embedded `contentHash` cannot establish equality. If the comparison differs or exact
-comparison is unavailable, apply the prepared `task.prompt` to the verified existing ID.
-A manual edit is drift even when it retains the marker hash. For prompt-only repair,
-preserve the cadence and anchor, enabled state, destination, coordinator settings and worker.
-Apply separately authorized setting changes under the ordinary sync rules.
-
-After a write, verify the saved prompt and settings from the native result or a fresh read of that ID.
-Report missing verification per job. A prompt repair never requires creating or activating
-a schedule or replacing its worker. A direct assembler call with an exact native task already
-available locally can still return `unchanged` itself.
-
-### Apply schedule settings
+For unrelated tasks, supply their ID, name and ownership observation. When assembling in the
+owning Dot with the exact saved `task.prompt` already available, pass it directly and omit
+`metadata` to use the existing comparison. Skip a proven
+match. For a difference or an unavailable comparison, apply the GitHub version to the
+existing native ID and continue. Before writing, recheck the binding and observed fields
+in `expectedCurrent` and, when supplied, `expectedMetadata`. Recompute if they changed.
+Verify the saved result through native controls.
 
 The assembler translates Agent System schedules into native VEVENT fields. Recurring intervals
 must be at least one hour and use whole minutes; cron must also leave at least an hour between
@@ -332,8 +305,7 @@ claim paused success. If creation is uncertain, recover the existing ID before p
 repeat an uncertain create. Existing tasks are updated directly to the declared enabled state.
 
 All consumed partials participate in comparison, including coordinator dispatch. A changed partial
-updates every affected task. A proven match retains its exact prompt, timestamp and native ID.
-Successful native
+updates every affected task. A proven match retains its exact prompt, timestamp and native ID. Successful native
 responses establish saved settings when returned; read back only missing values, uncertain effects
 and values the operator explicitly asks to verify. Never repeat a denied or uncertain create.
 
