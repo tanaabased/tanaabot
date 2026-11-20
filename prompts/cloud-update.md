@@ -53,9 +53,9 @@ the release changes between reads, refresh before preparing an update.
 5. For legacy `.codex-plugin/plugin.json` source, retain it and produce a root `plugin.json`
    using the supported account format. Copy portable identity fields and the complete OpenAI
    interface into `extensions.com.openai.interface`, preserving every `defaultPrompt` value,
-   its type and ordering. Synchronize both manifests to the exact npm version and preserve the
-   published display name and bundled icon declarations. Retain existing account-attributed
-   author/developer values. Use `Developer Tools` for unsupported `Tanaab-based` category and
+   its type and ordering. Use the published `author` object, interface `displayName` and
+   `developerName` in both manifests. Synchronize both versions to the exact npm version and
+   preserve the bundled icon declarations. Use `Developer Tools` for unsupported `Tanaab-based` category and
    `Tanaab canon and workflows` for the account subtitle. Omit `.mcp.json` and its declaration
    only when the source MCP map is empty. Preserve functional integrations using supported
    format; report unsupported structural changes instead of guessing. For portable upstream
@@ -85,7 +85,8 @@ intended files before another write. Stop on an account mismatch or denial; neve
 or repeat a denied action.
 
 After success, read back version, release ID, `USER`/`PRIVATE` state and the complete paginated
-inventory. Verify expected skill names, removed paths and updated references. Use the supported
+inventory. Verify the saved author, display name and developer name against the npm release in
+each manifest. Verify expected skill names, removed paths and updated references. Use the supported
 archive reader when binary or complete byte verification is needed; compare saved instructions
 and resources with the prepared package. Permit only semantically equivalent importer
 normalization of compatibility JSON. Inspect import diagnostics when available. An update
