@@ -21,8 +21,8 @@ metadata:
 ## Overview
 
 Synchronize one or all repository definitions through the dot's supported scheduling controls.
-One deterministic assembler owns task content and comparison. Native tools own creates and
-updates; the script itself makes no service writes.
+The assembler renders desired tasks from GitHub. The owning Dot compares exact native content
+when available and applies changes through native controls.
 
 ## Required Reading
 
@@ -122,6 +122,8 @@ Use the ordinary workflow below for an active binding or initial seeding.
    native controls. An unknown or differently bound existing worker requires intervention,
    not an automatic replacement or local fallback.
 5. Before assembly, verify the exact saved worker IDs and any replacements in native history.
+   Supply the [compact native records](./references/native-tasks.md#assemble-schedules) to Cloud.
+   Keep saved prompt text out of the assembler input.
    Run the script with `mode: "sync"`, the same `sourceSelection`, current tasks, worker records and
    `context.workerHistory`. It reads the manifest, external definitions, prompts and shared
    partials, and resolves Git revision/dirty
@@ -132,7 +134,9 @@ Use the ordinary workflow below for an active binding or initial seeding.
 6. Leave `unchanged` and `skipped` actions untouched. Report `worker-status-unverified` as Unverified.
    Report `worker-archived` and `worker-deleted` as pending recovery. Apply actions in returned order. Verify a changed
    synchronizer before proceeding to other selected jobs. Stop dependent
-   application if that self-update fails. Apply creates/updates through the owning dot's supported native controls with the exact
+   application if that self-update fails. For each update, follow
+   [Apply a prepared update](./references/native-tasks.md#apply-a-prepared-update) to skip a proven match
+   or reapply the prompt to its verified existing ID. Apply creates/updates through the owning dot's supported native controls with the exact
    compiled content and native ID. For disabled definitions, follow the native-task reference's
    paused-create or immediate create-then-pause procedure and verify the final state.
    Copy the compiled `task.schedule` fields directly into the native scheduling call; do not
