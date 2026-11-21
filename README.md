@@ -1,26 +1,22 @@
-# tanaabot
+<h1 align="center">tanaabot</h1>
 
 <p align="center">
   <img src="./assets/icon-large-circle.png" alt="tanaabot" width="180" />
 </p>
 
 <p align="center">
-  <a href="https://github.com/tanaabased/tanaabot/releases"><img src="https://img.shields.io/github/v/release/tanaabased/tanaabot?include_prereleases&sort=semver" alt="Latest release" /></a>
-  <img src="https://img.shields.io/badge/Linux-64--bit-111827" alt="64-bit Linux" />
-  <img src="https://img.shields.io/badge/Codex-tanaabot-00c88a" alt="Codex plugin: tanaabot" />
+  tanaabot is a custom Codex Dot that runs managed and scheduled tasks in its own Codex Cloud environment.
 </p>
 
-tanaabot is a custom Codex Dot for managed and scheduled tasks. This repository defines its identity,
-instructions, tools, skills and schedules. It works primarily in its own Codex Cloud environment and
-speaks with the courtesy of a protocol droid and a little grandmotherly concern.
+<p align="center">
+  <a href="./CLOUD-SETUP.md#usage"><img src="https://img.shields.io/badge/dynamic/xml?url=https%3A%2F%2Fgithub.com%2Ftanaabased%2Ftanaabot%2Fcommits%2Fmain.atom&amp;query=substring(substring-after((%2F%2F*%5Blocal-name()%3D%27entry%27%5D%2F*%5Blocal-name()%3D%27id%27%5D)%5B1%5D%2C%20%27%2F%27)%2C%201%2C%207)&amp;label=DEV&amp;color=blue" alt="Current development revision on main" /></a>
+  <a href="https://github.com/tanaabased/tanaabot/actions/workflows/pr-examples-tests.yml?query=event%3Apull_request"><img src="https://img.shields.io/github/actions/workflow/status/tanaabased/tanaabot/pr-examples-tests.yml?event=pull_request&amp;label=LEIA" alt="Leia scenario test status" /></a>
+</p>
 
-## What ships
-
-- [Identity](./.agent-system/agent.yaml) defines the Dot’s name and avatar.
-- The [global guidance](./dotfiles/ai/.codex/AGENTS.md) and [topic instructions](./instructions) are the source for the Dot’s saved instructions.
-- [Tanaboot](./TANABOOT.md) installs the [tools](./INVENTORY.md#dependencies) and [dotpackages](./INVENTORY.md#dotpackages). [Cloud setup](./CLOUD-SETUP.md) selects the revision to install.
-- The [skills](./INVENTORY.md#skills) are also available as an installable [Codex plugin](./.codex-plugin/plugin.json).
-- The [automations](./INVENTORY.md#automations) define the Dot’s scheduled tasks.
+<p align="center">
+  <a href="#install"><img src="https://img.shields.io/badge/CODEX-Cloud-6f42c1" alt="Set up tanaabot in Codex Cloud" /></a>
+  <a href="./TANABOOT.md#usage"><img src="https://img.shields.io/badge/OS-Linux-6f42c1" alt="Linux requirements for Tanaboot" /></a>
+</p>
 
 ## Prerequisites
 
@@ -69,6 +65,14 @@ all, once. Apply and verify the repository’s schedules and report the result.
 The Dot uses worker chats for some automations and other operations. To pick up a newly published
 Cloud environment, archive the worker chat after its current run finishes and wait for the Dot to
 recreate it.
+
+## What ships
+
+- [Identity](./.agent-system/agent.yaml) defines the Dot’s name and avatar.
+- The [global guidance](./dotfiles/ai/.codex/AGENTS.md) and [topic instructions](./instructions) are the source for the Dot’s saved instructions.
+- [Tanaboot](./TANABOOT.md) installs the [tools](./INVENTORY.md#dependencies) and [dotpackages](./INVENTORY.md#dotpackages). [Cloud setup](./CLOUD-SETUP.md) selects the revision to install.
+- The [skills](./INVENTORY.md#skills) are also available as an installable [Codex plugin](./.codex-plugin/plugin.json).
+- The [automations](./INVENTORY.md#automations) define the Dot’s scheduled tasks.
 
 ## Contributing
 
