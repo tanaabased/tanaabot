@@ -5,7 +5,7 @@
     "": {
       "name": "@tanaab/tanaabot",
       "dependencies": {
-        "@tanaab/openclaw-agent-system": "github:tanaabased/openclaw-agent-system#977463314f1373938be6f737987d28794cde7572",
+        "@tanaab/openclaw-agent-system": "github:tanaabased/openclaw-agent-system#504bc0a94b6ff9c1b2df48eb253c8d40a82ba5b0",
       },
       "devDependencies": {
         "@eslint/js": "^10.0.1",
@@ -332,7 +332,7 @@
 
     "@tanaab/codex-tools": ["@tanaab/codex-tools@1.0.3", "", { "dependencies": { "@types/node": "^24.0.0" }, "bin": { "codex-tools": "dist/codex-tools" } }, "sha512-aeW0sEiMhlxv1PxsdTjUNuRTSfWfW7WMlSgeVk0iP9x0OA0ifB2hRASfkLE88HUSM16IE/kPBMYF0nyatCX+Ug=="],
 
-    "@tanaab/openclaw-agent-system": ["@tanaab/openclaw-agent-system@github:tanaabased/openclaw-agent-system#9774633", { "dependencies": { "@1password/sdk": "0.5.0", "@clack/prompts": "1.6.0", "@openclaw/gateway-client": "2026.8.1", "@openclaw/gateway-protocol": "2026.8.1", "ansis": "^4.3.1", "camelcase-keys": "6.2.2", "debug": "^4.4.3", "fast-string-width": "3.0.2", "fast-wrap-ansi": "0.2.2", "graphql": "16", "json5": "2.2.3", "kebabcase-keys": "^1.0.0", "lodash-es": "4.18.1", "mdast-util-from-markdown": "2.0.2", "proper-lockfile": "4.1.2", "semver": "7.8.5", "smol-toml": "1.9.0", "tar-stream": "^3.2.1", "typebox": "1.3.3", "yaml": "2.9.0" }, "optionalDependencies": { "@napi-rs/keyring": "1.3.0" }, "peerDependencies": { "openclaw": ">=2026.11.5" } }, "tanaabased-openclaw-agent-system-9774633", "sha512-+UYfy/+CdTRDa9tMzfNK9Xbs3lvK0y8E0jG+bSgo9kEj2ANkkgYgzPrc/JwyWHIMEI71DgEJnthRJ4Rbr9dpLQ=="],
+    "@tanaab/openclaw-agent-system": ["@tanaab/openclaw-agent-system@github:tanaabased/openclaw-agent-system#504bc0a", { "dependencies": { "@1password/sdk": "0.5.0", "@clack/prompts": "1.6.0", "@openclaw/gateway-client": "2026.8.1", "@openclaw/gateway-protocol": "2026.8.1", "ansis": "^4.3.1", "camelcase-keys": "6.2.2", "debug": "^4.4.3", "fast-string-width": "3.0.2", "fast-wrap-ansi": "0.2.2", "graphql": "16", "json5": "2.2.3", "kebabcase-keys": "^1.0.0", "lodash-es": "4.18.1", "mdast-util-from-markdown": "2.0.2", "proper-lockfile": "4.1.2", "semver": "7.8.5", "smol-toml": "1.9.0", "tar-stream": "^3.2.1", "typebox": "1.3.3", "yaml": "2.9.0" }, "optionalDependencies": { "@napi-rs/keyring": "1.3.0" }, "peerDependencies": { "openclaw": ">=2026.11.6" } }, "tanaabased-openclaw-agent-system-504bc0a", "sha512-5wGFJLeI5F4vj0sz52JAkcovg+9FlzxQcgFN8iyI5Zbjq3POQL0rvFrYu9u1RBgCAIzoERaIQ6+aZz8VvbsVxQ=="],
 
     "@tokenizer/inflate": ["@tokenizer/inflate@0.2.7", "", { "dependencies": { "debug": "^4.4.0", "fflate": "^0.8.2", "token-types": "^6.0.0" } }, "sha512-MADQgmZT1eKjp06jpI2yozxaU9uVs4GzzgSL+uEq7bVcJ9V1ZXQkeGNql1fsSI0gMy1vhvNTNbUqrx+pZfJVmg=="],
 
