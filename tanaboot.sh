@@ -13,7 +13,7 @@ if [[ -n "${POSIXLY_CORRECT+1}" ]]; then
 fi
 
 REPO_DIR="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" && pwd -P)"
-SCRIPT_VERSION="v1.0.0"
+SCRIPT_VERSION="v1.0.1"
 BOOTBOX_URL="https://bootbox.tanaab.sh/bootbox.sh"
 SSH_KEY_SPEC="io7gvjejiyau6my2xasglxbydy/id_tanaabot"
 DATA_DIR="${XDG_DATA_HOME:-${HOME}/.local/share}/tanaabot"
