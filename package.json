@@ -1,7 +1,7 @@
 {
   "name": "@tanaab/tanaabot",
   "description": "Tanaabot's Codex Cloud environment, guidance and skills.",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "author": "Tanaab",
   "license": "MIT",
   "repository": {
