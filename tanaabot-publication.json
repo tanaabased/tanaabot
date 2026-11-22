@@ -1,10 +1,10 @@
 {
   "version": 1,
   "repository": "tanaabased/tanaabot",
-  "setupId": "main-4088b46f",
+  "setupId": "main-345aac6c",
   "selector": "main",
   "mode": "branch",
-  "installedCommit": "9d105e055ea8a73023fe850c006371da8a4b7100",
+  "installedCommit": "7252d3455118a7e3396684d433913620d832e9cf",
   "branch": "main",
   "tag": null,
   "fallback": null,
