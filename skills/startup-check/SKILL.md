@@ -25,6 +25,8 @@ Verification never provisions, upgrades, switches revisions, binds Agent System 
 ## Required Reading
 
 - **Always:** Read and apply [Tanaboot CLI options](../../TANABOOT.md#cli-options) for check behavior and limits.
+- **When available in the task catalog:** Read Canon's `tanaab-plugin-info` skill from that catalog
+  before obtaining Canon metadata.
 - **Before continuing a fresh Cloud task:** Read and apply the installed
   [global guidance](../../dotfiles/ai/.codex/AGENTS.md) after verifying its link in step 3.
 - **Before reporting:** Read and apply [Tanaabot Voice](../voice/SKILL.md).
@@ -102,6 +104,11 @@ separate operator-authorized scope. This skill inspects the saved installation o
    basic availability only, not ownership from the prefix alone or completeness of a Canon release.
    An accessible catalog with no matches fails this section; unavailable catalog evidence leaves it
    unverified. Canon is delivered through the ChatGPT account independently of this repository.
+   When the current catalog exposes Canon's `tanaab-plugin-info`, follow its installed instructions
+   to obtain its structured command result. Use `package.version` for the optional status report and
+   `skills` for any requested details about what the artifact ships. Keep the result in chat context
+   and use the Startup Check report format. If the skill is missing or its result cannot provide a
+   version, use the report contract's fallback and continue the independent startup checks.
    Do not inspect the container's plugin registry, require a fixed version or inventory, install,
    update, or query npm during this check.
 6. For **Identity**, first establish that the saved environment values are exported in the actual
@@ -179,6 +186,8 @@ always produce one ℹ️ status report. Use verified identity fields and never 
 private-key contents. Apply the overall failure/uncertainty
 rules; deferred instruction delivery does not prevent a pass. Distinguish machine checks, explicit local Tanaabot loading and Canon catalog availability. Confirm the retained local
 inventory contains each skill's name, description and absolute path. This does not alter the native
-catalog. Maintenance validation checks structure and packaged references; a fresh Cloud trial must
+catalog. Verify that Plugin Info supplies the version when available and that missing or unreadable
+Plugin Info leaves catalog availability and the other startup checks independent of version reporting.
+Maintenance validation checks structure and packaged references; a fresh Cloud trial must
 establish that the saved Start skill runs without a manual bootstrap prompt and that a later relevant
 request selects and reads the appropriate local skill without naming it in the request.
