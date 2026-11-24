@@ -96,11 +96,10 @@ Use uppercase H2 and H3 titles and put variable names, paths, versions and ident
   `--version` output on the same PATH. Derive the list from the prepared Brewfile.
 - **Dotfiles:** List the packages whose expected links and contents were verified. Identify
   incomplete packages separately when applicable.
-- **Canon skills:** Report catalog availability. Check the current host’s metadata for the loaded
-  Canon plugin and show its version in **Plugin version**. List each distinct loaded version if
-  applicable. If the host exposes no version, label an operator-supplied version **reported**.
-  Use **Unverified** only when neither source provides a version. Version visibility is independent of
-  catalog readiness. Never infer a loaded version from npm, a different install or a skill name.
+- **Canon skills:** Report availability from the current task catalog. Show `package.version` from
+  Canon’s Plugin Info result in **Plugin version**. Use its `skills` inventory for requested details
+  about shipped skills. If Plugin Info is unavailable or cannot verify the version, label an
+  operator-supplied version **reported**, or show **Unverified** if none was supplied.
 - **Identity:** Show the verified GitHub login, Git author, Git committer,
   manifest-bound agent email, configured transport, signing mode, configured key path and key
   verification. Distinguish local key matching and account registration when they differ. Neither
