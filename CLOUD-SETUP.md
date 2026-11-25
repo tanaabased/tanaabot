@@ -11,6 +11,7 @@ To install the revision already checked out, run [Tanaboot](./TANABOOT.md) direc
 - [CLI options](#cli-options)
   - [`--debug`](#--debug)
   - [`-h`, `--help`](#-h---help)
+- [Private PostgreSQL access](#private-postgresql-access)
 
 ## Usage
 
@@ -91,3 +92,25 @@ Cloud setup options go **before** `REF`.
 ### `-h`, `--help`
 
 Print Cloud setup usage and exit. No checkout is required. Set `CLOUD_SETUP_HELP=1` for the same result.
+
+## Private PostgreSQL access
+
+Set a tagged, reusable, ephemeral auth key in the Cloud environment’s **Tailscale** setting.
+Allow that tag to reach the database’s TCP port. Save `PGHOST` (the database DNS hostname),
+`PGPORT`, `PGUSER` and `PGPASSWORD` in the Tanaabot 1Password Environment before installation.
+`PGDATABASE` defaults to `PGUSER`. Supply the PostgreSQL SSL settings your database requires.
+
+During initial setup, the builder can proceed to **Publish** if the VPN is configured and
+pending its first enrollment, the database settings are present, and all other startup checks
+pass. Open a fresh published chat and confirm that **Networking** reports an enrolled VPN and
+an authenticated PostgreSQL query.
+
+In that Cloud chat, run the command from the prepared checkout through one approved outer executor:
+
+```sh
+bun --no-env-file scripts/postgres-task.js -c 'SELECT 1'
+```
+
+Use `psql` query or output options. Keep connection settings in the 1Password
+Environment. Use `--check` in place of `-c 'SELECT 1'` for the bounded startup probe with
+sanitized diagnostics.

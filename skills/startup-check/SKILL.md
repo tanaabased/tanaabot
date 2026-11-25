@@ -32,6 +32,8 @@ Verification never provisions, upgrades, switches revisions, binds Agent System 
 - **Before reporting:** Read and apply [Tanaabot Voice](../voice/SKILL.md).
 - **Before assigning results or composing the card:** Read and apply the
   [startup report contract](./references/startup-report.md).
+- **Before checking private networking:** Read the Networking and VPN references from the
+  available Cloud Environment Runtime skill.
 
 ## When to Use
 
@@ -160,10 +162,30 @@ separate operator-authorized scope. This skill inspects the saved installation o
    Run live transport and signing tests only during a separately authorized identity check.
    Keep the configured email as identity metadata. Obtain Google authentication evidence from the
    selected native connection when needed.
-7. Compose the startup card using the report contract. Show all six status rows together.
+7. For **Networking**, check the current Cloud VPN state for this task. Prefer current
+   `cloud_environment.environment_status` observations. If those are unavailable, use the live
+   proxy status endpoint through the Cloud runtime’s approved outer executor. Read only the
+   selected VPN result. A startup snapshot, saved draft, absence of an error, or working
+   PostgreSQL connection alone does not establish enrollment. Report confirmed enrollment failure
+   separately from missing or inconclusive evidence.
+   Verify that `PGHOST`, `PGPORT`, `PGUSER` and `PGPASSWORD` come from the verified 1Password
+   environment in step 3. Use `--check-names` there if needed. If the variables cannot be verified,
+   leave the query unverified and report the reason. Check their usable configuration offline with
+   `bun --no-env-file <prepared-checkout>/scripts/postgres-task.js --check-config`.
+   If initial builder onboarding has a verified saved VPN configuration awaiting its first
+   publication, defer the query and apply the report contract’s publication exception.
+   Otherwise run `bun --no-env-file <prepared-checkout>/scripts/postgres-task.js --check` through
+   one approved outer command in this Cloud environment. The query and its temporary loopback relay
+   must run together. Do not source the environment loader or supply credentials on the command
+   line. The command bounds the check and passes only on exit 0 with output `1`.
+   Report proxy rejection and PostgreSQL authentication failure separately when the command
+   identifies them. If approval, current routing evidence, or a prerequisite prevents the probe,
+   preserve the independent VPN result and state what prevented the query. Keep config values,
+   raw service diagnostics and unrelated VPN details private.
+8. Compose the startup card using the report contract. Show all seven status rows together.
    Below them, list any notes by section, with ❌ errors first, then ⚠️ warnings, then ℹ️ information
    such as verified identity-only Git drift. Omit **NOTES** when empty. Append at most one selected
-   status report using the contract’s six H3 sections, including on partial or failed runs.
+   status report using the contract’s seven H3 sections, including on partial or failed runs.
    Retain revision and diagnostic
    evidence in the working context without creating a receipt or printing routine success details. A script
    returns an exit code; this skill reports the overall result in its response. Do not turn missing
@@ -173,12 +195,13 @@ separate operator-authorized scope. This skill inspects the saved installation o
 
 - [Tanaboot](../../tanaboot.sh): Shared host and agent readiness checks.
 - [Git identity check](./scripts/git-identity.js): Actual commit identity, signing settings and source-drift classification.
+- [PostgreSQL command](../../scripts/postgres-task.js): Connect through the Cloud TCP proxy and check the configured database.
 - [Tanaabot Voice](../voice/SKILL.md): Courteous, concise reporting.
 - [Startup report contract](./references/startup-report.md): Section criteria, status rules and cards.
 
 ## Validation
 
-Confirm that no provisioning, SSH connection or state change was attempted, that all six startup
+Confirm that no provisioning, SSH connection or persistent state change was attempted, that all seven startup
 rows appear together in order, and that any notes follow the rows in severity order. Check that the
 signing-key lookup used the verified expected account, consumed all pages and reused the established local
 key match. Check ordinary and explicitly requested output with debug on and off. Explicit requests
@@ -188,6 +211,8 @@ rules; deferred instruction delivery does not prevent a pass. Distinguish machin
 inventory contains each skill's name, description and absolute path. This does not alter the native
 catalog. Verify that Plugin Info supplies the version when available and that missing or unreadable
 Plugin Info leaves catalog availability and the other startup checks independent of version reporting.
+Verify that a published chat reports current Tailscale enrollment and an authenticated query
+from the approved Cloud executor. Check that deferral during initial onboarding stays unverified.
 Maintenance validation checks structure and packaged references; a fresh Cloud trial must
 establish that the saved Start skill runs without a manual bootstrap prompt and that a later relevant
 request selects and reads the appropriate local skill without naming it in the request.

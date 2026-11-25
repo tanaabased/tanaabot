@@ -37,9 +37,9 @@ In a fresh chat, ask “Is `tanaab-skill-author` available in this chat’s skil
 ## Install
 
 1. Create a Codex Cloud environment named `tanaabot` from `tanaabased/tanaabot` on `main`. Ask the builder to follow [Cloud environment onboarding](./AGENTS.md#cloud-environment-onboarding).
-2. Review and save **Enable all public internet access**. In the Cloud environment settings, open **Edit environment variables**, add `OP_SERVICE_ACCOUNT_TOKEN` with your 1Password service account token as its value, and save it before the first install.
+2. Review and save **Enable all public internet access**. In the Cloud environment settings, open **Edit environment variables**, add `OP_SERVICE_ACCOUNT_TOKEN` with your 1Password service account token as its value, and save it. Configure [private PostgreSQL access](./CLOUD-SETUP.md#private-postgresql-access) before the first install.
 3. The builder should automatically configure the **Install script** and **Start skill** from the repository’s onboarding instructions. The Install script prepares the environment, and the Start skill loads the checkout’s Tanaabot skills into each new chat.
-4. When **Startup Check** passes, click **Publish**. After publication succeeds, copy the `Record Publication <setup-id>` command from the **📦 NEXT STEP · RECORD PUBLICATION** card into the same builder chat. It includes this install’s Setup ID.
+4. Click **Publish** when **Startup Check** passes or the builder confirms that initial VPN enrollment is the only outstanding check. After publication succeeds, copy the `Record Publication <setup-id>` command from the **📦 NEXT STEP · RECORD PUBLICATION** card into the same builder chat.
 5. Verify startup in a fresh chat in the published environment, then [seed Automation Sync](#first-time-setup) in the main Tanaabot Dot.
 
 > [!NOTE]

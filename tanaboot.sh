@@ -290,13 +290,14 @@ ensure_homebrew() {
 }
 
 activate_tools() {
-  local node_prefix brew_prefix brew_path
+  local node_prefix libpq_prefix brew_prefix brew_path
   brew_path="$(find_homebrew)" || fail 'brew is required. Run host setup first.'
   PATH="$(dirname -- "${brew_path}"):${PATH}"
   export PATH
   node_prefix="$(brew --prefix node@26)"
+  libpq_prefix="$(brew --prefix libpq)"
   brew_prefix="$(brew --prefix)"
-  PATH="${node_prefix}/bin:${brew_prefix}/bin:${PATH}"
+  PATH="${node_prefix}/bin:${libpq_prefix}/bin:${brew_prefix}/bin:${PATH}"
   export PATH
 }
 
@@ -313,19 +314,31 @@ check_tools() {
   note "Runtimes: ${node_version}, Bun $(bun --version)"
 }
 
+check_dependency() {
+  local tool version version_flag=--version
+  tool="${1##*/}"
+  tool="${tool%%@*}"
+  case "${tool}" in
+    libpq) tool=psql ;;
+    socat) version_flag=-V ;;
+  esac
+  require_tool "${tool}"
+  version="$("${tool}" "${version_flag}")" || fail "Cannot read ${tool}'s version."
+  if [[ "${tool}" == socat ]]; then
+    version="$(sed -n '/^socat version /p' <<< "${version}")"
+    [[ -n "${version}" ]] || fail 'Cannot read socat version.'
+  fi
+  note "Dependency: ${tool} ($(command -v "${tool}")); ${version%%$'\n'*}"
+}
+
 check_host() {
   check_tools
-  local formula tool version
+  local formula version
   [[ -r "${REPO_DIR}/Brewfile" ]] || fail 'The dependency inventory is not readable.'
   version="$(HOMEBREW_NO_AUTO_UPDATE=1 brew --version)" || fail 'Cannot read Homebrew version.'
   note "Homebrew: ${version}"
-  # the Brewfile is the dependency inventory; tap and version suffixes are not binary names.
   while IFS= read -r formula; do
-    tool="${formula##*/}"
-    tool="${tool%%@*}"
-    require_tool "${tool}"
-    version="$("${tool}" --version)" || fail "Cannot read ${tool}'s version."
-    note "Dependency: ${tool} ($(command -v "${tool}")); ${version%%$'\n'*}"
+    check_dependency "${formula}"
   done < <(sed -n 's/^brew "\([^"]*\)".*/\1/p' "${REPO_DIR}/Brewfile")
 }
 
@@ -369,12 +382,12 @@ check_shells() {
     fresh_environment+=(-u "${name}")
   done < <(jq -r '.variables | keys[]' "${HOME}/.local/state/tanaabot/environment.json")
   note 'Shell: inherited non-interactive Bash'
-  bash -c 'source "$1"; check_tools; check_git_transport; bun --no-env-file "${REPO_DIR}/scripts/environment-task.js" --check' _ "${REPO_DIR}/tanaboot.sh" || fail 'Non-interactive Bash cannot discover the declared tools or environment. Check the Cloud command launcher environment.'
+  bash -c 'source "$1"; check_tools; check_dependency libpq; check_git_transport; bun --no-env-file "${REPO_DIR}/scripts/environment-task.js" --check' _ "${REPO_DIR}/tanaboot.sh" || fail 'Non-interactive Bash cannot discover the declared tools or environment. Check the Cloud command launcher environment.'
   for mode in -lc -ic; do
     note "Shell: fresh Bash ${mode} from system PATH"
     # remove inherited tool paths so startup files must supply them.
     # shellcheck disable=SC2016
-    "${fresh_environment[@]}" HISTFILE=/dev/null PATH=/usr/bin:/bin bash "${mode}" 'source "$1"; check_tools; check_git_transport; bun --no-env-file "${REPO_DIR}/scripts/environment-task.js" --check' _ "${REPO_DIR}/tanaboot.sh" || fail 'Fresh Bash cannot discover the declared tools or environment. Check the active login file and .bashrc initialization.'
+    "${fresh_environment[@]}" HISTFILE=/dev/null PATH=/usr/bin:/bin bash "${mode}" 'source "$1"; check_tools; check_dependency libpq; check_git_transport; bun --no-env-file "${REPO_DIR}/scripts/environment-task.js" --check' _ "${REPO_DIR}/tanaboot.sh" || fail 'Fresh Bash cannot discover the declared tools or environment. Check the active login file and .bashrc initialization.'
   done
 }
 

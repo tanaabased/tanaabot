@@ -1,11 +1,16 @@
 # LINUX CLOUD tools.
-# each formula's basename, without @version, must support --version for offline checks.
+# taps
 tap "oven-sh/bun", trusted: true
 
+# libraries
+brew "libpq"
+
+# CLI tools
 brew "curl"
 brew "gh"
 brew "git"
 brew "jq"
 brew "node@26"
-brew "stow"
 brew "oven-sh/bun/bun"
+brew "socat"
+brew "stow"

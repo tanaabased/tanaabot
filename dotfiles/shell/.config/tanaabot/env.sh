@@ -7,7 +7,7 @@ if [ -z "$_tanaabot_brew" ]; then
 fi
 if [ -x "$_tanaabot_brew" ]; then
   eval "$("$_tanaabot_brew" shellenv)"
-  PATH="$("$_tanaabot_brew" --prefix node@26)/bin:$PATH"
+  PATH="$("$_tanaabot_brew" --prefix node@26)/bin:$("$_tanaabot_brew" --prefix libpq)/bin:$PATH"
   export PATH
 fi
 unset _tanaabot_brew

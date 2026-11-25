@@ -74,18 +74,22 @@ Tanaabot onboarding.
    repository only records the procedure; it does not configure the environment.
 
 5. Run [Tanaabot Startup Check](./skills/startup-check/SKILL.md) after installation, using the actual
-   task command launcher, and present its shared six-section card for operator review before publication. Report
-   failed or unavailable checks; never recommend publishing after a failed install. After publication,
+   task command launcher, and present its shared startup card for operator review before publication. Report
+   failed or unavailable checks. Use the [startup report’s exception](./skills/startup-check/references/startup-report.md#status-rules) only when initial VPN enrollment
+   must await publication and the query is deferred for that reason. Never recommend publishing after
+   a failed install or any other unresolved check. After publication,
    start a fresh chat. Verify startup runs without a
    manual bootstrap prompt and a subsequent request selects and reads the appropriate local skill.
-   Record machine readiness, explicit Tanaabot loading and Canon availability separately.
+   Record machine readiness, explicit Tanaabot loading, Canon availability, Tailscale enrollment
+   and the authenticated PostgreSQL query separately.
    Guidance readability and saved instructions in the main Dot do not establish automatic loading in Cloud.
 
-   Only during this pre-publication onboarding review, when the install succeeds, Startup Check
-   passes and its verified Setup ID matches the ID printed by this install, read
-   `cloud_environment_environment_status` before the operator publishes. Keep the current
-   `source_config_id` and `source_config_version_id` alongside this Setup ID in the publisher
-   chat. Mark unavailable observations as unknown. End the reply with this separate card,
+   For the pre-publication handoff, when the install succeeds, Startup Check
+   passes or qualifies for the initial VPN enrollment exception, and its verified Setup ID matches
+   the ID printed by this install, read the current `source_config_id` and `source_config_version_id`
+   from `cloud_environment_environment_status` before the operator publishes. Keep them alongside
+   this Setup ID in the publisher chat. Mark unavailable observations as unknown.
+   End the reply with this separate card,
    substituting the verified Setup ID for `<setup-id>`.
 
    > **📦 NEXT STEP · RECORD PUBLICATION**
