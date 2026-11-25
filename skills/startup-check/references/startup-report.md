@@ -1,8 +1,8 @@
 # Startup report
 
 Start the quoted card with its overall result, followed by all seven rows in the order below.
-Each row contains the bold section name and status. Under Networking, show separate Tailscale and
-PostgreSQL fields. Use normal sentence capitalization.
+Each row contains the bold section name and status. Use normal sentence capitalization.
+Under Networking, show the tailnet and database connection statuses separately.
 After the last row, include **NOTES** only when there is something to explain. During Cloud setup
 review and fresh published startup, include the validated Tanaabot setup ID in an information
 note. Keep the heading
@@ -18,7 +18,7 @@ emoji and bold section name. Use the optional status report below for detailed r
 | Tanaabot     | The local setup receipt is readable and valid. All local `SKILL.md` files beneath the prepared checkout's `skills/` are readable, have nonempty instructions and valid frontmatter with unique names and nonempty descriptions. Retain their names, descriptions and absolute paths in chat context.                                                                                                                                                                                                                                                                                                                                                                   |
 | Dependencies | Brewfile executables discoverable on the task's effective PATH, usable version output, and declared Node/Bun major versions satisfied. Homebrew maintenance permissions are not required.                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | Dotfiles     | The `ai`, `shell`, `git`, `gh` and `ssh` dotpackages link to the prepared sources and match them. Git source drift meets the assessment rules below; identity-only drift with verified overrides may pass. Shell initialization supplies tools and saved variables in fresh shells. The private environment file is outside the checkout, owned by this user with mode 600 in a real mode-700 directory; private storage and key paths are not symlinks.                                                                                                                                                                                                               |
-| Networking   | Current Cloud evidence confirms Tailscale enrollment. The approved outer command runs the authenticated PostgreSQL query through the local relay and returns `1`. Assess the two results independently.                                                                                                                                                                                                                                                                                                                                                                                                                                                                |
+| Networking   | Current Cloud evidence confirms tailnet enrollment. Startup Check verifies an authenticated connection to the configured database. Assess the two results independently.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | Canon skills | The task catalog contains machine names starting with `tanaab-`, allowing host qualification. Use ownership metadata when available to exclude unrelated matches. This establishes basic availability, not a complete release inventory or ownership from names alone. Installation and updates belong to the ChatGPT account.                                                                                                                                                                                                                                                                                                                                         |
 | Identity     | After saved environment loading is verified, actual Git author/committer names and emails match the committed Git configuration, including environment overrides. Source drift is assessed separately under Dotfiles. Agent email binding, SSH signing configuration, public key and allowed signers match the prepared configuration; the private key matches the approved public key. GitHub CLI and Git select HTTPS with the intended credential helper and URL rewrites; inspect platform authentication separately. The GitHub CLI credential returns the manifest's username, and that account's complete public signing-key listing contains the matching key. |
 
@@ -63,16 +63,15 @@ operation it ran, not an exit code returned by the skill or proof of unrelated s
 
 During initial builder onboarding, publication can proceed with **⚠️ STARTUP CHECK · INCOMPLETE**
 only when current Cloud evidence confirms the saved VPN configuration is awaiting first publication,
-the verified 1Password variables pass the offline PostgreSQL configuration check, and every other
-required check passes. Keep Tailscale **Unverified — pending publication** and PostgreSQL
-**Unverified — deferred until enrollment**. Continue with the verified Setup ID and publication
-handoff. A failed check, uncertain draft state, missing database settings, or an incomplete check in
-a fresh published chat does not qualify. After publication, both networking fields require live
-evidence from the fresh chat.
+the required database settings are verified in the 1Password environment, and every other check
+passes. Show the tailnet as **Unverified — pending publication** and the database as
+**Unverified — awaiting enrollment**. Continue with the verified Setup ID and publication handoff.
+After publication, both networking fields require live evidence from the fresh chat.
 
 For each failed check, give the observed failure in an error note. For an unverified check,
 give the missing evidence in a warning note. Include a concise next step in the relevant bullet.
-Keep routine evidence in working context. Include a safe error code, path or command only when
+For Networking, put the short reason in the connection field and add a note only for a distinct
+next step. Keep routine evidence in working context. Include a safe error code, path or command only when
 it helps recovery or the operator requests diagnostics. Never include tokens, secret values or credential dumps.
 Keep raw logs out of both cards and routine version and path details in the optional status report.
 
@@ -107,10 +106,10 @@ Use uppercase H2 and H3 titles and put variable names, paths, versions and ident
   version commands on the same PATH. For `libpq`, use `psql --version`. For `socat`, use `socat -V`.
 - **Dotfiles:** List the packages whose expected links and contents were verified. Identify
   incomplete packages separately when applicable.
-- **Networking:** Show Tailscale enrollment and the PostgreSQL query outcome independently.
-  Use only sanitized status and recovery guidance. On `proxy-connect-rejected`, check the target
-  grant and tailnet route. On `postgresql-authentication-failed`, check the 1Password settings and
-  database permissions. On an undifferentiated connection or query failure, leave the cause open.
+- **Networking:** Use the same fields in both cards. Label them with the verified tailnet name
+  and configured database hostname in backticks. Use **Tailnet** or **Database** if its name is
+  unavailable. Show **Connected** for a verified connection, or **Failed** or **Unverified** with a
+  short reason. Keep raw diagnostics and query output private.
 - **Canon skills:** Report availability from the current task catalog. Show `package.version` from
   Canon’s Plugin Info result in **Plugin version**. Use its `skills` inventory for requested details
   about shipped skills. If Plugin Info is unavailable or cannot verify the version, label an
@@ -162,8 +161,8 @@ Use this field layout with values from the current run. Debug uses the same body
 >
 > ### NETWORKING
 >
-> - **Tailscale** Enrolled
-> - **PostgreSQL** Authenticated query returned `1`
+> - **`tanaab`** Connected
+> - **`db1.tanaab.net`** Connected
 >
 > ### CANON SKILLS
 >
@@ -195,8 +194,8 @@ Preserve the quoted H2 heading and blank quoted line before the rows.
 > - **Dependencies — passed**
 > - **Dotfiles — passed**
 > - **Networking — passed**
->   - **Tailscale** Enrolled
->   - **PostgreSQL** Authenticated query returned `1`
+>   - **`tanaab`** Connected
+>   - **`db1.tanaab.net`** Connected
 > - **Canon skills — passed**
 > - **Identity — passed**
 
@@ -209,8 +208,8 @@ Preserve the quoted H2 heading and blank quoted line before the rows.
 > - **Dependencies — passed**
 > - **Dotfiles — passed**
 > - **Networking — passed**
->   - **Tailscale** Enrolled
->   - **PostgreSQL** Authenticated query returned `1`
+>   - **`tanaab`** Connected
+>   - **`db1.tanaab.net`** Connected
 > - **Canon skills — unverified**
 > - **Identity — passed**
 >
@@ -227,14 +226,14 @@ Preserve the quoted H2 heading and blank quoted line before the rows.
 > - **Dependencies — passed**
 > - **Dotfiles — passed**
 > - **Networking — failed**
->   - **Tailscale** Enrolled
->   - **PostgreSQL** Authentication failed
+>   - **`tanaab`** Connected
+>   - **`db1.tanaab.net`** Failed — Authentication rejected
 > - **Canon skills — unverified**
 > - **Identity — failed**
 >
 > **NOTES**
 >
-> - ❌ **Networking** — PostgreSQL rejected authentication. Check the 1Password settings and database permissions.
+> - ❌ **Networking** — Check the 1Password settings and database permissions.
 > - ❌ **Identity** — The approved signing key is missing from the verified GitHub account. Check its signing-key registration before rerunning startup.
 > - ⚠️ **Canon skills** — This task couldn’t inspect the skill catalog. Check Canon availability in a fresh task with catalog access.
 > - ℹ️ **Dotfiles** — Git’s configured identity differs from the committed defaults. Environment overrides supply the expected author and committer.

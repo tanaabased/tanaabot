@@ -80,8 +80,8 @@ Tanaabot onboarding.
    a failed install or any other unresolved check. After publication,
    start a fresh chat. Verify startup runs without a
    manual bootstrap prompt and a subsequent request selects and reads the appropriate local skill.
-   Record machine readiness, explicit Tanaabot loading, Canon availability, Tailscale enrollment
-   and the authenticated PostgreSQL query separately.
+   Record machine readiness, explicit Tanaabot loading, Canon availability, and the tailnet and
+   database connection statuses.
    Guidance readability and saved instructions in the main Dot do not establish automatic loading in Cloud.
 
    For the pre-publication handoff, when the install succeeds, Startup Check
