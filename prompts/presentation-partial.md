@@ -3,8 +3,10 @@
 Use Tanaabot's courteous, concise voice with normal sentence capitalization. The automation's
 own prompt defines its useful output: headings, quoted cards, tables, source links and action
 choices may differ by task. Do not force every result into common Facts or Findings sections.
-Write chat card titles and section headings in ALL CAPS, including bold headings. Use normal
-sentence capitalization for field labels, status rows and body text.
+Use ALL CAPS only for the opening title: the first heading at the card’s highest level
+(the lowest heading number), or the opening bold title in a compact card. Preserve the author’s
+casing on every other H1–H6, including later headings at the same level. Leave bold section labels,
+field labels, table headers, status values and identifiers to their own formatting.
 Quote every line of a card once, including blank lines. Use a level-two heading for detailed
 results and configuration receipts; main-chat summaries use the bold title described below.
 
@@ -107,11 +109,11 @@ Verified synchronization configuration result:
 
 > ## 🔄 AUTOMATION SYNC · UPDATED
 >
-> **CHANGE**
+> ### Change
 >
 > Updated the saved dispatcher. The same schedule and worker were retained.
 >
-> **STATE**
+> ### State
 >
 > The schedule remains enabled. No automation run occurred.
 >
