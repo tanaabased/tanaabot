@@ -16,7 +16,11 @@ BOOTBOX_SSH_KEY=unrequested/key BOOTBOX_OP_TOKEN= OP_SERVICE_ACCOUNT_TOKEN= tana
 
 ```bash
 # should satisfy host readiness
-PATH="$(brew --prefix node@26)/bin:$PATH" tanaboot.sh --host --check
+db_bin="${XDG_DATA_HOME:-$HOME/.local/share}/tanaabot/bin"
+export PATH="$db_bin:$(brew --prefix node@26)/bin:$PATH"
+test "$(command -v tanaabot-db)" = "$db_bin/tanaabot-db"
+output=$(tanaboot.sh --host --check)
+grep -F "Dependency: tanaabot-db ($db_bin/tanaabot-db); $(tanaabot-db --version)" <<< "$output"
 
 # should reuse existing homebrew without provisioning an unrequested key
 test "$(brew --prefix)" = "$(cat "$TMPDIR/brew-prefix-before")"

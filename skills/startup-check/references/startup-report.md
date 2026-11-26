@@ -1,7 +1,8 @@
 # Startup report
 
-Start the quoted card with its overall result, followed by all six rows in the order below.
-Each row contains only the bold section name and status. Use normal sentence capitalization.
+Start the quoted card with its overall result, followed by all seven rows in the order below.
+Each row contains the bold section name and status. Use normal sentence capitalization.
+Under Networking, show the tailnet and database connection statuses separately.
 After the last row, include **NOTES** only when there is something to explain. During Cloud setup
 review and fresh published startup, include the validated Tanaabot setup ID in an information
 note. Keep the heading
@@ -17,6 +18,7 @@ emoji and bold section name. Use the optional status report below for detailed r
 | Tanaabot     | The local setup receipt is readable and valid. All local `SKILL.md` files beneath the prepared checkout's `skills/` are readable, have nonempty instructions and valid frontmatter with unique names and nonempty descriptions. Retain their names, descriptions and absolute paths in chat context.                                                                                                                                                                                                                                                                                                                                                                   |
 | Dependencies | Brewfile executables discoverable on the task's effective PATH, usable version output, and declared Node/Bun major versions satisfied. Homebrew maintenance permissions are not required.                                                                                                                                                                                                                                                                                                                                                                                                                                                                              |
 | Dotfiles     | The `ai`, `shell`, `git`, `gh` and `ssh` dotpackages link to the prepared sources and match them. Git source drift meets the assessment rules below; identity-only drift with verified overrides may pass. Shell initialization supplies tools and saved variables in fresh shells. The private environment file is outside the checkout, owned by this user with mode 600 in a real mode-700 directory; private storage and key paths are not symlinks.                                                                                                                                                                                                               |
+| Networking   | Current Cloud evidence confirms tailnet enrollment. Startup Check verifies an authenticated connection to the configured database. Assess the two results independently.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               |
 | Canon skills | The task catalog contains machine names starting with `tanaab-`, allowing host qualification. Use ownership metadata when available to exclude unrelated matches. This establishes basic availability, not a complete release inventory or ownership from names alone. Installation and updates belong to the ChatGPT account.                                                                                                                                                                                                                                                                                                                                         |
 | Identity     | After saved environment loading is verified, actual Git author/committer names and emails match the committed Git configuration, including environment overrides. Source drift is assessed separately under Dotfiles. Agent email binding, SSH signing configuration, public key and allowed signers match the prepared configuration; the private key matches the approved public key. GitHub CLI and Git select HTTPS with the intended credential helper and URL rewrites; inspect platform authentication separately. The GitHub CLI credential returns the manifest's username, and that account's complete public signing-key listing contains the matching key. |
 
@@ -59,9 +61,17 @@ unverified required check makes it **⚠️ STARTUP CHECK · INCOMPLETE**. Other
 unverified remainder briefly when it affects recovery. A script exit code is evidence for the
 operation it ran, not an exit code returned by the skill or proof of unrelated sections.
 
+During initial builder onboarding, publication can proceed with **⚠️ STARTUP CHECK · INCOMPLETE**
+only when current Cloud evidence confirms the saved VPN configuration is awaiting first publication,
+the required database settings are verified in the 1Password environment, and every other check
+passes. Show the tailnet as **Unverified — pending publication** and the database as
+**Unverified — awaiting enrollment**. Continue with the verified Setup ID and publication handoff.
+After publication, both networking fields require live evidence from the fresh chat.
+
 For each failed check, give the observed failure in an error note. For an unverified check,
 give the missing evidence in a warning note. Include a concise next step in the relevant bullet.
-Keep routine evidence in working context. Include a safe error code, path or command only when
+For Networking, put the short reason in the connection field and add a note only for a distinct
+next step. Keep routine evidence in working context. Include a safe error code, path or command only when
 it helps recovery or the operator requests diagnostics. Never include tokens, secret values or credential dumps.
 Keep raw logs out of both cards and routine version and path details in the optional status report.
 
@@ -76,7 +86,7 @@ Always show the startup card first. Select at most one additional heading in thi
    selects **🔬 DEBUG · STATUS REPORT**.
 3. Otherwise finish after the startup card.
 
-Both headings use the template below. Keep all six sections in order and give each field its own
+Both headings use the template below. Keep all seven sections in order and give each field its own
 quoted bullet with a bold label. On every run, including repeat rebuilds, show the value observed
 on this run even when it matches the previous run. Keep the bullet for each missing value and
 mark it **Unverified**. Report observed failures explicitly and keep independently verified values.
@@ -94,9 +104,13 @@ including headings at the same level. Put variable names, paths, versions and id
   as the checkout revision. Include the verified local skill count and directory.
 - **Dependencies:** Use one bullet per Brewfile executable, with its observed version from
   Tanaboot’s host check. If the check stopped early, use the remaining executables’ read-only
-  `--version` output on the same PATH. Derive the list from the prepared Brewfile.
+  version commands on the same PATH. Include the installed database CLI from `tanaabot-db --version`.
 - **Dotfiles:** List the packages whose expected links and contents were verified. Identify
   incomplete packages separately when applicable.
+- **Networking:** Use the same fields in both cards. Label them with the verified tailnet name
+  and configured database hostname in backticks. Use **Tailnet** or **Database** if its name is
+  unavailable. Show **Connected** for a verified connection, or **Failed** or **Unverified** with a
+  short reason. Keep raw diagnostics and query output private.
 - **Canon skills:** Report availability from the current task catalog. Show `package.version` from
   Canon’s Plugin Info result in **Plugin version**. Use its `skills` inventory for requested details
   about shipped skills. If Plugin Info is unavailable or cannot verify the version, label an
@@ -139,10 +153,16 @@ Use this field layout with values from the current run. Debug uses the same body
 > - **jq** `1.7.1`
 > - **Node.js** `26.12.1`
 > - **Stow** `2.4.1`
+> - **tanaabot-db** `1.0.1`
 >
 > ### Dotfiles
 >
 > - **Verified packages** `ai` `gh` `git` `shell` `ssh`
+>
+> ### Networking
+>
+> - **`tanaab`** Connected
+> - **`db1.tanaab.net`** Connected
 >
 > ### Canon skills
 >
@@ -173,6 +193,9 @@ Preserve the quoted H2 heading and blank quoted line before the rows.
 > - **Tanaabot — passed**
 > - **Dependencies — passed**
 > - **Dotfiles — passed**
+> - **Networking — passed**
+>   - **`tanaab`** Connected
+>   - **`db1.tanaab.net`** Connected
 > - **Canon skills — passed**
 > - **Identity — passed**
 
@@ -184,6 +207,9 @@ Preserve the quoted H2 heading and blank quoted line before the rows.
 > - **Tanaabot — passed**
 > - **Dependencies — passed**
 > - **Dotfiles — passed**
+> - **Networking — passed**
+>   - **`tanaab`** Connected
+>   - **`db1.tanaab.net`** Connected
 > - **Canon skills — unverified**
 > - **Identity — passed**
 >
@@ -199,11 +225,15 @@ Preserve the quoted H2 heading and blank quoted line before the rows.
 > - **Tanaabot — passed**
 > - **Dependencies — passed**
 > - **Dotfiles — passed**
+> - **Networking — failed**
+>   - **`tanaab`** Connected
+>   - **`db1.tanaab.net`** Failed — Authentication rejected
 > - **Canon skills — unverified**
 > - **Identity — failed**
 >
 > **NOTES**
 >
+> - ❌ **Networking** — Check the 1Password settings and database permissions.
 > - ❌ **Identity** — The approved signing key is missing from the verified GitHub account. Check its signing-key registration before rerunning startup.
 > - ⚠️ **Canon skills** — This task couldn’t inspect the skill catalog. Check Canon availability in a fresh task with catalog access.
 > - ℹ️ **Dotfiles** — Git’s configured identity differs from the committed defaults. Environment overrides supply the expected author and committer.

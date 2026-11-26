@@ -16,7 +16,8 @@
   },
   "type": "module",
   "dependencies": {
-    "@tanaab/openclaw-agent-system": "github:tanaabased/openclaw-agent-system#504bc0a94b6ff9c1b2df48eb253c8d40a82ba5b0"
+    "@tanaab/openclaw-agent-system": "github:tanaabased/openclaw-agent-system#504bc0a94b6ff9c1b2df48eb253c8d40a82ba5b0",
+    "pg": "8.23.1"
   },
   "scripts": {
     "automations:prepare": "bun skills/automation-sync/scripts/prepare-dependency.js",
@@ -50,6 +51,7 @@
       ".agent-system/setup-agent.yaml",
       ".codex-plugin",
       "assets",
+      "bin/tanaabot-db.js",
       "dotfiles/ai/.codex/AGENTS.md",
       "dotfiles/shell/.config/tanaabot/env.sh",
       "dotfiles/git/.gitconfig",
@@ -87,6 +89,7 @@
     ".agent-system/setup-agent.yaml",
     ".codex-plugin/plugin.json",
     "assets/",
+    "bin/tanaabot-db.js",
     "dotfiles/ai/.codex/AGENTS.md",
     "dotfiles/shell/.config/tanaabot/env.sh",
     "dotfiles/git/.gitconfig",

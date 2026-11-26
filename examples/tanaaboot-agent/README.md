@@ -148,10 +148,25 @@ test -L "$HOME/.local/state/tanaabot/environment.json"
 head -c "$(wc -c < "$TMPDIR/bash-profile-before-agent")" "$HOME/.bash_profile" | cmp - "$TMPDIR/bash-profile-before-agent"
 
 # should initialize the published tools in a fresh interactive shell
-env -u BASH_ENV PATH=/usr/bin:/bin bash -ic 'set -e; command -v brew; command -v node; command -v bun'
+env -u BASH_ENV PATH=/usr/bin:/bin bash -ic '
+  set -e
+  command -v brew
+  command -v node
+  command -v bun
+  test "$(command -v tanaabot-db)" = "${XDG_DATA_HOME:-$HOME/.local/share}/tanaabot/bin/tanaabot-db"
+  tanaabot-db --version
+'
 
 # should preserve the active login profile and load its tools without inherited paths
-env -u BASH_ENV PATH=/usr/bin:/bin bash -lc 'set -e; test "$TANABOOT_PROFILE_SENTINEL" = preserved; command -v brew; command -v node; command -v bun'
+env -u BASH_ENV PATH=/usr/bin:/bin bash -lc '
+  set -e
+  test "$TANABOOT_PROFILE_SENTINEL" = preserved
+  command -v brew
+  command -v node
+  command -v bun
+  test "$(command -v tanaabot-db)" = "${XDG_DATA_HOME:-$HOME/.local/share}/tanaabot/bin/tanaabot-db"
+  tanaabot-db --version
+'
 
 # should reject a command environment missing homebrew rather than activating it during checks
 status=0

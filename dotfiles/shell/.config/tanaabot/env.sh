@@ -8,9 +8,9 @@ fi
 if [ -x "$_tanaabot_brew" ]; then
   eval "$("$_tanaabot_brew" shellenv)"
   PATH="$("$_tanaabot_brew" --prefix node@26)/bin:$PATH"
-  export PATH
 fi
 unset _tanaabot_brew
+export PATH="${XDG_DATA_HOME:-$HOME/.local/share}/tanaabot/bin:$PATH"
 
 # keep secret values out of shell tracing. values are data, never shell source.
 _tanaabot_trace=0

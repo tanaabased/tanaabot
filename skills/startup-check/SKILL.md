@@ -32,6 +32,8 @@ Verification never provisions, upgrades, switches revisions, binds Agent System 
 - **Before reporting:** Read and apply [Tanaabot Voice](../voice/SKILL.md).
 - **Before assigning results or composing the card:** Read and apply the
   [startup report contract](./references/startup-report.md).
+- **Before checking private networking:** Read the Networking and VPN references from the
+  available Cloud Environment Runtime skill.
 
 ## When to Use
 
@@ -160,10 +162,29 @@ separate operator-authorized scope. This skill inspects the saved installation o
    Run live transport and signing tests only during a separately authorized identity check.
    Keep the configured email as identity metadata. Obtain Google authentication evidence from the
    selected native connection when needed.
-7. Compose the startup card using the report contract. Show all six status rows together.
+7. For **Networking**, verify enrollment and the tailnet name from the current Cloud VPN status.
+   Use the Cloud runtime’s live proxy status when native observations are unavailable.
+   Check database connectivity independently. Reuse the verified 1Password environment from step 3.
+   Require `PGHOST` as a single DNS hostname, `PGPORT` as a TCP port number, and nonempty
+   `PGUSER` and `PGPASSWORD`. Use `--check-names` if needed. During initial onboarding, defer the
+   probe when the saved VPN configuration is waiting for its first publication.
+
+   Run the installed Cloud database command through the approved outer executor described in
+   the VPN reference.
+
+   ```sh
+   tanaabot-db -c 'SELECT 1 AS connected'
+   ```
+
+   Capture the probe output privately. Exit 0 with `[{"connected":1}]` establishes **Connected**
+   for the database. Give a short, sanitized reason
+   if either check fails or cannot run, such as enrollment pending, proxy refused access, or database
+   authentication rejected. Keep raw service output and credentials private.
+
+8. Compose the startup card using the report contract. Show all seven status rows together.
    Below them, list any notes by section, with ❌ errors first, then ⚠️ warnings, then ℹ️ information
    such as verified identity-only Git drift. Omit **NOTES** when empty. Append at most one selected
-   status report using the contract’s six H3 sections, including on partial or failed runs.
+   status report using the contract’s seven H3 sections, including on partial or failed runs.
    Retain revision and diagnostic
    evidence in the working context without creating a receipt or printing routine success details. A script
    returns an exit code; this skill reports the overall result in its response. Do not turn missing
@@ -178,7 +199,7 @@ separate operator-authorized scope. This skill inspects the saved installation o
 
 ## Validation
 
-Confirm that no provisioning, SSH connection or state change was attempted, that all six startup
+Confirm that no provisioning, SSH connection or persistent state change was attempted, that all seven startup
 rows appear together in order, and that any notes follow the rows in severity order. Check that the
 signing-key lookup used the verified expected account, consumed all pages and reused the established local
 key match. Check ordinary and explicitly requested output with debug on and off. Explicit requests
@@ -188,6 +209,8 @@ rules; deferred instruction delivery does not prevent a pass. Distinguish machin
 inventory contains each skill's name, description and absolute path. This does not alter the native
 catalog. Verify that Plugin Info supplies the version when available and that missing or unreadable
 Plugin Info leaves catalog availability and the other startup checks independent of version reporting.
+Verify both connections from a fresh published Cloud chat. Check that deferral during initial
+onboarding stays unverified.
 Maintenance validation checks structure and packaged references; a fresh Cloud trial must
 establish that the saved Start skill runs without a manual bootstrap prompt and that a later relevant
 request selects and reads the appropriate local skill without naming it in the request.
