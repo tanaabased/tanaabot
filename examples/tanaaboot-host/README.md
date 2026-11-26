@@ -16,11 +16,11 @@ BOOTBOX_SSH_KEY=unrequested/key BOOTBOX_OP_TOKEN= OP_SERVICE_ACCOUNT_TOKEN= tana
 
 ```bash
 # should satisfy host readiness
-libpq_bin="$(brew --prefix libpq)/bin"
-export PATH="$(brew --prefix node@26)/bin:$libpq_bin:$PATH"
-test "$(command -v psql)" = "$libpq_bin/psql"
+db_bin="${XDG_DATA_HOME:-$HOME/.local/share}/tanaabot/bin"
+export PATH="$db_bin:$(brew --prefix node@26)/bin:$PATH"
+test "$(command -v tanaabot-db)" = "$db_bin/tanaabot-db"
 output=$(tanaboot.sh --host --check)
-grep -F "Dependency: psql ($libpq_bin/psql); $(psql --version)" <<< "$output"
+grep -F "Dependency: tanaabot-db ($db_bin/tanaabot-db); $(tanaabot-db --version)" <<< "$output"
 
 # should reuse existing homebrew without provisioning an unrequested key
 test "$(brew --prefix)" = "$(cat "$TMPDIR/brew-prefix-before")"
@@ -31,7 +31,7 @@ test ! -e "$HOME/.ssh/key"
 cp -a "$TANABOOT_PACKAGE_ROOT" "$TMPDIR/incompatible-runtime"
 cp incompatible-node-version "$TMPDIR/incompatible-runtime/.node-version"
 status=0
-output=$(PATH="$(brew --prefix node@26)/bin:$(brew --prefix libpq)/bin:$PATH" bash "$TMPDIR/incompatible-runtime/tanaboot.sh" --host --check 2>&1) || status=$?
+output=$(PATH="$(brew --prefix node@26)/bin:$PATH" bash "$TMPDIR/incompatible-runtime/tanaboot.sh" --host --check 2>&1) || status=$?
 test "$status" -eq 1
 grep -F 'Node does not match' <<< "$output"
 cmp incompatible-node-version "$TMPDIR/incompatible-runtime/.node-version"

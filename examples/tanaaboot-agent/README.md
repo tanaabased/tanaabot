@@ -153,8 +153,8 @@ env -u BASH_ENV PATH=/usr/bin:/bin bash -ic '
   command -v brew
   command -v node
   command -v bun
-  test "$(command -v psql)" = "$(brew --prefix libpq)/bin/psql"
-  psql --version
+  test "$(command -v tanaabot-db)" = "${XDG_DATA_HOME:-$HOME/.local/share}/tanaabot/bin/tanaabot-db"
+  tanaabot-db --version
 '
 
 # should preserve the active login profile and load its tools without inherited paths
@@ -164,8 +164,8 @@ env -u BASH_ENV PATH=/usr/bin:/bin bash -lc '
   command -v brew
   command -v node
   command -v bun
-  test "$(command -v psql)" = "$(brew --prefix libpq)/bin/psql"
-  psql --version
+  test "$(command -v tanaabot-db)" = "${XDG_DATA_HOME:-$HOME/.local/share}/tanaabot/bin/tanaabot-db"
+  tanaabot-db --version
 '
 
 # should reject a command environment missing homebrew rather than activating it during checks

@@ -169,17 +169,15 @@ separate operator-authorized scope. This skill inspects the saved installation o
    `PGUSER` and `PGPASSWORD`. Use `--check-names` if needed. During initial onboarding, defer the
    probe when the saved VPN configuration is waiting for its first publication.
 
-   Follow the Cloud runtime’s VPN recipe in one approved outer command. Start its loopback
-   `socat` relay to `PGHOST:PGPORT` on an unused port. Verify the listener started, arrange
-   cleanup on exit, and use that port as `local_port` for native `psql`:
+   Run the installed Cloud database command through the approved outer executor described in
+   the VPN reference.
 
    ```sh
-   env -u PGSERVICE PGHOSTADDR=127.0.0.1 PGPORT="$local_port" \
-     timeout -k 1s 15s psql -X -w -v ON_ERROR_STOP=1 -Atqc 'SELECT 1'
+   tanaabot-db -c 'SELECT 1 AS connected'
    ```
 
-   Keep `PGHOST`, database settings and SSL settings inherited. Capture the probe output privately.
-   Exit 0 with output `1` establishes **Connected** for the database. Give a short, sanitized reason
+   Capture the probe output privately. Exit 0 with `[{"connected":1}]` establishes **Connected**
+   for the database. Give a short, sanitized reason
    if either check fails or cannot run, such as enrollment pending, proxy refused access, or database
    authentication rejected. Keep raw service output and credentials private.
 

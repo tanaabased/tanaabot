@@ -103,7 +103,7 @@ Use uppercase H2 and H3 titles and put variable names, paths, versions and ident
   as the checkout revision. Include the verified local skill count and directory.
 - **Dependencies:** Use one bullet per Brewfile executable, with its observed version from
   Tanaboot’s host check. If the check stopped early, use the remaining executables’ read-only
-  version commands on the same PATH. For `libpq`, use `psql --version`. For `socat`, use `socat -V`.
+  version commands on the same PATH. Include the installed database CLI from `tanaabot-db --version`.
 - **Dotfiles:** List the packages whose expected links and contents were verified. Identify
   incomplete packages separately when applicable.
 - **Networking:** Use the same fields in both cards. Label them with the verified tailnet name
@@ -151,9 +151,8 @@ Use this field layout with values from the current run. Debug uses the same body
 > - **GitHub CLI** `2.67.0`
 > - **jq** `1.7.1`
 > - **Node.js** `26.12.1`
-> - **psql** `18.1`
-> - **socat** `1.8.0.3`
 > - **Stow** `2.4.1`
+> - **tanaabot-db** `1.0.1`
 >
 > ### DOTFILES
 >

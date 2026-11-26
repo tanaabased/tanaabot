@@ -6,6 +6,7 @@
       "name": "@tanaab/tanaabot",
       "dependencies": {
         "@tanaab/openclaw-agent-system": "github:tanaabased/openclaw-agent-system#504bc0a94b6ff9c1b2df48eb253c8d40a82ba5b0",
+        "pg": "8.23.1",
       },
       "devDependencies": {
         "@eslint/js": "^10.0.1",

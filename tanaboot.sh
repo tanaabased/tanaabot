@@ -186,6 +186,7 @@ plan_host() {
   plan_action provision 'Bootbox dependencies and Brewfile'
   plan_command bootbox.sh --no-sudo --brewfile "${REPO_DIR}/Brewfile"
   plan_action configure 'Homebrew and Node PATH for this setup'
+  plan_action install 'The Tanaabot database command'
 }
 
 plan_agent() {
@@ -290,16 +291,30 @@ ensure_homebrew() {
 }
 
 activate_tools() {
-  local node_prefix libpq_prefix brew_prefix brew_path
+  local node_prefix brew_prefix brew_path
   brew_path="$(find_homebrew)" || fail 'brew is required. Run host setup first.'
   PATH="$(dirname -- "${brew_path}"):${PATH}"
   export PATH
   node_prefix="$(brew --prefix node@26)"
-  libpq_prefix="$(brew --prefix libpq)"
   brew_prefix="$(brew --prefix)"
-  PATH="${node_prefix}/bin:${libpq_prefix}/bin:${brew_prefix}/bin:${PATH}"
+  PATH="${DATA_DIR}/bin:${node_prefix}/bin:${brew_prefix}/bin:${PATH}"
   export PATH
 }
+
+install_database_cli() (
+  mkdir -p -- "${DATA_DIR}/bin"
+  local candidate
+  candidate="$(mktemp -d "${DATA_DIR}/bin/.database.XXXXXX")"
+  trap 'rm -rf -- "${candidate}"' EXIT
+  mkdir -- "${candidate}/bin"
+  cp -- "${REPO_DIR}/package.json" "${REPO_DIR}/bun.lock" "${candidate}/"
+  cp -- "${REPO_DIR}/bin/tanaabot-db.js" "${candidate}/bin/"
+  cd "${candidate}"
+  bun install --frozen-lockfile --production --omit=peer --ignore-scripts || fail 'Cannot install the locked database client dependency.'
+  bun build --compile --env=disable --no-compile-autoload-dotenv --no-compile-autoload-bunfig \
+    --outfile "${candidate}/tanaabot-db" bin/tanaabot-db.js || fail 'Cannot build tanaabot-db.'
+  mv -fT -- "${candidate}/tanaabot-db" "${DATA_DIR}/bin/tanaabot-db"
+)
 
 check_tools() {
   local node_version node_major tool
@@ -315,19 +330,11 @@ check_tools() {
 }
 
 check_dependency() {
-  local tool version version_flag=--version
+  local tool version
   tool="${1##*/}"
   tool="${tool%%@*}"
-  case "${tool}" in
-    libpq) tool=psql ;;
-    socat) version_flag=-V ;;
-  esac
   require_tool "${tool}"
-  version="$("${tool}" "${version_flag}")" || fail "Cannot read ${tool}'s version."
-  if [[ "${tool}" == socat ]]; then
-    version="$(sed -n '/^socat version /p' <<< "${version}")"
-    [[ -n "${version}" ]] || fail 'Cannot read socat version.'
-  fi
+  version="$("${tool}" --version)" || fail "Cannot read ${tool}'s version."
   note "Dependency: ${tool} ($(command -v "${tool}")); ${version%%$'\n'*}"
 }
 
@@ -340,6 +347,7 @@ check_host() {
   while IFS= read -r formula; do
     check_dependency "${formula}"
   done < <(sed -n 's/^brew "\([^"]*\)".*/\1/p' "${REPO_DIR}/Brewfile")
+  check_dependency tanaabot-db
 }
 
 shell_startup_files() {
@@ -382,12 +390,12 @@ check_shells() {
     fresh_environment+=(-u "${name}")
   done < <(jq -r '.variables | keys[]' "${HOME}/.local/state/tanaabot/environment.json")
   note 'Shell: inherited non-interactive Bash'
-  bash -c 'source "$1"; check_tools; check_dependency libpq; check_git_transport; bun --no-env-file "${REPO_DIR}/scripts/environment-task.js" --check' _ "${REPO_DIR}/tanaboot.sh" || fail 'Non-interactive Bash cannot discover the declared tools or environment. Check the Cloud command launcher environment.'
+  bash -c 'source "$1"; check_tools; check_dependency tanaabot-db; check_git_transport; bun --no-env-file "${REPO_DIR}/scripts/environment-task.js" --check' _ "${REPO_DIR}/tanaboot.sh" || fail 'Non-interactive Bash cannot discover the declared tools or environment. Check the Cloud command launcher environment.'
   for mode in -lc -ic; do
     note "Shell: fresh Bash ${mode} from system PATH"
     # remove inherited tool paths so startup files must supply them.
     # shellcheck disable=SC2016
-    "${fresh_environment[@]}" HISTFILE=/dev/null PATH=/usr/bin:/bin bash "${mode}" 'source "$1"; check_tools; check_dependency libpq; check_git_transport; bun --no-env-file "${REPO_DIR}/scripts/environment-task.js" --check' _ "${REPO_DIR}/tanaboot.sh" || fail 'Fresh Bash cannot discover the declared tools or environment. Check the active login file and .bashrc initialization.'
+    "${fresh_environment[@]}" HISTFILE=/dev/null PATH=/usr/bin:/bin bash "${mode}" 'source "$1"; check_tools; check_dependency tanaabot-db; check_git_transport; bun --no-env-file "${REPO_DIR}/scripts/environment-task.js" --check' _ "${REPO_DIR}/tanaboot.sh" || fail 'Fresh Bash cannot discover the declared tools or environment. Check the active login file and .bashrc initialization.'
   done
 }
 
@@ -469,7 +477,10 @@ main() (
       run_bootbox --brewfile "${REPO_DIR}/Brewfile"
     fi
   fi
-  if [[ "${ACTION}" == apply ]]; then activate_tools; fi
+  if [[ "${ACTION}" == apply ]]; then
+    activate_tools
+    if [[ "${TARGET}" != agent ]]; then install_database_cli; fi
+  fi
   check_host
   if [[ "${TARGET}" == bootstrap || "${TARGET}" == agent ]]; then
     if [[ "${ACTION}" == apply ]]; then apply_agent; else check_agent; fi
