@@ -1,17 +1,40 @@
 #!/usr/bin/env bun
 import { request } from 'node:http';
 import process from 'node:process';
+import { parseArgs } from 'node:util';
 
 import pg from 'pg';
 
 import manifest from '../package.json' with { type: 'json' };
 
-const usage = `Usage: tanaabot-db -c SQL
-       tanaabot-db --help | --version
+function terminalStyle(stream, code, value) {
+  const { NO_COLOR, FORCE_COLOR } = process.env;
+  const enabled = !NO_COLOR && FORCE_COLOR !== '0' && (stream.isTTY || Boolean(FORCE_COLOR));
+  return enabled ? `\u001b[${code}m${value}\u001b[0m` : value;
+}
+
+function help(stream) {
+  const heading = (label) => terminalStyle(stream, '38;2;0;200;138', label);
+  const dim = (value) => terminalStyle(stream, '2', value);
+  return `Usage: tanaabot-db -c SQL ${dim('[options]')}
 
 Run SQL through the Cloud TCP proxy and print rows as JSON.
-Uses PGHOST, PGPORT, PGUSER, PGPASSWORD and PGDATABASE.
-TLS settings are PGSSLMODE, PGSSLROOTCERT, PGSSLCERT and PGSSLKEY.`;
+
+${heading('Options:')}
+  -c, --command SQL  Run the supplied SQL
+      --debug        Write connection progress to stderr
+  -h, --help         Show this help
+      --version      Show the installed version
+
+${heading('Environment Variables:')}
+  PGHOST, PGUSER, PGPASSWORD          Database endpoint and credentials
+  PGPORT                              Database port ${dim('[default: 5432]')}
+  PGDATABASE                          Database name ${dim('[default: PGUSER]')}
+  PGSSLMODE                           TLS mode ${dim('[default: require]')}
+  PGSSLROOTCERT, PGSSLCERT, PGSSLKEY  Paths to TLS files
+  TANAABOT_DB_DEBUG                   Same as --debug when enabled
+`;
+}
 
 function connectionURL(env) {
   const { PGHOST: host, PGPORT: port = '5432', PGSSLMODE: mode = 'require' } = env;
@@ -75,13 +98,15 @@ function openTunnel(authority, signal) {
   });
 }
 
-async function query(sql, env) {
+async function query(sql, env, debug) {
   const url = connectionURL(env);
   const signal = AbortSignal.timeout(15_000);
+  debug('opening the Cloud proxy tunnel');
   const socket = await openTunnel(url.host, signal);
   const stop = () => socket.destroy();
   signal.addEventListener('abort', stop, { once: true });
   try {
+    debug('proxy tunnel established');
     // pg calls connect() on its stream. Report the already-open tunnel as connected once.
     const connect = socket.connect;
     socket.connect = () => {
@@ -97,7 +122,9 @@ async function query(sql, env) {
     // pg also emits an error for disconnects between queries.
     client.on('error', () => {});
     await client.connect();
+    debug('PostgreSQL session established');
     const result = await client.query(sql);
+    debug('query completed');
     await client.end();
     return Array.isArray(result) ? result.flatMap(({ rows }) => rows) : result.rows;
   } catch (error) {
@@ -118,17 +145,46 @@ async function query(sql, env) {
   }
 }
 
-const [flag, sql, ...extra] = process.argv.slice(2);
-if (['-h', '--help', '--version'].includes(flag) && !sql && !extra.length) {
-  process.stdout.write(`${flag === '--version' ? manifest.version : usage}\n`);
-} else if (flag !== '-c' || !sql?.trim() || extra.length) {
-  process.stderr.write(`${usage}\n`);
-  process.exitCode = 2;
-} else {
+function commandOptions(args) {
   try {
-    process.stdout.write(`${JSON.stringify(await query(sql, process.env))}\n`);
-  } catch (error) {
-    process.stderr.write(`${error.message}\n`);
-    process.exitCode = 1;
+    return parseArgs({
+      args,
+      options: {
+        command: { type: 'string', short: 'c', multiple: true },
+        debug: { type: 'boolean' },
+        help: { type: 'boolean', short: 'h' },
+        version: { type: 'boolean' },
+      },
+    }).values;
+  } catch {
+    return {};
   }
 }
+
+async function run(args, env) {
+  const options = commandOptions(args);
+  if (options.help || options.version) {
+    process.stdout.write(options.help ? help(process.stdout) : `${manifest.version}\n`);
+    return 0;
+  }
+  if (options.command?.length !== 1 || !options.command[0].trim()) {
+    process.stderr.write(help(process.stderr));
+    return 2;
+  }
+
+  const enabled = options.debug || /^(1|true|yes|on)$/i.test(env.TANAABOT_DB_DEBUG ?? '');
+  const debug = (message) => {
+    if (enabled) process.stderr.write(`debug: ${message}\n`);
+  };
+  try {
+    const rows = await query(options.command[0], env, debug);
+    process.stdout.write(`${JSON.stringify(rows)}\n`);
+    return 0;
+  } catch (error) {
+    const label = terminalStyle(process.stderr, '1;31', 'error');
+    process.stderr.write(`${label}: ${error.message}\n`);
+    return 1;
+  }
+}
+
+process.exitCode = await run(process.argv.slice(2), process.env);

@@ -10,6 +10,8 @@
   `prompts/bootstrap.md`.
 - If a required source, tool or binding is unavailable, report the gap and continue independent
   authorized work. Distinguish plans and attempts from verified results.
+- For PostgreSQL work in Cloud, read `instructions/postgresql.md` in the prepared Tanaabot checkout
+  when that guidance has not already been loaded.
 
 ## Accounts and authority
 

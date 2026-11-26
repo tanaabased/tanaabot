@@ -66,3 +66,4 @@ live appearance.
 | [Host setup](./.agent-system/setup-host.yaml)              | Host mode check/apply declaration                    |
 | [Package metadata](./package.json)                         | Tool versions, scripts and explicit package contents |
 | [Plugin manifest](./.codex-plugin/plugin.json)             | Plugin identity, skills and branding                 |
+| [PostgreSQL guidance](./instructions/postgresql.md)        | Database command and execution instructions          |
