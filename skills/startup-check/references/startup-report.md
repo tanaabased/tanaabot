@@ -90,7 +90,8 @@ Both headings use the template below. Keep all seven sections in order and give 
 quoted bullet with a bold label. On every run, including repeat rebuilds, show the value observed
 on this run even when it matches the previous run. Keep the bullet for each missing value and
 mark it **Unverified**. Report observed failures explicitly and keep independently verified values.
-Use uppercase H2 and H3 titles and put variable names, paths, versions and identities in backticks.
+Use ALL CAPS for the opening H2 title only. Preserve the author’s casing on later headings,
+including headings at the same level. Put variable names, paths, versions and identities in backticks.
 
 - **Environment:** Use the native environment name, observed OS, actual task shell and verified
   checkout path. Report saved 1Password loading and the names returned by a successful
@@ -124,7 +125,7 @@ Use this field layout with values from the current run. Debug uses the same body
 
 > ## ℹ️ STATUS REPORT
 >
-> ### ENVIRONMENT
+> ### Environment
 >
 > - **Cloud environment** `tanaabot`
 > - **Operating system** Linux
@@ -133,7 +134,7 @@ Use this field layout with values from the current run. Debug uses the same body
 > - **1Password environment** Loaded and verified in the task shell
 > - **Loaded variables** `EMAIL` `GH_TOKEN`
 >
-> ### TANAABOT
+> ### Tanaabot
 >
 > - **Setup ID** `main-921f3ae1`
 > - **Setup selector** `main`
@@ -143,7 +144,7 @@ Use this field layout with values from the current run. Debug uses the same body
 > - **Local skills loaded** 8
 > - **Skill directory** `/workspace/tanaabot/skills`
 >
-> ### DEPENDENCIES
+> ### Dependencies
 >
 > - **Bun** `1.4.4`
 > - **curl** `8.12.1`
@@ -154,21 +155,21 @@ Use this field layout with values from the current run. Debug uses the same body
 > - **Stow** `2.4.1`
 > - **tanaabot-db** `1.0.1`
 >
-> ### DOTFILES
+> ### Dotfiles
 >
 > - **Verified packages** `ai` `gh` `git` `shell` `ssh`
 >
-> ### NETWORKING
+> ### Networking
 >
 > - **`tanaab`** Connected
 > - **`db1.tanaab.net`** Connected
 >
-> ### CANON SKILLS
+> ### Canon skills
 >
 > - **Task catalog** Canon skills available
 > - **Plugin version** **Unverified**
 >
-> ### IDENTITY
+> ### Identity
 >
 > - **GitHub account** `tanaabot` · authenticated
 > - **Git author** `tanaabot <tanaabot@tanaab.dev>`
